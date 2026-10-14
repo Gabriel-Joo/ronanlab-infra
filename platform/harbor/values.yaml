@@ -1,0 +1,36 @@
+expose:
+  type: ingress
+  tls:
+    enabled: false
+  ingress:
+    hosts:
+      core: harbor.ronanlab.dev
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+externalURL: https://harbor.ronanlab.dev
+
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    registry:
+      storageClass: local-path
+      size: 20Gi
+    jobservice:
+      jobLog:
+        storageClass: local-path
+        size: 1Gi
+    database:
+      storageClass: local-path
+      size: 5Gi
+    redis:
+      storageClass: local-path
+      size: 1Gi
+    trivy:
+      storageClass: local-path
+      size: 5Gi
+
+trivy:
+  enabled: true

@@ -1,0 +1,40 @@
+controller:
+  jenkinsUrlProtocol: https
+  jenkinsUrl: https://jenkins.ronanlab.dev
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostName: jenkins.ronanlab.dev
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+  serviceType: ClusterIP
+
+  installPlugins:
+    - kubernetes:4560.vc25b_83890c34
+    - workflow-aggregator:608.v67378e9d3db_1
+    - git:5.11.0
+    - configuration-as-code:2136.veb_3a_554550b_f
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 8Gi
+
+agent:
+  enabled: true
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: jenkins
