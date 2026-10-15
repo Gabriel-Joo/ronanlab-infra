@@ -1,0 +1,22 @@
+# VIP 풀: libvirt default 망(virbr0) 192.168.122.240–250. DHCP 범위(.100–.199)와 노드 고정 IP(.10–.13) 밖
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: private
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.122.240-192.168.122.250
+  autoAssign: false        # 아무 LoadBalancer 나 가져가지 않게 — Service 가 이름으로 집어 쓴다
+---
+# eth1(192.168.122.x)로만 알린다. eth0 은 vagrant-libvirt NAT 망(192.168.121.x)이다
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: private
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - private
+  interfaces:
+    - eth1

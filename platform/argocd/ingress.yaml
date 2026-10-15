@@ -1,0 +1,32 @@
+# argocd.ronanlab.dev — 전에는 m-k8s 의 ~/argocd-ingress.yaml 로 apply 했다. 이제 이 파일이 원본이다.
+#   kubectl apply -f platform/argocd/ingress.yaml
+# - TLS 는 ingress-nginx 가 종단한다. 인증서는 cert-manager(platform/cert-manager/argocd-certificate.yaml, letsencrypt-prod)
+# - backend-protocol HTTPS: argocd-server 는 자체 인증서로 TLS 를 받는다(server.insecure 아님). nginx → argocd-server 도 TLS
+# - ssl-passthrough 는 뺐다: 컨트롤러가 --enable-ssl-passthrough 없이 떠서 원래도 동작하지 않았고,
+#   켜지면 nginx 가 TLS 를 종단하지 않아 위 인증서가 쓰이지 않는다
+# - ssl-redirect "false": Harbor·Jenkins 와 맞춘다. 터널은 https 로 붙고, 사설망 http(80) 경로도 그대로 둔다
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: argocd-ingress-tls
+      hosts:
+        - argocd.ronanlab.dev
+  rules:
+    - host: argocd.ronanlab.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 443

@@ -1,7 +1,12 @@
 expose:
   type: ingress
+  # 인증서는 cert-manager 가 만든다(platform/cert-manager/harbor-certificate.yaml → Secret harbor-tls, Let's Encrypt DNS-01).
+  # 노드 containerd 가 사설 VIP(192.168.122.240)로 https 를 검증해 당긴다 — Harbor 토큰 주소(externalURL)가 https 라서.
   tls:
-    enabled: false
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: harbor-tls
   ingress:
     hosts:
       core: harbor.ronanlab.dev
@@ -11,6 +16,9 @@ expose:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
 
 externalURL: https://harbor.ronanlab.dev
+
+# certSource: secret 이면 이 차트(1.19.2)는 core 의 ca-download 볼륨 secretName 을 비워 둔다 — 같은 Secret 을 준다
+caSecretName: harbor-tls
 
 persistence:
   enabled: true

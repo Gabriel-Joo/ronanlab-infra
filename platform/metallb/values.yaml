@@ -1,0 +1,8 @@
+# MetalLB L2 — ingress-nginx 에 사설망(192.168.122.x) VIP 를 준다.
+# BGP 를 쓰지 않으므로 FRR 백엔드를 둘 다 끈다(0.16 은 frr-k8s 가 기본으로 켜진다).
+# Calico 가 노드마다 BIRD 로 179 를 쓰고 있어 BGP 데몬을 하나 더 두지 않는다
+speaker:
+  frr:
+    enabled: false
+frrk8s:
+  enabled: false

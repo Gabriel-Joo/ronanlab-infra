@@ -8,6 +8,11 @@ controller:
     hostName: jenkins.ronanlab.dev
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # 인증서는 cert-manager(platform/cert-manager/jenkins-certificate.yaml, letsencrypt-prod DNS-01)
+    tls:
+      - secretName: jenkins-tls
+        hosts:
+          - jenkins.ronanlab.dev
 
   serviceType: ClusterIP
 

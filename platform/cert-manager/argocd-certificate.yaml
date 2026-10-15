@@ -1,0 +1,14 @@
+# argocd.ronanlab.dev 인증서 → Secret argocd/argocd-ingress-tls. Harbor 와 같은 ClusterIssuer(letsencrypt-prod, DNS-01)
+# 이름을 argocd-server-tls 로 두지 않는다 — argocd-server 가 그 Secret 을 자기 서버 인증서로 집어 간다
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-ingress-tls
+  namespace: argocd
+spec:
+  secretName: argocd-ingress-tls
+  dnsNames:
+    - argocd.ronanlab.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod

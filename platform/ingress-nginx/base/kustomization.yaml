@@ -1,0 +1,8 @@
+# 업스트림 ingress-nginx controller-v1.11.3 baremetal 매니페스트 그대로. 손대지 않는다 — 바꿀 것은 overlay 에.
+# 출처: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/baremetal/deploy.yaml
+# sha256: dbf8d35536ce82bc61c1a6f54d748b051a6f94f9c664281d2e93192d2533bd27
+# 버전을 올릴 때는 이 파일을 새 태그로 다시 받아 바꾸고, overlay 에서 kubectl diff -k 로 차이를 본다
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deploy.yaml
