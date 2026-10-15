@@ -1,0 +1,7 @@
+# cert-manager — Let's Encrypt DNS-01(Cloudflare). 인바운드 포트를 열지 않는다(Access·터널 뒤라 HTTP-01 은 못 쓴다)
+crds:
+  enabled: true
+# DNS-01 전파 확인은 공개 리졸버로만 — 클러스터·노드 쪽 이름 해석(/etc/hosts 등)에 흔들리지 않게.
+# 1.1.1.1:53 은 이 망에서 시간 초과다(노드·Pod 모두, 2026-10-15 확인) — 쓰지 않는다
+dns01RecursiveNameservers: "8.8.8.8:53,8.8.4.4:53"
+dns01RecursiveNameserversOnly: true

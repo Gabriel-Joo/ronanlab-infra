@@ -1,0 +1,13 @@
+# harbor.ronanlab.dev 인증서 → Secret harbor/harbor-tls. Harbor Helm(expose.tls.certSource: secret)이 이 Secret 을 쓴다
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-tls
+  namespace: harbor
+spec:
+  secretName: harbor-tls
+  dnsNames:
+    - harbor.ronanlab.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
