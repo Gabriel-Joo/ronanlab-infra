@@ -26,8 +26,8 @@ else
     --from-literal=type=git --from-literal=url="$REPO_SSH" --from-file=sshPrivateKey="$T/argocd" >/dev/null
   kubectl -n argocd label secret repo-ronanlab-infra argocd.argoproj.io/secret-type=repository >/dev/null
   echo "만듦  argocd/repo-ronanlab-infra"
-  echo "  ▶ GitHub 등록 — Title: argocd-read   Allow write access: 끔"
-  echo "    $(cat "$T/argocd.pub")"
+  echo "GitHub 등록 — Title: argocd-read, Allow write access: 끔. 다음 한 줄을 그대로 붙인다(앞 공백 없음):"
+  awk '{print $1, $2, "argocd-read"}' "$T/argocd.pub"
 fi
 
 if exists jenkins ronanlab-infra-deploy-key; then
@@ -36,12 +36,16 @@ else
   ssh-keygen -q -t ed25519 -N "" -C "jenkins@ronanlab ronanlab-infra write" -f "$T/jenkins"
   kubectl -n jenkins create secret generic ronanlab-infra-deploy-key --from-file=ssh-privatekey="$T/jenkins" >/dev/null
   echo "만듦  jenkins/ronanlab-infra-deploy-key"
-  echo "  ▶ GitHub 등록 — Title: jenkins-write   Allow write access: 켬"
-  echo "    $(cat "$T/jenkins.pub")"
+  echo "GitHub 등록 — Title: jenkins-write, Allow write access: 켬. 다음 한 줄을 그대로 붙인다(앞 공백 없음):"
+  awk '{print $1, $2, "jenkins-write"}' "$T/jenkins.pub"
 fi
 
-echo "--- Secret 안 키의 지문(공개 키에서 계산 — GitHub Deploy keys 화면의 SHA256 과 같아야 한다)"
-kubectl -n argocd get secret repo-ronanlab-infra -o jsonpath='{.data.sshPrivateKey}' | base64 -d > "$T/chk1"; chmod 600 "$T/chk1"
-ssh-keygen -y -f "$T/chk1" > "$T/chk1.pub"; echo "  argocd-read   $(fp "$T/chk1.pub")"
-kubectl -n jenkins get secret ronanlab-infra-deploy-key -o jsonpath='{.data.ssh-privatekey}' | base64 -d > "$T/chk2"; chmod 600 "$T/chk2"
-ssh-keygen -y -f "$T/chk2" > "$T/chk2.pub"; echo "  jenkins-write $(fp "$T/chk2.pub")"
+echo "--- Secret 안 키에서 다시 계산한 공개 키 — 이미 있는 Secret 이면 여기 것을 등록한다. 지문은 GitHub Deploy keys 화면의 SHA256 과 같아야 한다"
+pub() {  # pub <ns> <secret> <key> <title>
+  kubectl -n "$1" get secret "$2" -o jsonpath="{.data.$3}" | base64 -d > "$T/chk"; chmod 600 "$T/chk"
+  ssh-keygen -y -f "$T/chk" | awk -v t="$4" '{print $1, $2, t}' > "$T/chk.pub"
+  cat "$T/chk.pub"; echo "  지문 $(fp "$T/chk.pub")"
+  shred -u "$T/chk"
+}
+pub argocd  repo-ronanlab-infra       sshPrivateKey   argocd-read
+pub jenkins ronanlab-infra-deploy-key ssh-privatekey  jenkins-write
