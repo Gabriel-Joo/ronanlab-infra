@@ -1,0 +1,25 @@
+# 펫퍼민트 — apps/petmint 를 본다. 이미지 태그는 Jenkins(petmint-rag-chatbot Jenkinsfile)가 apps/petmint/kustomization.yaml 을 바꿔 push 한다.
+# 적용: kubectl apply -f platform/argocd/applications/petmint.yaml (Application 자체는 아직 사람이 넣는다)
+#
+# - Sync 는 수동(automated 없음). 매니페스트가 의도대로 반영되는지 확인한 뒤 자동으로 바꾼다
+# - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
+# - finalizer 없음 — Application 을 지워도 앱·MySQL·PV 는 남는다(resources-finalizer.argocd.argoproj.io 를 달지 않는다)
+# - Namespace 는 만들지도 소유하지도 않는다 — petmint 에 cloudflared 터널과 사람이 넣은 Secret 이 있다(apps/petmint/README.md)
+# - 저장소는 private — 읽기 전용 deploy key(Secret argocd/repo-ronanlab-infra, scripts/make-deploy-keys.sh)로 읽는다
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: petmint
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Gabriel-Joo/ronanlab-infra.git
+    targetRevision: main
+    path: apps/petmint
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: petmint
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

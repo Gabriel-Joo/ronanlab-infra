@@ -29,6 +29,9 @@ controller:
       keyName: username
     - name: harbor-robot-jenkins
       keyName: password
+    # ronanlab-infra 쓰기 deploy key(apps/petmint 이미지 태그 push) — scripts/make-deploy-keys.sh 가 만든 Secret jenkins/ronanlab-infra-deploy-key
+    - name: ronanlab-infra-deploy-key
+      keyName: ssh-privatekey
 
   JCasC:
     configScripts:
@@ -43,6 +46,14 @@ controller:
                       description: "Harbor robot$petmint+jenkins — petmint 프로젝트 push"
                       username: "${harbor-robot-jenkins-username}"
                       password: "${harbor-robot-jenkins-password}"
+                  - basicSSHUserPrivateKey:
+                      scope: GLOBAL
+                      id: ronanlab-infra-deploy-key
+                      username: git
+                      description: "ronanlab-infra deploy key(쓰기) — apps/petmint 이미지 태그 push. 이 저장소에만 쓸 수 있다"
+                      privateKeySource:
+                        directEntry:
+                          privateKey: "${ronanlab-infra-deploy-key-ssh-privatekey}"
         jobs:
           # petmint 앱 이미지 빌드 → Harbor push. 파이프라인 본문은 앱 리포의 Jenkinsfile.
           # GitHub webhook 은 Access 에 막히므로(운영 도구는 인터넷에 열지 않는다, docs/13) 2분마다 폴링한다
