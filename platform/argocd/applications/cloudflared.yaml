@@ -1,4 +1,4 @@
-# Cloudflare 터널 — platform/cloudflared 를 본다. 클러스터 공용 터널(petmint·argocd·harbor·jenkins 공개 주소 전부).
+# Cloudflare 터널 — platform/cloudflared 를 본다. 클러스터 공용 터널(petmint·argocd·harbor·jenkins·runshoes 공개 주소 전부).
 # 적용: kubectl apply -f platform/argocd/applications/cloudflared.yaml (Application 자체는 아직 사람이 넣는다)
 #
 # petmint.yaml 과 같은 규칙. 이 Application 은 특히 자동으로 바꾸지 않는다 — ArgoCD 자신에게 오는 길을 관리한다.
