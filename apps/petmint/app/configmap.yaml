@@ -24,6 +24,10 @@ data:
   PETMINT_MILVUS_URL: "http://192.168.122.1:19530"
   # search-service는 아직 없다. .invalid는 절대 풀리지 않는 이름이다 — 띄우면 http://192.168.122.1:8100 으로 바꾼다
   PETMINT_SEARCH_URL: "http://search-service-not-deployed.invalid:8100"
+  # 호스트 Ollama의 모델 이름(app/config.py). 어댑터를 바꾸면 RAG 쪽만 바꾼다 — 호스트에 ollama create로 먼저 올려 둔다.
+  # envFrom이라 이 값만 바꿔서는 떠 있는 Pod에 반영되지 않는다 — Sync 뒤 rollout restart(롤링)
+  PETMINT_MODEL_BASE: tri-7b
+  PETMINT_MODEL_RAG: tri-7b-rag-1
 
   # 약관 데이터 — 호스트 NFS(PVC petmint-chunks·petmint-graph)를 /var/lib/petmint 아래에 붙인다(이미지 기본값과 같다)
   PETMINT_CHUNKS_DIR: /var/lib/petmint/chunks
