@@ -1,0 +1,25 @@
+# RUNSHOES — apps/runshoes 를 본다. 이미지 태그는 Jenkins(runshoes Jenkinsfile)가 apps/runshoes/kustomization.yaml 의 두 newTag 를 바꿔 push 한다.
+# 적용: kubectl apply -f platform/argocd/applications/runshoes.yaml (Application 자체는 아직 사람이 넣는다)
+#
+# petmint.yaml 과 같은 규칙:
+# - Sync 는 수동(automated 없음)
+# - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
+# - finalizer 없음 — Application 을 지워도 앱·PVC(db.json)는 남는다
+# - Namespace 는 만들지도 소유하지도 않는다 — Secret harbor-pull 을 사람이 넣는다(apps/runshoes/README.md)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: runshoes
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Gabriel-Joo/ronanlab-infra.git
+    targetRevision: main
+    path: apps/runshoes
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: runshoes
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

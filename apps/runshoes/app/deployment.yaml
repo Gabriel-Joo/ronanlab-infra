@@ -1,0 +1,93 @@
+# 앱(Express + json-server + React 빌드물, :3000)과 챗봇 사이드카(파이썬 웹소켓, :8766) 한 Pod. 학교 vcluster 구성 그대로.
+# 상태가 PVC의 db.json 파일 하나라 Pod는 하나뿐이다 — replicas 1, Recreate(옛 Pod가 내려간 뒤 새 Pod. 배포 때 수십 초 끊긴다).
+# RollingUpdate면 두 Pod가 같은 RWO PVC를 잡으려다 새 Pod가 멈추거나, 같은 노드면 한 파일을 둘이 써서 깨진다.
+# 이미지는 root로 돈다(Dockerfile에 USER 없음) — petmint의 runAsNonRoot를 넣지 않는다. Dockerfile은 MySQL 전환 때 고친다.
+#
+# Ollama(리뷰 요약·챗봇)는 GPU 호스트에 있다 — VM 사설망의 호스트 주소로 바로 간다(petmint PETMINT_OLLAMA_URL과 같다).
+# 전에는 https://ollama.ronanlab.dev(Cloudflare 터널 + Access Service Token)로 나갔다 들어왔다. 직접 가므로 CF_ACCESS_* 는 주지 않는다
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runshoes
+  labels:
+    app.kubernetes.io/name: runshoes
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: runshoes
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: runshoes
+    spec:
+      # Harbor runshoes 프로젝트가 private — scripts/create-secrets.sh가 만드는 pull Secret
+      imagePullSecrets:
+        - name: harbor-pull
+      initContainers:
+        # PVC에 db.json이 없을 때만 시드를 복사한다 — 있으면(사용자가 쓴 리뷰 등) 그대로 둔다. 시드를 다시 넣으려면 PVC의 파일을 지우고 Pod를 다시 띄운다
+        - name: seed-db
+          image: harbor.ronanlab.dev/runshoes/runshoes   # 태그는 kustomization images가 붙인다(앱과 같은 이미지 — 시드가 이 안에 있다)
+          command:
+            - sh
+            - -c
+            - |
+              if [ -f /data/db.json ]; then echo "db.json 있음 — 그대로 둔다"
+              else cp /app/db.json.seed /data/db.json && echo "db.json 없음 — 시드 복사"; fi
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { memory: 64Mi }
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: runshoes
+          image: harbor.ronanlab.dev/runshoes/runshoes
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: DB_PATH
+              value: /data/db.json
+            - name: OLLAMA_URL
+              value: "http://192.168.122.1:11434"
+          readinessProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket: { port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - name: data
+              mountPath: /data
+        - name: chatbot
+          image: harbor.ronanlab.dev/runshoes/runshoes-chatbot
+          ports:
+            - name: chatbot
+              containerPort: 8766
+          env:
+            - name: OLLAMA_URL                 # chatbot_server.py가 읽는다(없으면 코드의 기본값)
+              value: "http://192.168.122.1:11434"
+            - name: PYTHONUNBUFFERED           # print 로그가 kubectl logs에 바로 보이게
+              value: "1"
+          readinessProbe:
+            tcpSocket: { port: chatbot }
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket: { port: chatbot }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 10m, memory: 48Mi }
+            limits: { memory: 256Mi }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: runshoes-data

@@ -1,0 +1,27 @@
+# RUNSHOES — React + Express/json-server 앱과 웹소켓 챗봇 사이드카 한 Pod. ArgoCD Application runshoes(platform/argocd/applications/runshoes.yaml)가 이 디렉터리를 본다.
+# kubectl apply로 직접 넣지 않는다 — ArgoCD와 상태가 엇갈린다(apps/petmint/README.md "ArgoCD가 관리한다"와 같다).
+# 2026-10-18 학교 vcluster(gitops 레포 apps/runshoes)에서 옮겼다. 데이터는 db.json 파일 하나(PVC) — MySQL 전환은 따로 한다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: runshoes
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: runshoes
+    includeSelectors: false
+
+# Namespace는 여기 없다 — 사람이 만든다(Secret harbor-pull이 거기 있다. petmint·monitoring과 같은 이유, README.md)
+resources:
+  - app/pvc.yaml
+  - app/deployment.yaml
+  - app/service.yaml
+  - app/ingress.yaml
+  # Secret은 여기 없다 — 평문을 저장소에 두지 않는다. scripts/create-secrets.sh가 클러스터에 직접 만든다
+
+# 이미지 둘은 같은 앱 리포 커밋에서 같은 태그로 나온다. Jenkins(runshoes Jenkinsfile)가 빌드 뒤 두 newTag 줄을 함께 커밋 해시 12자리로 바꿔 push한다.
+# 이 줄 모양을 바꾸면 Jenkinsfile의 sed도 바꾼다. latest 금지 — 어느 커밋이 도는지 태그로 알 수 있어야 한다
+images:
+  - name: harbor.ronanlab.dev/runshoes/runshoes
+    newTag: "8e4fd1202571"   # Jenkins가 바꾼다(커밋 해시 12자리). 맨 처음 값은 Harbor에 없는 자리값이었다 — 첫 빌드가 바꾼 뒤 Sync(README.md "처음 만드는 순서")
+  - name: harbor.ronanlab.dev/runshoes/runshoes-chatbot
+    newTag: "8e4fd1202571"   # 위와 같은 값이어야 한다(Jenkins sed가 두 줄을 함께 바꾼다)

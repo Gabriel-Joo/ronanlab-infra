@@ -1,0 +1,17 @@
+# 포트 둘 — 앱(http)과 챗봇(chatbot). Ingress가 경로로 나눈다(app/ingress.yaml)
+apiVersion: v1
+kind: Service
+metadata:
+  name: runshoes
+  labels:
+    app.kubernetes.io/name: runshoes
+spec:
+  selector:
+    app.kubernetes.io/name: runshoes
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: chatbot
+      port: 8766
+      targetPort: chatbot
