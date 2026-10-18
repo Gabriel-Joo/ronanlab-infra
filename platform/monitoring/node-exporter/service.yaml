@@ -1,0 +1,13 @@
+# Prometheus가 EndpointSlice로 노드별 대상을 찾는 용도(headless). 밖에서 부르지 않는다
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-exporter
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: node-exporter
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: metrics

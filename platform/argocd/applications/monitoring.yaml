@@ -1,0 +1,25 @@
+# 모니터링 — platform/monitoring 을 본다(Prometheus·Grafana·node-exporter·kube-state-metrics, petmint-rag-chatbot docs/15_monitoring.md).
+# 적용: kubectl apply -f platform/argocd/applications/monitoring.yaml (Application 자체는 아직 사람이 넣는다. 2026-10-18 작성, 아직 넣지 않았다)
+#
+# petmint.yaml 과 같은 규칙:
+# - Sync 는 수동(automated 없음)
+# - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
+# - finalizer 없음 — Application 을 지워도 Prometheus PVC 는 남는다
+# - Namespace 는 만들지도 소유하지도 않는다 — Secret grafana-admin 을 사람이 넣는다(platform/monitoring/README.md)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Gabriel-Joo/ronanlab-infra.git
+    targetRevision: main
+    path: platform/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

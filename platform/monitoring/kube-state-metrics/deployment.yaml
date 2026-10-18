@@ -1,0 +1,42 @@
+# v2.19.x는 client-go 1.35 — 클러스터 v1.35.9에 맞춘다(kube-state-metrics 호환표)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-state-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-state-metrics
+    spec:
+      serviceAccountName: kube-state-metrics
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+        - name: kube-state-metrics
+          image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.19.1
+          args:
+            - --port=8080
+            - --telemetry-port=8081
+            # 기본값은 객체 종류 전부(ConfigMap·Secret·Lease 등) — 15번 1절에 쓰는 것만. rbac.yaml과 같이 바꾼다
+            - --resources=cronjobs,daemonsets,deployments,jobs,namespaces,nodes,persistentvolumeclaims,persistentvolumes,pods,replicasets,services,statefulsets
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: telemetry
+              containerPort: 8081
+          livenessProbe:
+            httpGet: { path: /livez, port: http }
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet: { path: /readyz, port: telemetry }
+            initialDelaySeconds: 5
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { cpu: 100m, memory: 128Mi }

@@ -1,0 +1,50 @@
+# 노드 지표 — 노드마다 하나. 호스트 /proc·/sys·/ 를 읽기 전용으로 본다. hostNetwork :9100(노드 네 대 모두 비어 있음, 2026-10-18 확인).
+# tolerations는 배치 제약이 아니라 control-plane taint(m-k8s)에도 뜨게 하는 것 — 없으면 m-k8s 지표가 빠진다
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: node-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: node-exporter
+    spec:
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+        - operator: Exists
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+        - name: node-exporter
+          image: quay.io/prometheus/node-exporter:v1.12.1
+          args:
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --path.rootfs=/host/root
+            - --web.listen-address=:9100
+            # Pod마다 생기는 마운트·가상 NIC는 노드 지표가 아니다 — 시계열만 늘린다
+            - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run|var/lib/kubelet/.+|var/lib/containerd/.+|run/containerd/.+)($|/)
+            - --collector.netdev.device-exclude=^(veth.*|cali.*|flannel.*|cni.*|lo)$
+          ports:
+            - name: metrics
+              containerPort: 9100
+          readinessProbe:
+            httpGet: { path: /, port: metrics }
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+          volumeMounts:
+            - { name: proc, mountPath: /host/proc, readOnly: true }
+            - { name: sys, mountPath: /host/sys, readOnly: true }
+            - { name: root, mountPath: /host/root, readOnly: true, mountPropagation: HostToContainer }
+      volumes:
+        - { name: proc, hostPath: { path: /proc } }
+        - { name: sys, hostPath: { path: /sys } }
+        - { name: root, hostPath: { path: / } }

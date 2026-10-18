@@ -1,0 +1,32 @@
+# Prometheus가 쿠버네티스 서비스 디스커버리(노드·Pod·EndpointSlice)와 kubelet cAdvisor(/metrics/cadvisor)를 읽는 권한. 읽기만
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-prometheus
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/metrics, services, endpoints, pods]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - nonResourceURLs: [/metrics]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: monitoring-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring

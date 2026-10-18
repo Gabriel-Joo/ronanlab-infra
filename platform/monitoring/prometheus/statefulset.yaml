@@ -1,0 +1,65 @@
+# Prometheus 한 대. 보존 7일, TSDB는 local-path PVC(5Gi) — 크기 근거는 README.md "크기".
+# local-path PV는 처음 붙은 노드에 묶인다(hostPath). Pod는 그 노드로만 다시 뜬다 — 노드를 비우면 Prometheus도 멈춘다
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus
+spec:
+  serviceName: prometheus
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prometheus
+      annotations:
+        # 설정을 바꾸면 이 값을 올려 롤링한다(ConfigMap만 바뀌면 Pod가 다시 읽지 않는다)
+        monitoring.ronanlab.dev/config-rev: "1"
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        fsGroup: 65534
+      containers:
+        - name: prometheus
+          image: quay.io/prometheus/prometheus:v3.15.0
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.retention.size=4GB      # PVC 5Gi보다 먼저 지운다 — 시계열이 예상보다 늘어도 디스크를 채우지 않게
+          ports:
+            - name: http
+              containerPort: 9090
+          readinessProbe:
+            httpGet: { path: /-/ready, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /-/healthy, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 384Mi }
+            limits: { cpu: 500m, memory: 768Mi }
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi
