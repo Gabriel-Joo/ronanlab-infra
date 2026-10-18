@@ -10,8 +10,10 @@ labels:
       app.kubernetes.io/part-of: runshoes
     includeSelectors: false
 
-# Namespace는 여기 없다 — 사람이 만든다(Secret harbor-pull이 거기 있다. petmint·monitoring과 같은 이유, README.md)
+# Namespace는 여기 없다 — 사람이 만든다(Secret harbor-pull · runshoes-mysql이 거기 있다. petmint·monitoring과 같은 이유, README.md)
 resources:
+  - mysql/service.yaml
+  - mysql/statefulset.yaml
   - app/pvc.yaml
   - app/deployment.yaml
   - app/service.yaml

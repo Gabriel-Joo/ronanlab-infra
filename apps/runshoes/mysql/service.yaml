@@ -1,0 +1,15 @@
+# 앱이 runshoes-mysql:3306 으로 붙는다(headless — StatefulSet 의 Pod 하나)
+apiVersion: v1
+kind: Service
+metadata:
+  name: runshoes-mysql
+  labels:
+    app.kubernetes.io/name: runshoes-mysql
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: runshoes-mysql
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql

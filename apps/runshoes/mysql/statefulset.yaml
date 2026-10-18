@@ -1,0 +1,87 @@
+# runshoes 데이터베이스 — MySQL 8 하나(runshoes 네임스페이스). 앱(Spring)이 Flyway 로 스키마·시드를 넣는다.
+# 처음 빈 데이터 디렉터리로 뜰 때 이미지가 데이터베이스 runshoes 와 계정 runshoes 를 만든다(MYSQL_DATABASE · MYSQL_USER) — 초기화 Job 이 없다.
+# 비밀번호는 Secret runshoes-mysql(사람이 만든다, scripts/create-secrets.sh). root 비밀번호는 처음 만들 때만 쓰인다 — 나중에 바꿔도 반영되지 않는다.
+# 설정은 같은 클러스터의 petmint MySQL(apps/petmint/mysql)과 맞췄다.
+#
+# local-path 라 처음 뜬 노드에 PV 가 묶인다 — w1 을 선호한다(2026-10-18 limits 여유가 가장 큰 노드).
+# petmint MySQL 의 PV 도 w1 에 있다 — w1 이 멈추면 두 DB 가 같이 멈춘다(노드가 3대라 감수).
+# PVC 는 StatefulSet · Pod 를 지워도 남는다(Retain). StorageClass reclaimPolicy 가 Delete 라 PVC 를 지우면 데이터도 지워진다.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: runshoes-mysql
+  labels:
+    app.kubernetes.io/name: runshoes-mysql
+spec:
+  serviceName: runshoes-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: runshoes-mysql
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: runshoes-mysql
+    spec:
+      terminationGracePeriodSeconds: 60      # InnoDB 가 정상 종료할 시간
+      securityContext:
+        fsGroup: 999                          # mysql 이미지의 mysql 사용자
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - { key: kubernetes.io/hostname, operator: In, values: [w1-k8s] }
+      containers:
+        - name: mysql
+          image: mysql:8.0.46                 # 고정 태그. kustomization images 에 넣지 않는다 — Jenkins sed 가 바꾸지 않게
+          args:
+            - --innodb-buffer-pool-size=256M  # 워커 VM 이 4GB
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+            - --default-time-zone=+00:00      # 앱 · JDBC 도 UTC(createdAt)
+            - --performance-schema=OFF        # 메모리 수백 MB 절약
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: runshoes-mysql, key: MYSQL_ROOT_PASSWORD } }
+            - name: MYSQL_DATABASE
+              value: runshoes
+            - name: MYSQL_USER
+              value: runshoes
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: runshoes-mysql, key: MYSQL_PASSWORD } }
+          ports:
+            - name: mysql
+              containerPort: 3306
+          # 초기화 중에는 임시 서버가 네트워크 없이 돈다 — 127.0.0.1 ping 이 실패해 Ready 가 늦게 선다(원하는 대로).
+          # mysqladmin ping 은 인증 없이도 서버가 응답하면 0 — 비밀번호를 프로세스 인자에 남기지 않는다
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            requests: { cpu: 200m, memory: 512Mi }
+            limits: { memory: 1Gi }
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 2Gi
