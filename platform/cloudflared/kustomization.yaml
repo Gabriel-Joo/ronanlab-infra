@@ -1,4 +1,4 @@
-# Cloudflare 터널 petmint-tunnel — 클러스터 공용(petmint·argocd·harbor·jenkins·runshoes 공개 주소 전부, petmint-rag-chatbot docs/13).
+# Cloudflare 터널 ronanlab-tunnel — 클러스터 공용(petmint·argocd·harbor·jenkins·runshoes 공개 주소 전부, petmint-rag-chatbot docs/13).
 # ArgoCD Application cloudflared(platform/argocd/applications/cloudflared.yaml)가 이 디렉터리를 본다.
 # 2026-10-18 petmint 네임스페이스에서 옮겼다 — 그 전에는 m-k8s ~/cloudflared-deploy.yaml 을 손으로 apply 했다.
 #
