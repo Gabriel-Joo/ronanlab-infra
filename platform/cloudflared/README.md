@@ -1,6 +1,6 @@
 # platform/cloudflared — 클러스터 공용 Cloudflare 터널
 
-터널 `petmint-tunnel`(`02ad6a13-ce45-4262-a32a-40241bf034dc`) 하나가 공개 주소 넷을 받는다 — `petmint`·`argocd`·`harbor`·`jenkins` `.ronanlab.dev`.
+터널 `petmint-tunnel`(`02ad6a13-ce45-4262-a32a-40241bf034dc`) 하나가 공개 주소 다섯을 받는다 — `petmint`·`argocd`·`harbor`·`jenkins`·`runshoes` `.ronanlab.dev`(runshoes는 2026-10-18 추가, Access 없음).
 원점은 전부 ingress-nginx ClusterIP(`ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`), 앞단은 Cloudflare Access(petmint-rag-chatbot docs/13).
 ArgoCD Application `cloudflared`(`platform/argocd/applications/cloudflared.yaml`)가 이 디렉터리를 본다. 네임스페이스 `cloudflared`.
 
@@ -9,7 +9,7 @@ ArgoCD Application `cloudflared`(`platform/argocd/applications/cloudflared.yaml`
 
 ```
 kustomization.yaml   Namespace·Secret 없음(아래)
-configmap.yaml       터널 설정 config.yaml — 호스트 넷이 한 파일. 기동 때만 읽는다
+configmap.yaml       터널 설정 config.yaml — 호스트 다섯이 한 파일. 기동 때만 읽는다
 deployment.yaml      커넥터 2개. readinessProbe /ready · maxUnavailable 0 · 노드 분산(선호)
 ```
 
