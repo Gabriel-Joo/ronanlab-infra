@@ -1,0 +1,87 @@
+# Prometheus 설정 — 15번 1절의 지표를 낼 만큼만 긁는다. 시계열 수가 곧 메모리·디스크라 큰 출처는 남길 것만 남긴다(README.md "크기").
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      scrape_timeout: 10s
+      evaluation_interval: 30s
+      external_labels:
+        cluster: ronanlab
+
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: [localhost:9090]
+
+      # 노드 CPU·메모리·디스크 — DaemonSet(hostNetwork :9100). EndpointSlice로 찾고 node 라벨을 붙인다
+      - job_name: node-exporter
+        kubernetes_sd_configs:
+          - role: endpointslice
+            namespaces:
+              names: [monitoring]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            regex: node-exporter
+            action: keep
+          - source_labels: [__meta_kubernetes_endpointslice_endpoint_topology_kubernetes_io_hostname]
+            target_label: node
+
+      # 컨테이너 CPU·메모리 사용량 — kubelet의 cAdvisor. 노드 IP:10250(kubeadm kubelet 인증서는 자체 서명이라 검증하지 않는다)
+      - job_name: kubelet-cadvisor
+        scheme: https
+        metrics_path: /metrics/cadvisor
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+        metric_relabel_configs:
+          # cAdvisor는 컨테이너마다 수십 개를 낸다. 1절(사용량 대 Requests, OOM)에 쓰는 것만 남긴다
+          - source_labels: [__name__]
+            regex: container_(cpu_usage_seconds_total|cpu_cfs_periods_total|cpu_cfs_throttled_periods_total|memory_working_set_bytes|oom_events_total|network_receive_bytes_total|network_transmit_bytes_total)
+            action: keep
+
+      # Pod 재시작·OOMKilled·Requests/Limits·노드 Ready — kube-state-metrics
+      - job_name: kube-state-metrics
+        static_configs:
+          - targets: [kube-state-metrics.monitoring.svc:8080]
+
+      # 앱 /metrics 자리 — Pod에 prometheus.io/scrape: "true"(+ port·path) 주석을 달면 긁는다. petmint는 아직 /metrics가 없다(15번 1절 △)
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            regex: "true"
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            regex: (.+)
+            target_label: __metrics_path__
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+      # GPU 호스트의 Milvus(docker milvus-standalone, :9091 게시) — 응답 가능 여부만 본다. up은 metric_relabel로 지워지지 않으므로
+      # 노출 지표를 전부 버리고 up·scrape_*만 남긴다(Milvus 내부 지표는 수천 개라 지금은 받지 않는다)
+      - job_name: milvus
+        metrics_path: /metrics
+        static_configs:
+          - targets: [192.168.122.1:9091]
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: .+
+            action: drop
