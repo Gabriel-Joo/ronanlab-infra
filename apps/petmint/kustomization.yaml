@@ -10,8 +10,9 @@ labels:
       app.kubernetes.io/part-of: petmint
     includeSelectors: false
 
-# Namespace는 여기 없다 — petmint 네임스페이스에는 cloudflared 터널(공개 주소 전부)과 사람이 넣은 Secret이 함께 있다.
-# ArgoCD가 소유하면 prune·Application 삭제 한 번에 그것들이 사라질 수 있어, 네임스페이스는 사람이 만든다(Secret과 같다)
+# Namespace는 여기 없다 — petmint 네임스페이스에는 사람이 넣은 Secret이 있다(scripts/create-secrets.sh).
+# ArgoCD가 소유하면 prune·Application 삭제 한 번에 그것들이 사라질 수 있어, 네임스페이스는 사람이 만든다(Secret과 같다).
+# cloudflared 터널도 예전에는 여기 있었다 — 2026-10-18 platform/cloudflared(네임스페이스 cloudflared)로 옮겼다
 resources:
   - mysql/service.yaml
   - mysql/statefulset.yaml

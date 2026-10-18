@@ -27,8 +27,8 @@ ArgoCD가 넘겨받은 뒤(2026-10-16)로는 **이 디렉터리를 `kubectl appl
 
 - **Sync는 지금 수동이다.** 매니페스트가 의도대로 반영되는지 확인한 뒤 자동으로 바꾼다. prune도 꺼져 있다 — git에서 지운 리소스는 클러스터에 남는다(손으로 지운다)
 - **Application에 finalizer가 없다.** Application을 지워도 앱·MySQL·PV는 남는다
-- **Namespace는 사람이 만든다.** petmint 네임스페이스에는 cloudflared 터널(argocd·harbor·jenkins·petmint 공개 주소 전부)과
-  사람이 넣은 Secret 4개가 함께 있다. ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다
+- **Namespace는 사람이 만든다.** petmint 네임스페이스에는 사람이 넣은 Secret 4개가 있다. ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다.
+  공개 주소 터널(cloudflared)도 예전에는 여기 있었다 — 2026-10-18 `platform/cloudflared`(네임스페이스 `cloudflared`)로 옮겼다
 - **단일 환경이다.** 개발은 로컬(uvicorn + vite), 클러스터는 운영만 — 개발·운영 네임스페이스를 가르지 않는다
 
 ## 처음 만드는 순서 (빈 클러스터에서)
