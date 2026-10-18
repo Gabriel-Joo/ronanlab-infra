@@ -32,6 +32,11 @@ controller:
     # ronanlab-infra 쓰기 deploy key(apps/petmint 이미지 태그 push) — scripts/make-deploy-keys.sh 가 만든 Secret jenkins/ronanlab-infra-deploy-key
     - name: ronanlab-infra-deploy-key
       keyName: ssh-privatekey
+    # Harbor robot$runshoes+jenkins(runshoes 프로젝트 push) — 사람이 넣은 Secret jenkins/harbor-robot-runshoes-jenkins(키 username·password)
+    - name: harbor-robot-runshoes-jenkins
+      keyName: username
+    - name: harbor-robot-runshoes-jenkins
+      keyName: password
 
   JCasC:
     configScripts:
@@ -74,6 +79,48 @@ controller:
                     scm {
                       git {
                         remote { url('https://github.com/Gabriel-Joo/petmint-rag-chatbot.git') }
+                        branch('*/main')
+                      }
+                    }
+                    scriptPath('Jenkinsfile')
+                    lightweight(true)
+                  }
+                }
+              }
+      # RUNSHOES — petmint 와 같은 모양. JCasC 는 configScripts 파일들을 합친다(credentials·jobs 목록이 이어 붙는다).
+      # Job 을 처음 더한 helm upgrade 뒤에는 Job 이 목록에 안 보일 수 있다 — 기동 중 JCasC 가 Job 을 만든 직후 Jenkins 가 디스크 목록으로 덮었다
+      # (2026-10-18, jobs/runshoes-app/config.xml 은 있는데 API 404). POST /configuration-as-code/reload(관리 → Configuration as Code → Reload) 한 번이면 나타난다
+      # ronanlab-infra 쓰기 deploy key(ronanlab-infra-deploy-key)는 위 petmint 블록의 것을 같이 쓴다 — 저장소 단위 키라 apps/runshoes 에도 쓸 수 있다
+      runshoes: |
+        credentials:
+          system:
+            domainCredentials:
+              - credentials:
+                  - usernamePassword:
+                      scope: GLOBAL
+                      id: harbor-robot-runshoes-jenkins
+                      description: "Harbor robot$runshoes+jenkins — runshoes 프로젝트 push"
+                      username: "${harbor-robot-runshoes-jenkins-username}"
+                      password: "${harbor-robot-runshoes-jenkins-password}"
+        jobs:
+          # runshoes 앱·챗봇 이미지 빌드 → Harbor push → apps/runshoes 태그 커밋. 파이프라인 본문은 앱 리포의 Jenkinsfile
+          - script: |
+              pipelineJob('runshoes-app') {
+                description('runshoes main → harbor.ronanlab.dev/runshoes/{runshoes,runshoes-chatbot}:<커밋 12자리>. JCasC 가 만든다 — UI 에서 고치지 않는다')
+                properties {
+                  pipelineTriggers {
+                    triggers {
+                      pollSCM {
+                        scmpoll_spec('H/2 * * * *')
+                      }
+                    }
+                  }
+                }
+                definition {
+                  cpsScm {
+                    scm {
+                      git {
+                        remote { url('https://github.com/Gabriel-Joo/runshoes.git') }
                         branch('*/main')
                       }
                     }
