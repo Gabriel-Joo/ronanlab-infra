@@ -19,12 +19,13 @@ apps/petmint와 같다 — `kubectl apply`로 넣지 않는다.
 
 | 하고 싶은 것 | 하는 방법 |
 | --- | --- |
-| 새 이미지 배포 | 앱 리포 main에 push → Jenkins `runshoes-app`(2분 폴링) → `newTag` 커밋 → ArgoCD에서 Sync |
-| 설정 변경 | 이 디렉터리를 고쳐 push → Sync |
-| 되돌리기 | 이 저장소 커밋을 revert해 push → Sync. db.json은 되돌아가지 않는다(PVC) |
+| 새 이미지 배포 | 앱 리포 main에 push → Jenkins `runshoes-app`(2분 폴링) → `newTag` 커밋 → ArgoCD 자동 Sync(3분 안) |
+| 설정 변경 | 이 디렉터리를 고쳐 push → 자동 Sync |
+| 되돌리기 | 이 저장소 커밋을 revert해 push → 자동 Sync. db.json은 되돌아가지 않는다(PVC) |
 
 - **배포 때 수십 초 끊긴다.** Pod 하나·Recreate라 옛 Pod가 내려간 뒤 새 Pod가 뜬다. 열려 있던 챗봇 WebSocket도 끊긴다
-- **Sync는 수동, prune·finalizer 없음, Namespace는 사람이 만든다** — petmint와 같은 이유(Secret)
+- **Sync는 자동(2026-10-18 이주 검증 뒤), prune·selfHeal·finalizer 없음, Namespace는 사람이 만든다** — Namespace는 petmint와 같은 이유(Secret).
+  push가 곧 배포다 — 앱 리포 main에 올리면 몇 분 안에 Pod가 Recreate로 바뀐다. Application 객체는 사람이 `kubectl apply`로 넣는다(git push만으로는 바뀌지 않는다)
 
 ## 처음 만드는 순서
 
@@ -33,7 +34,7 @@ apps/petmint와 같다 — `kubectl apply`로 넣지 않는다.
 # 2. 네임스페이스와 pull Secret — 사람이 만든다
 HARBOR_USER='robot$runshoes+pull' HARBOR_PASSWORD=... apps/runshoes/scripts/create-secrets.sh
 # 3. Jenkins push 자격 증명 — Secret jenkins/harbor-robot-runshoes-jenkins(키 username·password), platform/jenkins/values.yaml이 읽는다
-# 4. ArgoCD Application → 첫 Jenkins 빌드로 newTag가 바뀐 뒤 Sync
+# 4. ArgoCD Application — 첫 Jenkins 빌드로 newTag가 바뀐 **뒤에** 넣는다. 자동 Sync라 먼저 넣으면 Harbor에 없는 자리값 태그로 바로 배포된다(ImagePullBackOff)
 kubectl apply -f platform/argocd/applications/runshoes.yaml
 ```
 
