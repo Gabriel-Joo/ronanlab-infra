@@ -1,10 +1,10 @@
 # RUNSHOES — apps/runshoes 를 본다. 이미지 태그는 Jenkins(runshoes Jenkinsfile)가 apps/runshoes/kustomization.yaml 의 두 newTag 를 바꿔 push 한다.
 # 적용: kubectl apply -f platform/argocd/applications/runshoes.yaml (Application 자체는 아직 사람이 넣는다)
 #
-# petmint.yaml 과 같은 규칙에서 하나만 다르다 — Sync 가 자동이다(2026-10-18, 이주 검증 뒤):
-# - 자동 Sync — Jenkins 태그 커밋이 사람 손 없이 배포된다. git 을 3분마다 본다(ArgoCD 기본값)
-# - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다(prune: false)
-# - selfHeal 없음 — 클러스터를 손으로 바꾸면 OutOfSync 로 표시만 하고 되돌리지 않는다(selfHeal: false). 다음 git 변경 때 git 쪽으로 맞춘다
+# petmint.yaml 과 같은 규칙:
+# - Sync 는 수동(automated 없음). 2026-10-18 이주 검증 뒤 잠시 자동으로 켰다가 같은 날 껐다 —
+#   Spring·MySQL 전환 중에는 반쯤 된 상태(Jenkins 태그 커밋)가 배포되지 않게 사람이 Sync 한다. 전환이 끝나면 다시 켤지 정한다
+# - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
 # - finalizer 없음 — Application 을 지워도 앱·PVC(db.json)는 남는다
 # - Namespace 는 만들지도 소유하지도 않는다 — Secret harbor-pull 을 사람이 넣는다(apps/runshoes/README.md)
 apiVersion: argoproj.io/v1alpha1
@@ -22,8 +22,5 @@ spec:
     server: https://kubernetes.default.svc
     namespace: runshoes
   syncPolicy:
-    automated:
-      prune: false
-      selfHeal: false
     syncOptions:
       - CreateNamespace=false
