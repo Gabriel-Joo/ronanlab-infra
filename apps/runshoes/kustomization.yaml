@@ -1,6 +1,6 @@
-# RUNSHOES — React + Express/json-server 앱과 웹소켓 챗봇 사이드카 한 Pod. ArgoCD Application runshoes(platform/argocd/applications/runshoes.yaml)가 이 디렉터리를 본다.
+# RUNSHOES — Spring Boot 앱(React 빌드물 + API)과 웹소켓 챗봇 사이드카 한 Pod, MySQL StatefulSet 하나.
+# ArgoCD Application runshoes(platform/argocd/applications/runshoes.yaml)가 이 디렉터리를 본다.
 # kubectl apply로 직접 넣지 않는다 — ArgoCD와 상태가 엇갈린다(apps/petmint/README.md "ArgoCD가 관리한다"와 같다).
-# 2026-10-18 학교 vcluster(gitops 레포 apps/runshoes)에서 옮겼다. 데이터는 db.json 파일 하나(PVC) — MySQL 전환은 따로 한다.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: runshoes

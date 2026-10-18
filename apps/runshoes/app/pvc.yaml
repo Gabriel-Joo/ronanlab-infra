@@ -1,6 +1,5 @@
-# db.json — 앱이 읽고 쓰는 데이터 전부(json-server). 첫 기동 때 initContainer seed-db가 이미지 안 시드(git db.json)를 복사하고, 그 뒤로는 덮어쓰지 않는다.
-# local-path(노드 디스크)라 Pod가 이 PV가 있는 노드에 묶인다 — 그 노드를 drain하면 Pod는 Pending(apps/petmint/README.md "노드 drain"과 같다).
-# StorageClass의 reclaimPolicy가 Delete다 — 이 PVC를 지우면 데이터도 지워진다. Application에 finalizer·prune이 없어 ArgoCD가 지우지는 않는다
+# 지금 앱은 이 PVC 를 쓰지 않는다(데이터는 MySQL). 되돌리기용으로 남긴다 — 전환 전 배포(Node, db.json)가 읽던 파일이 들어 있다(README.md "되돌리기").
+# 관찰 기간이 끝나면 이 파일을 지우고 PVC 도 손으로 지운다(prune 없음). StorageClass reclaimPolicy 가 Delete — PVC 를 지우면 파일도 지워진다
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
