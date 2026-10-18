@@ -1,0 +1,80 @@
+# cloudflared 커넥터 2개 — 같은 터널에 둘 다 붙는다(커넥터마다 엣지 연결 4개). 하나가 죽어도 다른 하나가 받는다.
+# petmint 네임스페이스에 손으로 넣었던 것(m-k8s ~/cloudflared-deploy.yaml)과 같고, 셋을 더했다 — 롤링 중 터널이 비지 않게:
+# - readinessProbe /ready: 엣지 연결이 하나라도 서야 200. 이게 없으면 Pod가 뜨자마자 Ready가 되어 옛 Pod가 먼저 내려간다
+# - maxUnavailable 0 · maxSurge 1: 새 커넥터가 Ready가 된 뒤에 옛 것을 내린다. 새 Pod가 Ready가 못 되면 옛 둘이 그대로 받는다
+# - 노드 분산(선호): 두 커넥터가 한 노드에 몰리지 않게. 강제는 아니다 — 워커가 빠져도 둘 다 뜨는 쪽이 낫다
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  labels:
+    app: cloudflared
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          nodeTaintsPolicy: Honor        # control-plane(m-k8s, taint)을 빈 칸으로 세지 않는다
+          labelSelector:
+            matchLabels:
+              app: cloudflared
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.10.0
+          args:
+            - --no-autoupdate
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - --metrics
+            - 0.0.0.0:2000
+            - tunnel
+            - run
+          ports:
+            - containerPort: 2000
+              name: metrics
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: creds
+          secret:
+            secretName: cloudflared-credentials
+        - name: config
+          configMap:
+            name: cloudflared-config

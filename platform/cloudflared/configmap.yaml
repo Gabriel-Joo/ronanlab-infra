@@ -1,0 +1,30 @@
+# 터널 설정(locally-managed). 호스트 네 개가 한 파일에 들어 있다 — 터널 하나를 클러스터가 같이 쓴다(docs/13 2-3절).
+# 원점은 전부 ingress-nginx ClusterIP(Service DNS :443) — 호스트 구분은 nginx가 Host 헤더로 한다. NodePort·VIP를 쓰지 않는다.
+# cloudflared는 이 파일을 기동 때만 읽는다 — 바꾼 뒤 Sync만으로는 반영되지 않는다. README.md "바꿀 때"의 rollout restart까지.
+# 터널 ID는 비밀이 아니다(자격 증명은 Secret cloudflared-credentials).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+data:
+  config.yaml: |
+    tunnel: 02ad6a13-ce45-4262-a32a-40241bf034dc
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    ingress:
+      - hostname: petmint.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      - hostname: argocd.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      - hostname: harbor.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      - hostname: jenkins.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      - service: http_status:404

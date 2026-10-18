@@ -1,0 +1,19 @@
+# Cloudflare 터널 petmint-tunnel — 클러스터 공용(petmint·argocd·harbor·jenkins 공개 주소 전부, petmint-rag-chatbot docs/13).
+# ArgoCD Application cloudflared(platform/argocd/applications/cloudflared.yaml)가 이 디렉터리를 본다.
+# 2026-10-18 petmint 네임스페이스에서 옮겼다 — 그 전에는 m-k8s ~/cloudflared-deploy.yaml 을 손으로 apply 했다.
+#
+# 이 터널이 끊기면 ArgoCD·Jenkins 도 같이 끊긴다. 고칠 때는 README.md "바꿀 때" 순서대로, 되돌리기는 m-k8s kubectl 로 한다.
+# Namespace는 여기 없다 — 사람이 만든다(Secret cloudflared-credentials가 거기 있다. monitoring과 같은 이유, README.md)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cloudflared
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: cloudflared
+    includeSelectors: false
+
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  # Secret cloudflared-credentials는 여기 없다 — 평문을 저장소에 두지 않는다(README.md "처음 한 번")
