@@ -1,0 +1,33 @@
+# runshoes.ronanlab.dev — 공용 터널(platform/cloudflared) → ingress-nginx → 이 Service. TLS는 Cloudflare 엣지에서 끝난다.
+# /ws/chat 은 챗봇 사이드카, 나머지는 앱. 프런트가 wss://<같은 호스트>/ws/chat 으로 붙는다(src/api.ts) — 경로를 바꾸지 않는다(rewrite 없음, 챗봇은 경로를 보지 않는다).
+# WebSocket: ingress-nginx 기본 프록시 제한(60초)에 걸려 끊기지 않게 1시간(petmint와 같다). Ollama 응답(최대 40초)도 그 안이다
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: runshoes
+  labels:
+    app.kubernetes.io/name: runshoes
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"          # 터널이 https로 들어온다 — 다른 호스트와 같다
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: runshoes.ronanlab.dev
+      http:
+        paths:
+          - path: /ws/chat
+            pathType: Prefix
+            backend:
+              service:
+                name: runshoes
+                port:
+                  name: chatbot
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: runshoes
+                port:
+                  name: http

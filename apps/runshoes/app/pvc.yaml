@@ -1,0 +1,15 @@
+# db.json — 앱이 읽고 쓰는 데이터 전부(json-server). 첫 기동 때 initContainer seed-db가 이미지 안 시드(git db.json)를 복사하고, 그 뒤로는 덮어쓰지 않는다.
+# local-path(노드 디스크)라 Pod가 이 PV가 있는 노드에 묶인다 — 그 노드를 drain하면 Pod는 Pending(apps/petmint/README.md "노드 drain"과 같다).
+# StorageClass의 reclaimPolicy가 Delete다 — 이 PVC를 지우면 데이터도 지워진다. Application에 finalizer·prune이 없어 ArgoCD가 지우지는 않는다
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: runshoes-data
+  labels:
+    app.kubernetes.io/name: runshoes
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
