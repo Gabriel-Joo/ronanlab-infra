@@ -35,8 +35,9 @@ data:
 
   # Cloudflare Access 헤더가 없을 때의 상담원 값. 클러스터에서 헤더가 없다는 것은 Access를 거치지 않은 요청이다 — 로그에서 드러나게
   PETMINT_DEFAULT_AGENT: no-access-header@petmint
-  # 상담 제목을 LLM(호스트 Ollama, GPU)으로 짓는다. GPU 실험 중이라 끈다 — 끄면 첫 질문 첫 줄을 잘라 제목으로 쓴다
-  PETMINT_TITLE_LLM: "0"
+  # 일반·사내규정 상담 제목을 LLM(호스트 Ollama, GPU — 베이스 tri-7b)으로 짓는다. 업무특화는 늘 첫 질문 첫 줄(앱 코드 titles.uses_llm —
+  # 파인튜닝 모델과 GPU를 번갈아 쓰면 첫 답변이 약 5초 늦어진다). 0이면 모든 모드가 첫 질문 첫 줄. 앱 이미지가 이 코드를 가진 뒤에 1로
+  PETMINT_TITLE_LLM: "1"
 ---
 # 초기화 Job만 쓰는 값(앱은 쓰지 않는다)
 apiVersion: v1
