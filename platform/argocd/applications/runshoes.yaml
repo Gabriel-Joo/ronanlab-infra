@@ -2,8 +2,10 @@
 # 적용: kubectl apply -f platform/argocd/applications/runshoes.yaml (Application 자체는 아직 사람이 넣는다)
 #
 # petmint.yaml 과 같은 규칙:
-# - Sync 는 수동(automated 없음). 2026-10-18 이주 검증 뒤 잠시 자동으로 켰다가 같은 날 껐다 —
-#   Spring·MySQL 전환 중에는 반쯤 된 상태(Jenkins 태그 커밋)가 배포되지 않게 사람이 Sync 한다. 전환이 끝나면 다시 켤지 정한다
+# - Sync 는 자동(2026-10-21 — Spring 전환 · 로그인 3단계가 끝나 다시 켰다). Jenkins 태그 커밋이 3분 안에 배포된다.
+#   prune · selfHeal 은 끈다 — git 에서 지운 것은 남기고, 클러스터에서 손으로 바꾼 것(예: 복구 중 replicas 0)을 되돌리지 않는다.
+#   스키마를 바꾸는 배포(백업 → 지문 → 이미지 Sync 를 이어야 하는 것)는 이 자동 Sync 를 잠시 끄고 한다 — apps/runshoes/runbooks/auth-v3.md 1절
+#   (이전: 2026-10-18 이주 검증 뒤 잠시 켰다가 같은 날 껐다 — 전환 중에 반쯤 된 상태가 배포되지 않게)
 # - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
 # - finalizer 없음 — Application 을 지워도 앱·PVC(db.json)는 남는다
 # - Namespace 는 만들지도 소유하지도 않는다 — Secret harbor-pull 을 사람이 넣는다(apps/runshoes/README.md)
@@ -22,5 +24,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: runshoes
   syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
     syncOptions:
       - CreateNamespace=false
