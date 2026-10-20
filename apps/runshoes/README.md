@@ -11,7 +11,8 @@ app/deployment.yaml      replicas 1 · RollingUpdate(maxUnavailable 0). runshoes
 app/service.yaml         포트 http(80→3000) · chatbot(8766)
 app/ingress.yaml         / → http, /ws/chat → chatbot
 app/pvc.yaml             runshoes-data — 앱이 쓰지 않는다. 되돌리기용(아래 "되돌리기")
-scripts/                 create-secrets.sh (runshoes-mysql · harbor-pull)
+scripts/                 create-secrets.sh (runshoes-mysql · harbor-pull · runshoes-auth)
+runbooks/                운영 절차 — auth-v3.md(로그인 V3 적용 · MySQL 백업 · 복구)
 ```
 
 ## 배포 — ArgoCD가 관리한다
@@ -34,7 +35,7 @@ apps/petmint와 같다 — `kubectl apply`로 넣지 않는다.
 
 ```bash
 # 1. Harbor: 프로젝트 runshoes(private), robot$runshoes+jenkins(push·pull), robot$runshoes+pull(pull)
-# 2. 네임스페이스와 Secret — 사람이 만든다(runshoes-mysql 은 무작위, harbor-pull 은 robot 값)
+# 2. 네임스페이스와 Secret — 사람이 만든다(runshoes-mysql · runshoes-auth 는 무작위, harbor-pull 은 robot 값)
 HARBOR_USER='robot$runshoes+pull' HARBOR_PASSWORD=... apps/runshoes/scripts/create-secrets.sh
 # 3. Jenkins push 자격 증명 — Secret jenkins/harbor-robot-runshoes-jenkins(키 username·password), platform/jenkins/values.yaml이 읽는다
 # 4. ArgoCD Application → 첫 Jenkins 빌드로 newTag가 바뀐 뒤 Sync. MySQL 이 먼저 Ready 가 되고 앱이 Flyway 로 스키마·시드를 넣는다
@@ -46,8 +47,7 @@ kubectl apply -f platform/argocd/applications/runshoes.yaml
 - 데이터베이스 `runshoes`, 계정 `runshoes`(Secret `runshoes-mysql` 의 `MYSQL_PASSWORD`). MySQL 이미지가 빈 데이터 디렉터리에서 처음 뜰 때 만든다
 - 스키마 · 시드는 앱(Spring)이 기동 때 Flyway 로 넣는다(앱 리포 `backend/src/main/resources/db/migration`). 적용된 버전은 다시 돌지 않는다
 - 시드로 다시 시작하려면(데이터가 지워진다): StatefulSet 을 0 으로 → PVC `data-runshoes-mysql-0` 삭제 → Sync(빈 DB) → 앱 `rollout restart`(Flyway 가 다시 시드)
-- **백업이 없다.** local-path는 노드 디스크 한 곳이다 — 필요하면
-  `kubectl -n runshoes exec runshoes-mysql-0 -- sh -c 'mysqldump -urunshoes -p"$MYSQL_PASSWORD" runshoes' > runshoes.sql`
+- **정기 백업이 없다.** local-path는 노드 디스크 한 곳이다 — 스키마를 바꾸기 전에는 덤프를 뜨고 복원까지 확인한다: [runbooks/auth-v3.md](runbooks/auth-v3.md) 2절
 - **노드 drain**: MySQL Pod는 PV 가 있는 노드(w1)에 묶인다 — w1 drain 동안 DB 가 멈추고 앱은 Ready 가 빠진다
 
 ## Ollama — 호스트 직접 연결

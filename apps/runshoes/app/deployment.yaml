@@ -47,6 +47,12 @@ spec:
               value: UTC
             - name: OLLAMA_URL
               value: "http://192.168.122.1:11434"
+          # 로그인(앱 리포 docs/AUTH_DESIGN.md) — Secret runshoes-auth 의 키가 그대로 env 이름이다: JWT_SECRET · SEED_USER_PASSWORD · ADMIN_PASSWORD.
+          # 사람이 만든다(scripts/create-secrets.sh). optional 이 아니다 — Secret 이 없으면 새 Pod 가 CreateContainerConfigError 로 멈추고
+          # (maxUnavailable 0 이라 옛 Pod 는 그대로 돈다) V3 이미지가 JWT_SECRET 없이 뜨는 일이 없다. V3 전 이미지는 이 env 를 읽지 않는다
+          envFrom:
+            - secretRef:
+                name: runshoes-auth
           # 이미지가 사용자 10001 로 돈다(Dockerfile USER). 챗봇 컨테이너는 root 라 Pod 전체가 아니라 이 컨테이너에만
           securityContext:
             runAsNonRoot: true
