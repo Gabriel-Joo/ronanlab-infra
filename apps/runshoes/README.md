@@ -21,14 +21,14 @@ apps/petmint와 같다 — `kubectl apply`로 넣지 않는다.
 
 | 하고 싶은 것 | 하는 방법 |
 | --- | --- |
-| 새 이미지 배포 | 앱 리포 main에 push → Jenkins `runshoes-app`(2분 폴링) → `newTag` 커밋 → ArgoCD에서 Sync(사람) |
+| 새 이미지 배포 | 앱 리포 main에 push → Jenkins `runshoes-app`(2분 폴링) → `newTag` 커밋 → ArgoCD 자동 Sync(3분 안) |
 | 설정 변경 | 이 디렉터리를 고쳐 push → Sync |
 | 되돌리기 | 이 저장소 커밋을 revert해 push → Sync. DB는 되돌아가지 않는다(스키마 변경은 Flyway 다음 버전으로) |
 
 - **배포 때 끊기지 않는다.** 새 Pod가 Ready(DB 접속까지)가 된 뒤 옛 Pod를 내린다. 옛 Pod는 preStop 5초 동안 엔드포인트에서 빠지고
   그 뒤 graceful shutdown. 열려 있던 챗봇 WebSocket은 한 번 끊기고 프런트가 다시 붙는다
 - 새 Pod가 Ready가 못 되면(DB · Flyway · probe) 롤링이 멈추고 옛 Pod가 계속 받는다 — 고쳐서 다시 Sync하거나 revert
-- **Sync는 수동, prune · finalizer 없음, Namespace는 사람이 만든다** — Namespace는 petmint와 같은 이유(Secret).
+- **Sync는 자동(prune · selfHeal 없음), finalizer 없음, Namespace는 사람이 만든다** — Jenkins 태그 커밋이 3분 안에 배포된다. 스키마를 바꾸는 배포는 자동 Sync를 잠시 끄고 런북(runbooks/auth-v3.md)대로. Namespace는 petmint와 같은 이유(Secret).
   Application 객체는 사람이 `kubectl apply`로 넣는다(git push만으로는 바뀌지 않는다)
 
 ## 처음 만드는 순서
