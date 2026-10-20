@@ -197,3 +197,24 @@ git -C ~/AI_programming/runshoes show <커밋>:backend/src/main/resources/db/mig
 
 - 운영 Flyway checksum(V1 `-1576961241` · V2 `263137229` · V3 `-2094729346`)이 로컬 시험 DB 와 같다 — 시험한 그 파일이 들어갔다
 - 덤프 보관: 7절. 지운 날: (아직)
+
+## 9. 실행 기록 — 로그인 2단계 배포(이미지만) · 2026-10-21
+
+새 마이그레이션이 없다(V1 · V2 · V3 그대로) — 이미지 Sync 하나. 배포하는 순간 **로그인 없는 쓰기가 막힌다**(401). 덤프는 뜨지 않았다(스키마 · 데이터를 바꾸지 않는다).
+
+| 단계 | 시각(UTC) | 결과 |
+|---|---|---|
+| 앱 push `e558a39`(한 커밋 — 나누면 중간 커밋이 동작하지 않는다) | 10-20 22:43:39 | |
+| Jenkins #10 | → 22:48:54 | `Finished: SUCCESS`, 커밋 `e558a39fe7d8`. 경고는 #9 와 같다(yarn Workspaces 10 · pip root 1, error 0). 태그 커밋 `ecdac9f`(newTag 두 줄만) |
+| 6절 이미지 확인 | 22:5x | digest `sha256:8f2b45e1…`, V1 · V2 · V3 sha256 이 운영에 적용된 파일과 같다(V3 `ec24e0e4…`) |
+| 이미지 Sync(사람) | 22:51:30 새 Pod | `runshoes-56dcc9986-svkzb`(w3), 재시작 0. 시작 프로브 실패 1회는 앱이 뜨기 전 첫 확인 |
+| 확인(`$B/post-sync-stage2.sh e558a39fe7d8`) | 22:52:15 | 아래 |
+
+- 스크립트는 **Pod 이미지가 전부 새 태그일 때만** 4번(로그인 없는 쓰기 시도)을 돈다 — 옛 이미지에서는 그 요청이 실제로 써지기 때문이다. 옛 Pod 가 완전히 내려간 뒤 돌렸다
+- 로그: `Schema runshoes is up to date. No migration necessary.`, 기동 6.95초, ERROR 없음
+- 데이터: 리뷰 104 · `user_id` NULL 0 · 최대 id 105 · users 31 · Flyway 1, 2, 3 — 배포 직전에 끼어든 쓰기 없음
+- API: `/api/shoes` · `/api/reviews` · `/login` 200, `/api/me`(토큰 없음) 401, 로그인 없는 리뷰 POST · 신발 PATCH · 찜 PUT 모두 401(그 뒤 리뷰 수 그대로), refresh(쿠키 없음) 401, `/api/auth` 에 CORS 헤더 없음, 공개 주소 200
+- 로그인: 시드 계정 runner01 로(Secret 의 `SEED_USER_PASSWORD` 를 파이프로만 — 화면 · 파일에 남기지 않는다). 시험 계정은 만들지 않는다(포트폴리오 사이트의 사용자 목록에 섞이지 않게). 가입은 사람이 화면에서 확인
+  - **공개 https 로 시험한다.** 내부 VIP 는 http 라 curl 이 Secure 쿠키를 저장하지 않는다 — 첫 시험(VIP)은 refresh · 로그아웃 확인이 무효였고 refresh token 하나가 살아 남았다(쓸 수 있는 곳 없음, 2026-11-04 만료 — 운영 DB 에 쓰기를 하는 것보다 두는 쪽으로 정함)
+  - https: 로그인 200 · 쿠키(`Path=/api/auth` · Secure · HttpOnly) · `/api/me` 200 · refresh 200 · 로그아웃 204(쿠키 지움)
+- 사람이 화면으로 확인: admin 등록·관리 메뉴, 가입 · 로그인, 리뷰 작성(닉네임 자동) · 중복 리뷰 차단, 계정별 찜, 비로그인 리뷰 폼 대신 로그인 안내 · 하트는 로그인으로
