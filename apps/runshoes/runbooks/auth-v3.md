@@ -169,3 +169,31 @@ git -C ~/AI_programming/runshoes show <커밋>:backend/src/main/resources/db/mig
   `docker pull` 의 `failed size validation` 은 그 HTML 을 레이어로 받으려다 난 것이다. runshoes 만이 아니라 petmint 도 같다. 노드는 `/etc/hosts` 로 VIP 에 붙어 상관없다 — Sync 는 영향이 없다
 - 2026-10-21 운영 태그 `0f789ad645bc` 로 시험: V1 `0db56bb0…` · V2 `9091885d…` 가 커밋 `0f789ad` 의 파일과 같았다
 - 이 방법이 안 되면 빌드 직후 로컬 이미지에서 꺼내 보는 것으로 대신하고, **"Harbor 왕복 검증은 못 했다"고 여기에 남긴다**
+
+## 7. 덤프 보관
+
+| 덤프 | 보관 | 지우는 때 |
+|---|---|---|
+| `runshoes-before-v3-*.sql` (V3 직전, V2 상태) | `$B`(호스트 디스크 한 곳, git 밖) | **V4 를 운영에 적용하고 2주 탈 없이 돈 뒤**, 그리고 **2026-11-21(V3 적용 30일) 이후** — 둘 중 늦은 때 |
+
+- 쓸 데: 5.2(V3 전으로 되돌리기)와 "V3 전 데이터가 어땠는지"의 근거. V4 가 `shoes.liked` · `reviews.liked` 를 지우면 공용 찜 · 공감의 원래 값은 이 덤프에만 남는다 — 그래서 V4 뒤에도 2주를 더 둔다
+- 내용: 신발 · 리뷰(공개 데이터) · 용어 · Flyway 이력. **비밀번호 · 토큰은 없다**(V2 상태라 users · refresh_tokens 가 없다).
+  V3 뒤에 뜨는 덤프에는 비밀번호 해시(BCrypt) · refresh token 해시 · 활동 로그(IP · User-Agent)가 들어간다 — 같은 곳에 두되 `chmod 600`, 지우는 때는 그때 정한다
+- 지우기 전에 `sha256sum -c` 로 기록과 같은 파일인지 확인하고, 지운 날을 아래 8절에 적는다
+
+## 8. 실행 기록 — 2026-10-21 (KST, 시각은 UTC)
+
+| 단계 | 시각(UTC) | 결과 |
+|---|---|---|
+| Secret `runshoes-auth` 생성 · envFrom Sync(`62a0515`) | 10-20 21:4x | 사람. 롤링 정상, 이미지 `0f789ad645bc` 그대로, env 키 3개(1.1 로 확인), `/api/shoes` 200 |
+| 앱 push `9659f13` → Jenkins #9 | 21:47:20 → 21:53:17 | SUCCESS. 경고는 직전 #8 과 같다(yarn Workspaces 10줄 · pip root 1줄), error 0. Jenkins 가 newTag 커밋 `1801f12`(`9659f1346681`, newTag 두 줄만) |
+| 6절 이미지 확인(Harbor 왕복, w2 containerd) | 21:5x | digest `sha256:a693813d…` · V3 `ec24e0e4d5085d91…` = 커밋 9659f13 파일 = 로컬 검증 파일. V1 `0db56bb0…` · V2 `9091885d…` 도 같다 |
+| 2절 덤프 | 21:55:30 | `runshoes-before-v3-20261020T215530Z.sql` 41,093 bytes, sha256 `5bb023a30c7fe8bc95291630e0fc146c405e1d83c6710aded590fb0439b78a23`. `Dump completed`, stderr 는 비밀번호 경고만 |
+| 2절 복원 확인(로컬 `runshoes_restore_check`) | 21:55:30 | 종료코드 0, 리뷰 105 · 지문 `166db588…` = 운영 API, shoes 20 · terms 13 · Flyway 1:1, 2:1. 확인 뒤 지움 |
+| 3절 운영 지문 | 21:55:31 | OK — 105 · `166db588…80d8` · #29 · #81 회복주전용 · Flyway 1, 2 |
+| 이미지 Sync(`1801f12`) | 사람 | 새 Pod `runshoes-8475b6f79d-tfpr2`(21:56:22 시작, ReplicaSet revision 10) |
+| V3 적용(Flyway) | 21:56:28.795 → 21:56:29.061 | `Successfully applied 1 migration … now at version v3`(241ms). 덤프에서 적용까지 59초 — 그 사이 쓰기 없음(아래 user_id NULL 0) |
+| 4절 확인 | 21:56:32~ | `비밀번호가 없던 계정 31개 중 31개를 Secret 값으로 채웠다`, Flyway 1 · 2 · 3 success, 리뷰 104 · user_id NULL 0 · users 31, `/api/shoes` 200. 처리할 리뷰 없음 |
+
+- 운영 Flyway checksum(V1 `-1576961241` · V2 `263137229` · V3 `-2094729346`)이 로컬 시험 DB 와 같다 — 시험한 그 파일이 들어갔다
+- 덤프 보관: 7절. 지운 날: (아직)
