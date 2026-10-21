@@ -7,7 +7,7 @@
 #   스키마를 바꾸는 배포(백업 → 지문 → 이미지 Sync 를 이어야 하는 것)는 이 자동 Sync 를 잠시 끄고 한다 — apps/runshoes/runbooks/auth-v3.md 1절
 #   (이전: 2026-10-18 이주 검증 뒤 잠시 켰다가 같은 날 껐다 — 전환 중에 반쯤 된 상태가 배포되지 않게)
 # - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
-# - finalizer 없음 — Application 을 지워도 앱·PVC(db.json)는 남는다
+# - finalizer 없음 — Application 을 지워도 앱 · MySQL · PVC 는 남는다
 # - Namespace 는 만들지도 소유하지도 않는다 — Secret harbor-pull 을 사람이 넣는다(apps/runshoes/README.md)
 apiVersion: argoproj.io/v1alpha1
 kind: Application

@@ -10,7 +10,6 @@ mysql/service.yaml       runshoes-mysql:3306 (headless)
 app/deployment.yaml      replicas 1 · RollingUpdate(maxUnavailable 0). runshoes(Spring, :3000) + chatbot(:8766)
 app/service.yaml         포트 http(80→3000) · chatbot(8766)
 app/ingress.yaml         / → http, /ws/chat → chatbot
-app/pvc.yaml             runshoes-data — 앱이 쓰지 않는다. 되돌리기용(아래 "되돌리기")
 scripts/                 create-secrets.sh (runshoes-mysql · harbor-pull · runshoes-auth)
 runbooks/                운영 절차 — auth-v3.md(로그인 V3 적용 · MySQL 백업 · 복구)
 ```
@@ -55,8 +54,8 @@ kubectl apply -f platform/argocd/applications/runshoes.yaml
 리뷰 요약(앱)과 챗봇(`chatbot_server.py`)이 `OLLAMA_URL=http://192.168.122.1:11434`(VM 사설망의 GPU 호스트)를 부른다 — petmint와 같은 길.
 **두 기능 다 GPU를 쓴다** — GPU 실험 중 확인은 `/`, `/api/*`, WebSocket 연결·환영 메시지까지만 한다(환영 메시지는 Ollama를 부르지 않는다).
 
-## 되돌리기 — db.json(Node) 배포로
+## 되돌리기
 
-2026-10-18 이 Deployment 로 바꾸기 전에는 앱이 PVC `runshoes-data` 의 db.json 을 읽는 Node 이미지였다(전환 기록: 앱 리포 docs).
-관찰 기간 동안 PVC 와 옛 이미지(`c4bb060faf3d`)를 남겨 둔다 — 이 저장소의 전환 커밋 둘(Deployment · 이미지 태그)을 revert → Sync 하면 그 배포로 돌아간다(Recreate, 약 30초 끊김).
-**전환 뒤 MySQL 에 쓴 데이터는 그 배포에서 보이지 않는다.** 관찰을 마치면 `app/pvc.yaml` 을 지우고 PVC 도 손으로 지운다(prune 없음).
+- **이미지만**(DB 는 그대로): 이 저장소의 태그 커밋을 `git revert` → push(자동 Sync). 옛 이미지가 지금 DB 위에서 뜨는지는 스키마 변경마다 확인해 둔다 — V3 위에서 V3 전 이미지가 뜨는 것은 확인했다(runbooks/auth-v3.md 5.3)
+- **DB 까지**: 스키마를 바꾸는 배포 직전에 뜬 mysqldump 로 복원(runbooks/auth-v3.md 5.2). 그 덤프 뒤에 들어온 쓰기는 사라진다
+- 전환 전(Node · db.json) 배포로 돌아가는 길은 2026-10-21 에 닫았다 — PVC `runshoes-data`(시드와 같은 db.json 하나)를 지웠다. DB 가 V3(계정 · 리뷰 재배분)라 그 배포는 지금 데이터와 맞지 않는다. 시드 원본은 앱 리포 `db.json`
