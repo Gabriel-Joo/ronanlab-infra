@@ -30,8 +30,18 @@ data:
   PETMINT_MODEL_RAG: kabyul-tri-7b-rag1-rebuild4-ckpt462
 
   # 약관 데이터 — 호스트 NFS(PVC petmint-chunks·petmint-graph)를 /var/lib/petmint 아래에 붙인다(이미지 기본값과 같다)
-  PETMINT_CHUNKS_DIR: /var/lib/petmint/chunks
-  PETMINT_GRAPH_DIR: /var/lib/petmint/graph
+  # 청크 v3(약관 호·법령박스 분할, 2026-10-22) — NFS 공유 안의 v3 폴더. 앱 이미지가 f7991c9 이후여야 한다
+  # (그 전 이미지는 variant를 사내규정 검색에도 붙여 503 — hr_regulation_v3 컬렉션이 없다)
+  PETMINT_CHUNKS_DIR: /var/lib/petmint/chunks/v3
+  PETMINT_GRAPH_DIR: /var/lib/petmint/graph/v3
+
+  # ---- 검색·답 표시 플래그(2026-10-23 운영 반영 측정 — 리포 data/review/rollout_measure.md) ----
+  # 되돌리기: 아래 다섯 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
+  PETMINT_SEARCH_VARIANT: v3           # search-service의 Milvus petmint_*_v3 컬렉션으로 찾는다(약관만)
+  PETMINT_DISPLAY_PARENT: "1"          # v3 조각으로 찾고 모델에게는 부모(원래 청크) 글을 보여 준다
+  PETMINT_SEARCH_EXPAND: "1"           # 질의 확장(고객 말 → 약관 말, BM25·리랭커 질의에만)
+  PETMINT_EXPAND_DICT: v2              # 동의어 사전 v2(62항목)
+  PETMINT_ANSWER_TABLES: "1"           # 답이 쓴 발췌의 표를 답 아래에
 
   # Cloudflare Access 헤더가 없을 때의 상담원 값. 클러스터에서 헤더가 없다는 것은 Access를 거치지 않은 요청이다 — 로그에서 드러나게
   PETMINT_DEFAULT_AGENT: no-access-header@petmint
