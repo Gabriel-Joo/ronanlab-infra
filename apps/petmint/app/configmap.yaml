@@ -36,7 +36,7 @@ data:
   PETMINT_GRAPH_DIR: /var/lib/petmint/graph/v3
 
   # ---- 검색·답 표시 플래그(2026-10-23 운영 반영 측정 — 리포 data/review/rollout_measure.md) ----
-  # 되돌리기: 아래 일곱 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
+  # 되돌리기: 아래 아홉 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
   PETMINT_SEARCH_VARIANT: v3           # search-service의 Milvus petmint_*_v3 컬렉션으로 찾는다(약관만)
   PETMINT_DISPLAY_PARENT: "1"          # v3 조각으로 찾고 모델에게는 부모(원래 청크) 글을 보여 준다
   PETMINT_SEARCH_EXPAND: "1"           # 질의 확장(고객 말 → 약관 말, BM25·리랭커 질의에만)
@@ -44,6 +44,8 @@ data:
   PETMINT_ANSWER_TABLES: "1"           # 답이 쓴 발췌의 표를 답 아래에
   PETMINT_RULE_FIRST: "1"              # 보장 여부 — 같은 조의 원칙(제1항)을 참조에서 본문 앞으로(1안)
   PETMINT_COVERAGE_CODE: "1"           # 그 반려동물 부담보에 걸리는 보장 질문은 코드가 특약 제2조로 답한다(3안′)
+  PETMINT_SEARCH_POOL: "50"            # 1차 후보 깊이(Dense·BM25 각각) 20 → 50 — 리포 data/review/pool_measure.md
+  PETMINT_AGE_CODE: "1"                # 신규 가입 나이(숫자)를 묻는 질문은 코드가 약관 기준(만 8세, 실속형 만 10세)과 비교해 답한다 — 리포 data/review/age_measure.md
 
   # Cloudflare Access 헤더가 없을 때의 상담원 값. 클러스터에서 헤더가 없다는 것은 Access를 거치지 않은 요청이다 — 로그에서 드러나게
   PETMINT_DEFAULT_AGENT: no-access-header@petmint
