@@ -36,7 +36,7 @@ data:
   PETMINT_GRAPH_DIR: /var/lib/petmint/graph/v3
 
   # ---- 검색·답 표시 플래그(2026-10-23 운영 반영 측정 — 리포 data/review/rollout_measure.md) ----
-  # 되돌리기: 아래 열 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
+  # 되돌리기: 아래 열한 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
   PETMINT_SEARCH_VARIANT: v3           # search-service의 Milvus petmint_*_v3 컬렉션으로 찾는다(약관만)
   PETMINT_DISPLAY_PARENT: "1"          # v3 조각으로 찾고 모델에게는 부모(원래 청크) 글을 보여 준다
   PETMINT_SEARCH_EXPAND: "1"           # 질의 확장(고객 말 → 약관 말, BM25·리랭커 질의에만)
@@ -47,9 +47,13 @@ data:
   PETMINT_SEARCH_POOL: "50"            # 1차 후보 깊이(Dense·BM25 각각) 20 → 50 — 리포 data/review/pool_measure.md
   PETMINT_AGE_CODE: "1"                # 신규 가입 나이(숫자)를 묻는 질문은 코드가 약관 기준(만 8세, 실속형 만 10세)과 비교해 답한다 — 리포 data/review/age_measure.md
   PETMINT_PROVISO_CODE: "1"            # 면책 단서(⑫ 침술·② 1년 이내 예방접종·⑲ Ⅰ 유형 구강질환)가 보장 쪽으로 빼 주는 질문은 코드가 답한다 — 리포 data/review/proviso_measure.md
+  PETMINT_TWIN_ARTICLE: "1"            # 특약 낱말 없는 질문이 보통약관(사람 보험) 제3·5조로 가면 같은 제목 의료비 특약 조(제1·2조)를 그 앞으로 — 리포 data/review/human_article_measure.md
 
   # Cloudflare Access 헤더가 없을 때의 상담원 값. 클러스터에서 헤더가 없다는 것은 Access를 거치지 않은 요청이다 — 로그에서 드러나게
   PETMINT_DEFAULT_AGENT: no-access-header@petmint
+  # 앱 자체 로그인(2026-10-28, 리포 docs/13 2-1절·docs/14 1-16) — 사번·비밀번호, 서버 저장 세션 쿠키(HttpOnly·Secure·SameSite=Lax).
+  # 위 헤더 값은 access 모드에서만 쓴다. 되돌리기: 이 줄을 지우고 Sync 뒤 rollout restart(Access 헤더가 다시 신원이 된다)
+  PETMINT_AUTH: "app"
   # 일반·사내규정 상담 제목을 LLM(호스트 Ollama, GPU — 베이스 tri-7b)으로 짓는다. 업무특화는 늘 첫 질문 첫 줄(앱 코드 titles.uses_llm —
   # 파인튜닝 모델과 GPU를 번갈아 쓰면 첫 답변이 약 5초 늦어진다). 0이면 모든 모드가 첫 질문 첫 줄. 앱 이미지가 이 코드를 가진 뒤에 1로
   PETMINT_TITLE_LLM: "1"
