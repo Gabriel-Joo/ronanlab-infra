@@ -36,7 +36,7 @@ data:
   PETMINT_GRAPH_DIR: /var/lib/petmint/graph/v3
 
   # ---- 검색·답 표시 플래그(2026-10-23 운영 반영 측정 — 리포 data/review/rollout_measure.md) ----
-  # 되돌리기: 아래 열한 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
+  # 되돌리기: 아래 열네 줄을 지우고 위 두 줄을 /var/lib/petmint/chunks·graph로 → Sync 뒤 rollout restart("코드만" 상태)
   PETMINT_SEARCH_VARIANT: v3           # search-service의 Milvus petmint_*_v3 컬렉션으로 찾는다(약관만)
   PETMINT_DISPLAY_PARENT: "1"          # v3 조각으로 찾고 모델에게는 부모(원래 청크) 글을 보여 준다
   PETMINT_SEARCH_EXPAND: "1"           # 질의 확장(고객 말 → 약관 말, BM25·리랭커 질의에만)
@@ -48,6 +48,9 @@ data:
   PETMINT_AGE_CODE: "1"                # 신규 가입 나이(숫자)를 묻는 질문은 코드가 약관 기준(만 8세, 실속형 만 10세)과 비교해 답한다 — 리포 data/review/age_measure.md
   PETMINT_PROVISO_CODE: "1"            # 면책 단서(⑫ 침술·② 1년 이내 예방접종·⑲ Ⅰ 유형 구강질환)가 보장 쪽으로 빼 주는 질문은 코드가 답한다 — 리포 data/review/proviso_measure.md
   PETMINT_TWIN_ARTICLE: "1"            # 특약 낱말 없는 질문이 보통약관(사람 보험) 제3·5조로 가면 같은 제목 의료비 특약 조(제1·2조)를 그 앞으로 — 리포 data/review/human_article_measure.md
+  PETMINT_ASK_DISEASE: "1"             # 병명 없이 보장을 묻는 질문("○○가 입원했어요. 보장되나요?")은 가입 특약 원칙 + 병명 되묻기를 코드가 답한다 — 리포 data/review/disease_ask_measure.md
+  PETMINT_ASK_DISEASE_LLM: "1"         # 병명 되묻기에서 "병명·증상 이름이 있는가"를 베이스 모델(tri-7b)이 본다(실패하면 정규식) — 리포 data/review/disease_ask_llm_measure.md
+  PETMINT_NAMED_COVER: "1"             # 병명이 있는 보장 질문("감기도 보장되나요?")은 그 특약 제2조 면책 목록과 대조해 코드가 답한다, 금액 되묻기 뒤 병명 질문은 되묻기를 되풀이하지 않는다 — 리포 data/review/named_cover_measure.md
 
   # Cloudflare Access 헤더가 없을 때의 상담원 값. 클러스터에서 헤더가 없다는 것은 Access를 거치지 않은 요청이다 — 로그에서 드러나게
   PETMINT_DEFAULT_AGENT: no-access-header@petmint
