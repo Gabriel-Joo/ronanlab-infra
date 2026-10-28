@@ -233,3 +233,23 @@ V4 · V5 는 Flyway 가 한 번에 차례로 적용한다. V5(ALTER 한 문장)�
 | 단계 | 시각 | 결과 |
 |---|---|---|
 | 0절 출발 상태 | 10-28 17:4x | 위 표. 운영 MySQL `exec` 읽기는 권한 판정에서 막혀 Flyway 를 못 봤다 |
+| 1 자동 Sync 끄기 | 18:1x | 사람. `syncPolicy` = `{"syncOptions":["CreateNamespace=false"]}`(Claude 도 확인) |
+| 2 앱 push `d3ff385` · infra `ac2fc00`(런북 · 매니페스트) | 18:2x | 한 커밋 77파일. infra 는 원격에 petmint 태그 커밋 5개가 앞서 있어 따로 만든 worktree 에서 origin/main 위로 cherry-pick 해 push(작업 트리의 petmint configmap 수정은 그대로) |
+| Jenkins #12 → 태그 커밋 `46f66ad` | 18:26:00 | newTag 두 줄만(`d3ff385ab316`). 운영 Pod 는 `eeffbd840964` 그대로 — 자동 배포 안 됨 |
+| 3 이미지 확인(6절, Harbor 왕복 w2) | 18:2x | digest `sha256:805f84da26f997f9…`, V1~V5 sha256 = 커밋 `d3ff385` 파일(V4 `db22befe…` · V5 `8d512eb7…`) |
+| API 지문 | 18:26:40 | 신발 20(id 1~20) · 리뷰 104 · `3e954039…12b1` — 0절과 같다 |
+| 4 덤프(Claude — 이번에는 exec 가 막히지 않았다) | 18:28:22 | `runshoes-before-v4-20261028T182822Z.sql` 67,672 bytes, sha256 `a3b400e13dcac19a162cb9dca5a38a1cd2469d94e72bd7af870bfec7c37105b6`. `Dump completed`, stderr 는 비밀번호 경고만 |
+| 4 복원 확인(로컬 `runshoes_restore_check`) | 18:28:4x | 종료코드 0, 리뷰 104 · `3e954039…` = 운영 API, shoes 20 · users 33 · Flyway 1:1,2:1,3:1. 확인 뒤 지움 |
+| 5 운영 지문 | 18:28:42 | 신발 20(id 1~20) · 리뷰 104 · `3e954039…` · Flyway 1 `-1576961241` · 2 `263137229` · 3 `-2094729346` |
+| 6 Sync(`46f66ad`, 사람) | 18:29:24 새 Pod | `runshoes-764478dbb6-zzvjn`, 재시작 0 |
+| V4 · V5 적용 | 18:29:31.545 → .788 | `v4 guard ok`, `Successfully applied 2 migrations … now at version v5`(186ms). 덤프에서 적용까지 69초 — 리뷰 104 · 지문 그대로라 그 사이 리뷰 쓰기 없음 |
+| 4절 확인 | 18:29:5x | Flyway 4 `-942386036` · 5 `1378788652`(로컬과 같다), shoes 20 · line_key NULL 0, 리뷰 104, users 33, `/api/shoes/1` 키 36 · `asics:gel-kayano` 32 false, 공개 주소 200, ERROR 0 |
+| 7 건조 실행 | 18:30 | POST 274 · PATCH 21 — 리허설과 같다 |
+| 7 적재 30 · 100 · 전체(Claude — Secret 읽기 막히지 않았다) | 18:30:30 · 18:30:52 · 18:31:06 | PATCH 5 · POST 27 → 47 / PATCH 8 · POST 62 → 109 / PATCH 8 · POST 185 → 294. 묶음마다 lineKey 없음 0 · 중복 0 · 리뷰 지문 그대로 · ERROR 0. 끝 건조 실행 POST 0 · PATCH 0 |
+| 적재 뒤 | 18:3x | 운영 294켤레 = 로컬 DB(id · 평점 · 찜 말고 모든 칸 같다), 새 id 21~294, 시드 평점 · 리뷰 수 · 찜 그대로, 정가 메타 87. 적재 기록 세 개 → `$B`(600) |
+| 적재 뒤 수정 ① — 7행(이미지 · 스택 · ABC 정가) | 18:59:43 | 사용자 요청: 글리세린 맥스 2 대표 이미지 StockX 404 → 다른 색상, 카야노 33 스택 40(사용자 MAN), 시드 ABC 정가 5(페가수스 42 · 베이퍼플라이 4 · 고스트 17 · 웨이브 라이더 29 · 슈퍼노바 라이즈 3). PATCH 7, 리뷰 지문 그대로 |
+| 앱 push `03534b1`(priceSource 에 '다나와') → Jenkins #13 | 19:1x | **FAILURE** — 이미지 안 Maven 이 Maven Central 에 못 닿음(`Network is unreachable`). 코드 문제 아님(노드에서 다시 재 보니 200) |
+| Jenkins #14(재빌드) → 태그 커밋 `5bc5455` | 19:30:12 | SUCCESS. digest `sha256:e3bfec16…`, V1~V5 sha256 = 커밋 `03534b1` 파일. 마이그레이션 없음 — 덤프 없이 이미지 Sync |
+| Sync(사람) | 19:31:4x | `runshoes-69dcd46ff4-2qvv7`(`03534b17a3ad`), `validated 5 migrations` · `up to date`, 재시작 0 |
+| 적재 뒤 수정 ② — 15행 | 19:40:38 | 다나와 13(값 유지, 날짜 = db.json 커밋 날짜, 종류 null) + 보스턴 13 · 880 v15 ABC 189,000(사용자). PATCH 15, 건조 실행 0, 리뷰 104 · 지문 그대로 · ERROR 0. 가격이 있는데 출처가 없는 신발 0 — 공식몰 68 · ABC마트 26 · 다나와 13 |
+| 9 자동 Sync 다시 켜기(사람) | 10-28 19:4x 뒤 | `syncPolicy` = `{"automated":{"prune":false,"selfHeal":false},…}` — Synced `5bc5455`. 매니페스트에 automated 세 줄을 되돌렸다. 덤프 보관은 8절 |
