@@ -2,8 +2,9 @@
 # 적용: kubectl apply -f platform/argocd/applications/runshoes.yaml (Application 자체는 아직 사람이 넣는다)
 #
 # petmint.yaml 과 같은 규칙:
-# - Sync 는 자동(2026-10-29 — V4 · V5 카탈로그 확장 · 적재 뒤 수정이 끝나 사용자가 다시 켰다). Jenkins 태그 커밋이 3분 안에 배포된다.
-#   (이전: 2026-10-29 V4 · V5 동안 껐다 — apps/runshoes/runbooks/catalog-v4-v5.md. 2026-10-21 Spring 전환 · 로그인 3단계 뒤 켰다)
+# - Sync 는 지금 수동(2026-10-30 — V6~V9 관리 화면 · 데모 계정 배포 동안 사용자가 껐다. apps/runshoes/runbooks/admin-demo-v6-v9.md).
+#   끝나면 다시 automated(prune false · selfHeal false)로 켠다. 켜져 있으면 Jenkins 태그 커밋이 3분 안에 배포된다.
+#   (이전: 2026-10-29 V4 · V5 동안 껐다가 다시 켰다 — catalog-v4-v5.md. 2026-10-21 Spring 전환 · 로그인 3단계 뒤 켰다)
 #   prune · selfHeal 은 끈다 — git 에서 지운 것은 남기고, 클러스터에서 손으로 바꾼 것(예: 복구 중 replicas 0)을 되돌리지 않는다.
 #   스키마를 바꾸는 배포(백업 → 지문 → 이미지 Sync 를 이어야 하는 것)는 이 자동 Sync 를 잠시 끄고 한다 — apps/runshoes/runbooks/auth-v3.md 1절
 #   (이전: 2026-10-18 이주 검증 뒤 잠시 켰다가 같은 날 껐다 — 전환 중에 반쯤 된 상태가 배포되지 않게)
@@ -25,8 +26,5 @@ spec:
     server: https://kubernetes.default.svc
     namespace: runshoes
   syncPolicy:
-    automated:
-      prune: false
-      selfHeal: false
     syncOptions:
       - CreateNamespace=false
