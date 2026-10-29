@@ -188,8 +188,35 @@ V6~V9 는 Flyway 가 한 번에 차례로 적용한다. **MySQL DDL 은 트랜�
 | `runshoes-before-v4-*.sql` | V4 런북 8절 — 옛 칸 정리는 V6 이 아니라 **V10** 으로 밀렸다(V6~V9 가 먼저). 그 시계도 V10 기준 |
 | 적재 기록 `$B/*.json` | V10 뒤 |
 
-## 9. 실행 기록 (시각은 UTC)
+## 9. 이어서 — 다듬기 배포(2026-10-30 사용자, 앱 리포 docs/ADMIN_DEMO_DESIGN.md 13절)
+
+V6~V9 배포 뒤 화면 다듬기 10건. **마이그레이션이 없다**(V1~V9 그대로) — 덤프 · 지문은 필요 없고, 데이터는 적재기가 바꾼다(`--revert` 기록이 남는다). 자동 Sync 는 아직 꺼져 있으니 그대로 잇는다.
+
+| # | 할 일 | 누가 | 확인 |
+|---|---|---|---|
+| 1 | 앱 커밋 · push → Jenkins → 태그 커밋 | Claude(승인 뒤) | newTag 두 줄만 |
+| 2 | 이미지 확인(6절) | Claude | V1~V9 sha256 이 0절과 같다(바뀐 마이그레이션 없음) |
+| 3 | Sync | **사람** | 새 Pod · `validated 9 migrations` · `up to date`, `/api/auth/demo-accounts` 31장(시드 30 + 데모 관리자, 찜 수 포함) |
+| 4 | 적재 — 가격 종류 `정가` → `발매가` 94켤레 | **사람**(관리자 비밀번호 — Secret 을 새 비밀번호로 바꿨으면 5절 `admin()` 그대로) · Claude(건조 실행 · 확인) | 건조 실행 `PATCH 94` `{"priceKind":94}` → 적용 → 다시 0. 리뷰 지문 그대로 |
+| 5 | 화면 확인(13절 열 가지) | 사람 | |
+| 6 | 자동 Sync 다시 켜기 | **사람** | `automated` 다시 있음 → 이 리포 매니페스트도 되돌려 커밋 |
+
+- 3 과 4 사이에는 옛 값 `정가` 94행이 남아 있다 — 화면은 가격 옆 "발매가"를 관리 폼에서만 보여 주므로 공개 화면에는 차이가 없다. 그 사이 관리 화면에서 가격을 저장하면 `발매가`로 저장된다(새 서버는 `정가`를 받지 않는다)
+
+## 10. 실행 기록 (시각은 UTC)
 
 | 단계 | 시각 | 결과 |
 |---|---|---|
 | 0절 출발 상태 | 10-29 19:0x | 위 표(Claude, 읽기만) |
+| 1 자동 Sync 끄기(사람) | 10-29 19:1x | `syncPolicy` = `{"syncOptions":["CreateNamespace=false"]}`(Claude 도 확인) |
+| 5 사전 점검(2.1, 순서를 당겨 push 전에 — 읽기만) | 19:1x | 겹치는 이메일 · 닉네임 0, `ck_users_role`(USER · ADMIN), users 33 · 최대 id 33, Flyway 1~5 checksum 0절과 같다 |
+| 2 infra `456303e`(런북 · env · 매니페스트) · 3 앱 `ccd0f20` push | 19:1x | 앱 127파일(계약 기준선 spring-v6 59 포함 — 토큰 · 비밀번호는 <가림>) |
+| Jenkins → 태그 커밋 `06d7572` | 19:2x | newTag 두 줄만(`ccd0f20c3182`). 운영 이미지는 `03534b17a3ad` 그대로(OutOfSync — 자동 배포 안 됨) |
+| 4 이미지 확인(6절, w2 containerd) | 19:2x | digest `sha256:16a1a1a84dfc6949…`, V1~V9 sha256 = 커밋 `ccd0f20` 파일 |
+| 6 덤프(Claude) | 19:23:42 | `runshoes-before-v6-20261029T192342Z.sql` 450,868 bytes, sha256 `7a49913d502bc448400158deaf68512837ff682b16483f029d4824407450e558`, `Dump completed`, stderr 는 비밀번호 경고만 |
+| 6 복원 확인(로컬 `runshoes_restore_check`) | 19:23:4x | 종료코드 0, 리뷰 104 · `3e954039…` = 운영 API, shoes 294 · users 33 · Flyway 1:1~5:1. 확인 뒤 지움 |
+| 7 운영 지문 | 19:23:43 | 신발 294(키 36 · 최대 id 294) · 리뷰 104 · `3e954039…` · 최대 83자 · Flyway 1~5 checksum 그대로 · users 33 · `데모관리자` 0 |
+| 8 Sync(사람) | 19:24:3x 새 Pod | `runshoes-6fdf75b6c6-fljb9`(`ccd0f20c3182`), 재시작 0 |
+| V6~V9 적용 | 19:24:42.131 → .393 | `Successfully applied 4 migrations … now at version v9`(182ms). checksum 6 `-1597188006` · 7 `-1950123291` · 8 `-223806260` · 9 `-371820711`(로컬과 같다). 데모 관리자 id 34 · `!demo`, shoes 294 · 숨김 0, users 34, 리뷰 104 · 지문 그대로, `/api/shoes/1` 키 37, 체험 카드 4, 공개 주소 200 |
+| 9 적재(첫 시도, Claude) | 19:27 | **관리자 로그인 401** — 10-28 20:25 에 관리 화면에서 비밀번호를 바꿨다(`auth.password.change`). Secret `ADMIN_PASSWORD` 는 옛 값. 쓴 것 없음, 실패 2건에서 멈춤 |
+| 9 적재(사람, 새 비밀번호) | 19:33:42 | PATCH 293 · POST 0 · 어드민 수정 0. 다시 건조 실행 0, 출처 있는 신발 293(BITR 612 · WEB 361 · RSG 216 · STORE 86 · PR 11 · MAN 11 · DB 10 칸), 리뷰 지문 그대로, ERROR 0. 기록 → `$B`(600) |
