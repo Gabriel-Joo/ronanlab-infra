@@ -239,3 +239,5 @@ Sync 뒤 화면: 두 신발 상세 모달에 화살표 · 썸네일 줄, 나머�
 | 9.2 다듬기 3차 — infra `13617fc` · 앱 `ece18a2` push → 태그 `db803f4` | 23:0x | newTag 두 줄만(`ece18a2ed70f`), 이미지 digest `sha256:11c7bad0…`, V1~V9 sha256 = 커밋 파일 |
 | Sync(사람) | 23:14:0x | `runshoes-5cc5bd6948-8hcnd`, `validated 9 migrations` · `up to date`, 재시작 0. 건조 실행 0(적재 없음), 리뷰 104 · `3e954039…`, 공개 200, 화면 묶음 `index-CrwEP8Mv.js` = 로컬 빌드 |
 | 자동 Sync 다시 켜기(사람) · 확인(Claude) | 10-30 23:3x | `syncPolicy` = `{"automated":{"prune":false,"selfHeal":false},…}`, Synced · Healthy `db803f4`. 매니페스트 `platform/argocd/applications/runshoes.yaml` 에 automated 세 줄을 되돌렸다. 이 뒤의 앱 push 는 3분 안에 배포된다 |
+| 다듬기 4차(자동 Sync 켠 뒤 — Sync 를 누르지 않는다) — 앱 `62f73f8` · 되돌림 `c8605c1`(헤더 이름은 닉네임 그대로) | 10-30 23:37 · 23:39 push | Jenkins 가 두 커밋을 한 번에 받아 `c8605c1` 만 빌드 → 태그 `4eed683`(`c8605c178039`) → 자동 배포. `62f73f8` 단독 이미지는 운영에 나가지 않았다 |
+| 4차 확인(Claude) | 23:51:1x | `runshoes-7bfcf48bfb-hllmh`, `validated 9` · `up to date`, 재시작 0. 건조 실행 0, 리뷰 104 · `3e954039…`, 공개 200, 화면 묶음 = 로컬 HEAD 빌드 |
