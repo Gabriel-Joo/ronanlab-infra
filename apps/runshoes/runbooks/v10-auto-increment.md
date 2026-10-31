@@ -77,8 +77,10 @@ mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -N -uroot
 mk 'kubectl -n runshoes rollout status deploy/runshoes --timeout=180s'
 mk 'kubectl -n runshoes logs deploy/runshoes -c runshoes | grep -E "Migrating|Successfully applied|ERROR"'
 #   → Migrating schema `runshoes` to version "10 - auto increment ids" / Successfully applied 1 migration … now at version v10
-mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -N -uroot -p\"\$MYSQL_ROOT_PASSWORD\" runshoes -e \"SELECT version, success, checksum FROM flyway_schema_history WHERE version = 10; SHOW TABLE STATUS WHERE Name IN ('\''reviews'\'', '\''shoes'\''); SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = '\''runshoes'\''\" 2>/dev/null"' | cut -f1,11
+mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -N -uroot -p\"\$MYSQL_ROOT_PASSWORD\" runshoes -e \"SET SESSION information_schema_stats_expiry = 0; SELECT version, success, checksum FROM flyway_schema_history WHERE version = 10; SHOW TABLE STATUS WHERE Name IN ('\''reviews'\'', '\''shoes'\''); SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = '\''runshoes'\''\" 2>/dev/null"' | cut -f1,11
 #   → 10 1 -1713919463(로컬과 같아야 — 시험한 그 파일) / reviews 106 · shoes 295(0절 최대 id + 1) / FK 10(Sync 전과 같다)
+#   Auto_increment 는 MySQL 8 의 통계 캐시(information_schema_stats_expiry, 기본 24시간)에서 읽는다 — 이 SET 이 없으면 Sync 직후에도 NULL 로 보인다(10-31 실제로 그랬다).
+#   열 자체는 information_schema.COLUMNS 의 EXTRA = auto_increment 로도 본다
 ```
 
 그리고 3절의 API 두 줄을 다시(리뷰 104 · 지문 그대로 · 신발 294), 공개 주소 200.
@@ -99,3 +101,12 @@ mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -N -uroot
 | 단계 | 시각 | 결과 |
 |---|---|---|
 | 0절 출발 상태 | 10-31 16:1x | 위 표(Claude, 읽기만) |
+| 1 자동 Sync 끔 | 10-31 16:26 전 | 사용자. `syncPolicy` = `{"syncOptions":["CreateNamespace=false"]}`(automated 없음, Claude 확인) |
+| 2 infra push | 10-31 16:26 | `545517f`(이 런북) |
+| 3 app push | 10-31 16:27 | `73ab592` → Jenkins 태그 `a17731c`(16:32, 두 newTag 줄만) `73ab5923a449` |
+| 4 이미지 확인 | 10-31 16:32~16:33 | `check-image-migrations.sh 73ab5923a449` — V1~V10 sha256 이 커밋과 같다, digest `sha256:659bd991…` |
+| 5 덤프 | 10-31 16:33:36 | `~/k8s-cluster/backup/2026-11-01-runshoes-v10/runshoes-before-v10-20261031T163336Z.sql` 667,609 B · 600 · `Dump completed` · sha256 `67290b91…`. 로컬 별도 DB 에 복원해 리뷰 104 · 지문 `3e954039…` · 신발 294 · 사용자 34 · Flyway 1~9 확인 뒤 지움 |
+| 6 지문 | 10-31 16:33:38 | OK 104 `3e954039…` 최대 id 105 / 294 37 294 / 1~9 checksum 0절과 같다 / Auto_increment NULL · NULL / FK 10 |
+| 7 Sync | 10-31 18:58 | 사용자. 새 Pod 18:58:24 시작 — `Migrating … "10 - auto increment ids"` → `Successfully applied 1 migration … v10`(0.198s), 6.9초에 기동 |
+| 4절 확인 | 10-31 18:59~19:00 | rollout 끝 · 새 Pod 2/2 재시작 0 · 이미지 `73ab5923a449` 둘 / `10 1 -1713919463` / reviews · shoes `id` EXTRA auto_increment, Auto_increment 106 · 295(캐시를 끄고 읽음 — 4절 메모) / FK 10 / API 리뷰 104 · `3e954039…` · 신발 294 / 공개 주소 200 / ERROR · Deadlock 0줄. 운영 쓰기 시험 없음 |
+| 8 자동 Sync 켬 | 10-31 19:04 전 | 사용자. `{"automated":{"prune":false,"selfHeal":false},…}` · Synced/Healthy · `a17731c`(Claude 확인) |
