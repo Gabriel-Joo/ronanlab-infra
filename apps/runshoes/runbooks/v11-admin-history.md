@@ -96,3 +96,14 @@ CREATE TABLE shoe_purges ( … shoe_id · line_key · generation · gender · br
 
 | 단계 | 시각 | 결과 |
 |---|---|---|
+| 1 자동 Sync 끔 | 10-31 20:5x 전 | 사용자. `{"syncOptions":["CreateNamespace=false"]}`(automated 없음, Claude 확인 — 앱 push 직전에 한 번 더) |
+| 2 이 런북 | 10-31 20:50 | `ec18bb8` |
+| 3 앱 push | 10-31 20:5x | `a6b4031`(모달) · `a9f17e0`(V11 · 편집 폼 불러오기 전 입력 막기) · `182f6ae`(카탈로그) → Jenkins `58d3ce7`(20:56, newTag 두 줄만) `182f6aee7808` |
+| 4 이미지 확인 | 10-31 20:57 | digest `sha256:d29d7962…`, V1~V11 sha256 = 커밋 파일(`diff` 없음), V11 `3b4d7268…` |
+| 5 덤프 | 10-31 20:58:20 | `~/k8s-cluster/backup/2026-11-01-runshoes-v11/runshoes-before-v11-20261031T205820Z.sql` 679,756 B · 600 · `Dump completed` · err 비밀번호 경고뿐 · sha256 `9effb3cb…`. 로컬 다른 이름 DB 에 복원 — 리뷰 104 · `3e954039…` · 신발 294 · 사용자 34 · Flyway 1~10, 확인 뒤 지움 |
+| 6 지문 | 10-31 20:58:20 | 리뷰 104 · `3e954039…` · 최대 id 105 / 신발 294 · 키 37 · 최대 id 294 · 숨김 0 / Flyway 1~10 그대로 / FK 10 / V11 열 없음 — 0절과 같다 |
+| 7 Sync | 10-31 20:59~21:00 | 사용자. 새 Pod 21:00:02 — `Migrating … "11 - admin history"` → `Successfully applied 1 migration … v11`(**68ms**), 6.5초에 기동 |
+| 4절 확인 | 10-31 21:01 | 이미지 `182f6aee7808` 둘 · 새 Pod 2/2 재시작 0 / `11 1 308032898` / 열 셋 · 294행 모두 NULL · `shoe_purges` 0 · FK 10 / 리뷰 104 · 지문 그대로 · 신발 294 · 키 40 / 공개 200 · VIP 200 · 영구 삭제 기록 비로그인 401 / ERROR · Deadlock 0줄. 운영 쓰기 시험 없음 |
+| 8 품번 채우기 | 10-31 21:04:57~21:05:05 | 사용자 승인 뒤. 건조 실행 `PATCH 293 · {"sku":293}` → `--apply` **PATCH 293 · POST 0**(관리자 비밀번호는 Secret 에서 env 로만). sku 293행(엔돌핀 스피드 4 만 NULL) · **updated_at · last_change 0행**(적재기 제외) · 활동 로그 `shoe.update` via loader 293(fields `["sku"]`) · 다시 건조 실행 PATCH 0 · `decisions.json` · `shoes.jsonl` 그대로. 기록 `…/2026-11-01-runshoes-v11/2026-10-31T21-04-59-377Z.json`(600) |
+| 9 자동 Sync 켬 | 10-31 21:0x | 사용자. `{"automated":{"prune":false,"selfHeal":false},…}`(Claude 확인). 그 사이 쌓인 텔레그램 커밋 `7773b76` → `89142bb` `7773b767eb2f` 배포 — 코드 · 스키마 같다, `up to date`, 7.3초에 기동, 리뷰 104 · 지문 그대로 · 신발 294 · sku 293. Synced · Healthy |
+| 뒤 | 10-31 21:09 | 관리 화면에서 카야노 32 숨김(21:09:34) → 되살리기(21:09:42) — `updated_at` · `last_change ["restored"]` 가 찍혔다(설계대로, 관리자 계정) |
