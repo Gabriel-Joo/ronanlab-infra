@@ -1,0 +1,18 @@
+# 시험 앱(2026-11-02) — "apps/<이름>/ 폴더만 넣으면 루트가 Application 을 만든다"를 확인하고 바로 지운다. 리소스 0개, Sync 수동
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zz-smoke
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Gabriel-Joo/ronanlab-infra.git
+    targetRevision: main
+    path: apps/zz-smoke
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
