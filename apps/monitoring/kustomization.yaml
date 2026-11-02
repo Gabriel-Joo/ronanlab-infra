@@ -1,5 +1,5 @@
 # 모니터링 — Prometheus·Grafana·node-exporter·kube-state-metrics(15번). Alertmanager는 없다(알림 설계 전).
-# ArgoCD Application monitoring(platform/argocd/applications/monitoring.yaml)이 이 디렉터리를 본다. helm install로 넣지 않는다(14번 1-9절).
+# ArgoCD Application monitoring(app.yaml)이 이 디렉터리를 본다. helm install로 넣지 않는다(14번 1-9절).
 # 차트를 쓰지 않고 손으로 쓴 매니페스트다 — kube-prometheus-stack의 Operator·CRD 없이 Prometheus 설정 파일 하나로 긁는다.
 #
 # Namespace는 여기 없다 — 사람이 만든다(Secret grafana-admin이 거기 있다. petmint와 같은 이유, README.md).

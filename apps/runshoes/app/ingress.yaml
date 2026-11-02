@@ -1,4 +1,4 @@
-# runshoes.ronanlab.dev — 공용 터널(platform/cloudflared) → ingress-nginx → 이 Service. TLS는 Cloudflare 엣지에서 끝난다.
+# runshoes.ronanlab.dev — 공용 터널(apps/cloudflared) → ingress-nginx → 이 Service. TLS는 Cloudflare 엣지에서 끝난다.
 # /ws/chat 은 챗봇 사이드카, 나머지는 앱. 프런트가 wss://<같은 호스트>/ws/chat 으로 붙는다(src/api.ts) — 경로를 바꾸지 않는다(rewrite 없음, 챗봇은 경로를 보지 않는다).
 # WebSocket: ingress-nginx 기본 프록시 제한(60초)에 걸려 끊기지 않게 1시간(petmint와 같다). Ollama 응답(최대 40초)도 그 안이다
 apiVersion: networking.k8s.io/v1

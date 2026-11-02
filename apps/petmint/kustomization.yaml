@@ -1,4 +1,4 @@
-# 펫퍼민트 — 앱 + MySQL (14번 1-7절). ArgoCD Application petmint(platform/argocd/applications/petmint.yaml)가 이 디렉터리를 본다.
+# 펫퍼민트 — 앱 + MySQL (14번 1-7절). ArgoCD Application petmint(app.yaml)가 이 디렉터리를 본다.
 # kubectl apply로 직접 넣지 않는다 — ArgoCD와 상태가 엇갈린다(README.md "ArgoCD가 관리한다").
 # 이미지 태그는 Jenkins(petmint-rag-chatbot Jenkinsfile)가 빌드 뒤 아래 newTag 한 줄을 커밋 해시 12자리로 바꿔 push한다.
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -12,7 +12,7 @@ labels:
 
 # Namespace는 여기 없다 — petmint 네임스페이스에는 사람이 넣은 Secret이 있다(scripts/create-secrets.sh).
 # ArgoCD가 소유하면 prune·Application 삭제 한 번에 그것들이 사라질 수 있어, 네임스페이스는 사람이 만든다(Secret과 같다).
-# cloudflared 터널도 예전에는 여기 있었다 — 2026-10-18 platform/cloudflared(네임스페이스 cloudflared)로 옮겼다
+# cloudflared 터널도 예전에는 여기 있었다 — 2026-10-18 apps/cloudflared(네임스페이스 cloudflared)로 옮겼다
 resources:
   - mysql/service.yaml
   - mysql/statefulset.yaml
