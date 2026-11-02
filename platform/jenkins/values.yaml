@@ -37,6 +37,10 @@ controller:
       keyName: username
     - name: harbor-robot-runshoes-jenkins
       keyName: password
+    # GitHub 웹훅 공유 시크릿(2026-11-03) — 사람이 넣은 Secret jenkins/github-webhook-secret(키 secret). petmint-rag-chatbot · runshoes 웹훅이 같이 쓴다.
+    # ArgoCD 웹훅(ronanlab-infra)은 다른 값이다(argocd/argocd-secret webhook.github.secret)
+    - name: github-webhook-secret
+      keyName: secret
 
   JCasC:
     configScripts:
@@ -59,17 +63,30 @@ controller:
                       privateKeySource:
                         directEntry:
                           privateKey: "${ronanlab-infra-deploy-key-ssh-privatekey}"
+                  - string:
+                      scope: GLOBAL
+                      id: github-webhook-secret
+                      description: "GitHub 웹훅 공유 시크릿 — /github-webhook/ 서명(X-Hub-Signature-256) 검증"
+                      secret: "${github-webhook-secret-secret}"
+        # GitHub 웹훅(2026-11-03): https://jenkins.ronanlab.dev/github-webhook/ — Cloudflare Access 는 이 경로만 Bypass, 나머지는 그대로.
+        # 지켜 주는 것은 HMAC SHA-256 서명이다. 훅은 사람이 GitHub 에서 손으로 걸었다(토큰 없음 — 플러그인이 훅을 관리하지 않는다)
+        unclassified:
+          gitHubPluginConfig:
+            hookSecretConfigs:
+              - credentialsId: github-webhook-secret
+                signatureAlgorithm: SHA256
         jobs:
           # petmint 앱 이미지 빌드 → Harbor push. 파이프라인 본문은 앱 리포의 Jenkinsfile.
-          # GitHub webhook 은 Access 에 막히므로(운영 도구는 인터넷에 열지 않는다, docs/13) 2분마다 폴링한다
+          # 2026-11-03부터 GitHub 웹훅(githubPush)이 주력이다. pollSCM 15분은 웹훅을 놓쳤을 때의 안전망(전에는 Access 에 막혀 2분 폴링만)
           - script: |
               pipelineJob('petmint-app') {
                 description('petmint-rag-chatbot main → harbor.ronanlab.dev/petmint/petmint-app:<커밋 12자리>. JCasC 가 만든다 — UI 에서 고치지 않는다')
                 properties {
                   pipelineTriggers {
                     triggers {
+                      githubPush()
                       pollSCM {
-                        scmpoll_spec('H/2 * * * *')
+                        scmpoll_spec('H/15 * * * *')
                       }
                     }
                   }
@@ -110,8 +127,9 @@ controller:
                 properties {
                   pipelineTriggers {
                     triggers {
+                      githubPush()
                       pollSCM {
-                        scmpoll_spec('H/2 * * * *')
+                        scmpoll_spec('H/15 * * * *')
                       }
                     }
                   }
@@ -136,6 +154,7 @@ controller:
     - git:5.11.0
     - configuration-as-code:2136.veb_3a_554550b_f
     - job-dsl:3732.v9a_c49a_61a_313          # JCasC jobs: 로 Pipeline Job 을 만든다
+    - github:1.47.0                          # /github-webhook/ — 웹훅 서명 검증(hookSecretConfigs SHA256) · githubPush 트리거(2026-11-03)
 
   resources:
     requests:
