@@ -1,4 +1,4 @@
-# platform/monitoring
+# apps/monitoring
 
 Prometheus · Grafana · node-exporter · kube-state-metrics (petmint-rag-chatbot `docs/15_monitoring.md`). Alertmanager는 없다 — 알림 설계 전.
 차트 없이 손으로 쓴 매니페스트다(14번 1-9절 — 설정을 저장소에 남긴다). ArgoCD Application `monitoring`이 이 디렉터리를 본다.
@@ -11,7 +11,7 @@ Prometheus · Grafana · node-exporter · kube-state-metrics (petmint-rag-chatbo
 kubectl create namespace monitoring
 read -rsp 'grafana admin password: ' P; echo
 kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password="$P"; unset P
-kubectl apply -f platform/argocd/applications/monitoring.yaml     # Application 자체는 아직 사람이 넣는다(petmint와 같다)
+# Application: bootstrap/root-app.yaml 의 exclude 줄(monitoring)을 지우고 push → 루트가 app.yaml 로 만든다(Sync 는 수동)
 ```
 
 그다음 ArgoCD에서 monitoring만 Sync한다. petmint Application은 따로다.

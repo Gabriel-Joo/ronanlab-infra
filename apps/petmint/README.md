@@ -1,7 +1,7 @@
 # apps/petmint — 펫퍼민트 K8s 매니페스트
 
 14번 1-7절 "이주 때 할 일"의 매니페스트. 네임스페이스 `petmint`. 2026-10-16 petmint-rag-chatbot `deploy/`에서 옮겼다(14번 1-5절).
-ArgoCD Application `petmint`(`platform/argocd/applications/petmint.yaml`)가 이 디렉터리를 보고, 이미지 태그는 Jenkins가 바꾼다.
+ArgoCD Application `petmint`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 만든다)가 이 디렉터리를 보고, 이미지 태그는 Jenkins가 바꾼다.
 
 ```
 kustomization.yaml     이미지 태그(images.newTag) — Jenkins가 커밋 해시 12자리로 바꿔 push한다. Namespace는 없다(아래)
@@ -28,7 +28,7 @@ ArgoCD가 넘겨받은 뒤(2026-10-16)로는 **이 디렉터리를 `kubectl appl
 - **Sync는 지금 수동이다.** 매니페스트가 의도대로 반영되는지 확인한 뒤 자동으로 바꾼다. prune도 꺼져 있다 — git에서 지운 리소스는 클러스터에 남는다(손으로 지운다)
 - **Application에 finalizer가 없다.** Application을 지워도 앱·MySQL·PV는 남는다
 - **Namespace는 사람이 만든다.** petmint 네임스페이스에는 사람이 넣은 Secret 4개가 있다. ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다.
-  공개 주소 터널(cloudflared)도 예전에는 여기 있었다 — 2026-10-18 `platform/cloudflared`(네임스페이스 `cloudflared`)로 옮겼다
+  공개 주소 터널(cloudflared)도 예전에는 여기 있었다 — 2026-10-18 따로 뺐다(지금 `apps/cloudflared`, 네임스페이스 `cloudflared`)
 - **단일 환경이다.** 개발은 로컬(uvicorn + vite), 클러스터는 운영만 — 개발·운영 네임스페이스를 가르지 않는다
 
 ## 처음 만드는 순서 (빈 클러스터에서)
@@ -43,7 +43,7 @@ sudo <petmint-rag-chatbot>/deploy/scripts/host-nfs-setup.sh
 kubectl create namespace petmint
 apps/petmint/scripts/create-secrets.sh     # Harbor pull Secret까지: HARBOR_USER='robot$petmint+pull' HARBOR_PASSWORD=...
 # 2. ArgoCD Application → UI 또는 argocd CLI에서 Sync
-kubectl apply -f platform/argocd/applications/petmint.yaml
+# Application 은 루트(bootstrap/root-app.yaml)가 app.yaml 로 만든다 — 손으로 apply 하지 않는다(2026-11-02 App of Apps)
 ```
 
 ## 순서 보장 — 초기화 Job이 앱보다 먼저

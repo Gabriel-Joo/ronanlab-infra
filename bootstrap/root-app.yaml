@@ -1,0 +1,43 @@
+# 루트 Application(App of Apps, 2026-11-02) — apps/<이름>/app.yaml 을 읽어 Application 을 만든다. 이 파일만 사람이 한 번 넣는다:
+#   kubectl apply -f bootstrap/root-app.yaml
+# 새 앱: apps/<이름>/ 에 app.yaml + 매니페스트(kustomization.yaml)를 넣고 push 하면 3분 안에 Application 이 생긴다.
+#   app.yaml 은 자식의 kustomization.yaml resources 에 넣지 않는다 — 자식은 매니페스트만, 루트는 app.yaml 만 읽는다.
+#
+# - 루트가 다루는 것은 Application 객체뿐(include */app.yaml). 앱 리소스의 Sync 방식은 각 app.yaml 이 정한다
+# - 자동 Sync — 폴더를 넣으면 Application 이 생긴다. selfHeal 끔
+# - 자식의 spec.syncPolicy 는 루트가 덮지 않는다(ignoreDifferences + RespectIgnoreDifferences). 자동 Sync 켜고 끄기는 지금처럼 클러스터에서
+#   kubectl patch 가 실제 스위치이고 app.yaml 은 기록이다(runshoes runbooks). 그러지 않으면 Jenkins 태그 커밋 하나에 루트가 다시 Sync 해
+#   스키마 배포 중에 잠시 꺼 둔 자동 Sync 를 도로 켠다. 처음 만들 때는 app.yaml 의 syncPolicy 가 그대로 들어간다
+# - prune 끔 — 폴더를 지워도 Application 은 남는다(지울 때는 kubectl -n argocd delete application <이름>, 자식 리소스는 finalizer 가 없어 남는다)
+# - finalizer 없음 — 루트를 지워도 자식 Application · 리소스는 남는다
+# - platform/ 은 ArgoCD 밖이다(ArgoCD 보다 먼저 깐 기반: cert-manager · coredns · ingress-nginx · metallb · harbor · jenkins · argocd ingress)
+# 되돌리기: 호스트 ~/k8s-cluster/backup/2026-11-02-app-of-apps/ROLLBACK.md
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:Gabriel-Joo/ronanlab-infra.git
+    targetRevision: main
+    path: apps
+    directory:
+      recurse: true
+      include: '*/app.yaml'
+      exclude: 'monitoring/app.yaml'     # 모니터링은 자리만 잡았다 — 넣을 때 이 줄을 지운다(apps/monitoring/README.md)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /spec/syncPolicy
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - RespectIgnoreDifferences=true

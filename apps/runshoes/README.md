@@ -1,7 +1,7 @@
 # apps/runshoes — RUNSHOES K8s 매니페스트
 
 러닝화 스펙 아카이브(앱 리포 GitHub `Gabriel-Joo/runshoes` — Spring Boot + MySQL + React). 네임스페이스 `runshoes`, 주소 `runshoes.ronanlab.dev`.
-ArgoCD Application `runshoes`(`platform/argocd/applications/runshoes.yaml`)가 이 디렉터리를 보고, 이미지 태그는 Jenkins `runshoes-app`이 바꾼다.
+ArgoCD Application `runshoes`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 만든다)가 이 디렉터리를 보고, 이미지 태그는 Jenkins `runshoes-app`이 바꾼다.
 
 ```
 kustomization.yaml       이미지 둘(runshoes, runshoes-chatbot) — 같은 태그. Jenkins가 커밋 해시 12자리로 두 줄을 함께 바꾼다
@@ -38,7 +38,7 @@ apps/petmint와 같다 — `kubectl apply`로 넣지 않는다.
 HARBOR_USER='robot$runshoes+pull' HARBOR_PASSWORD=... apps/runshoes/scripts/create-secrets.sh
 # 3. Jenkins push 자격 증명 — Secret jenkins/harbor-robot-runshoes-jenkins(키 username·password), platform/jenkins/values.yaml이 읽는다
 # 4. ArgoCD Application → 첫 Jenkins 빌드로 newTag가 바뀐 뒤 Sync. MySQL 이 먼저 Ready 가 되고 앱이 Flyway 로 스키마·시드를 넣는다
-kubectl apply -f platform/argocd/applications/runshoes.yaml
+# Application 은 루트(bootstrap/root-app.yaml)가 app.yaml 로 만든다 — 손으로 apply 하지 않는다(2026-11-02 App of Apps)
 ```
 
 ## 데이터 — MySQL

@@ -1,5 +1,5 @@
 # RUNSHOES — apps/runshoes 를 본다. 이미지 태그는 Jenkins(runshoes Jenkinsfile)가 apps/runshoes/kustomization.yaml 의 두 newTag 를 바꿔 push 한다.
-# 적용: kubectl apply -f platform/argocd/applications/runshoes.yaml (Application 자체는 아직 사람이 넣는다)
+# 적용: 루트 Application(bootstrap/root-app.yaml)이 apps/*/app.yaml 을 읽어 만든다 — 2026-11-02 App of Apps. 손으로 apply 하지 않는다
 #
 # petmint.yaml 과 같은 규칙:
 # - Sync 는 자동(2026-10-30 — V6~V9 관리 화면 · 데모 계정 배포와 다듬기 세 번이 끝나 사용자가 다시 켰다). Jenkins 태그 커밋이 3분 안에 배포된다.

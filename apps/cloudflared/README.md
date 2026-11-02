@@ -1,8 +1,9 @@
-# platform/cloudflared — 클러스터 공용 Cloudflare 터널
+# apps/cloudflared — 클러스터 공용 Cloudflare 터널
 
 터널 `ronanlab-tunnel`(`02ad6a13-ce45-4262-a32a-40241bf034dc`, 2026-10-18 전 이름 `petmint-tunnel`) 하나가 공개 주소 다섯을 받는다 — `petmint`·`argocd`·`harbor`·`jenkins`·`runshoes` `.ronanlab.dev`(runshoes는 2026-10-18 추가, Access 없음).
 원점은 전부 ingress-nginx ClusterIP(`ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`), 앞단은 Cloudflare Access(petmint-rag-chatbot docs/13).
-ArgoCD Application `cloudflared`(`platform/argocd/applications/cloudflared.yaml`)가 이 디렉터리를 본다. 네임스페이스 `cloudflared`.
+ArgoCD Application `cloudflared`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 만든다)가 이 디렉터리를 본다. 네임스페이스 `cloudflared`.
+2026-11-02 `platform/cloudflared`에서 옮겼다(App of Apps — 호스트 `~/k8s-cluster/backup/2026-11-02-app-of-apps/ROLLBACK.md`).
 
 2026-10-18 `petmint` 네임스페이스에서 옮겼다. 그 전에는 m-k8s `~/cloudflared-deploy.yaml`과 손으로 만든 ConfigMap을 `kubectl apply`했고, git에 없었다.
 옮긴 기록·되돌리기는 호스트 `~/k8s-cluster/backup/2026-10-18-cloudflared-platform/ROLLBACK.md`.
@@ -29,7 +30,7 @@ kubectl create namespace cloudflared
 # 자격 증명 — 터널을 만든 호스트의 ~/.cloudflared/<터널 ID>.json. 디스크·화면에 평문을 남기지 않게 표준 입력으로 넣는다
 ssh <m-k8s> 'kubectl -n cloudflared create secret generic cloudflared-credentials --from-file=credentials.json=/dev/stdin' \
   < ~/.cloudflared/02ad6a13-ce45-4262-a32a-40241bf034dc.json
-kubectl apply -f platform/argocd/applications/cloudflared.yaml     # Application 자체는 아직 사람이 넣는다(petmint와 같다)
+# Application 은 루트(bootstrap/root-app.yaml)가 app.yaml 로 만든다 — 손으로 apply 하지 않는다(2026-11-02 App of Apps)
 ```
 
 그다음 ArgoCD에서 cloudflared만 Sync한다. 2026-10-18에는 옛 `petmint/cloudflared-credentials`에서 같은 방법(`base64 -d | … /dev/stdin`)으로 복사했다 —
