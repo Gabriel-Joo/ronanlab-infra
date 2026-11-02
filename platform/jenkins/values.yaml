@@ -41,9 +41,25 @@ controller:
     # ArgoCD 웹훅(ronanlab-infra)은 다른 값이다(argocd/argocd-secret webhook.github.secret)
     - name: github-webhook-secret
       keyName: secret
+    # FOREMAN 빌드 알림 토큰(2026-11-03) — 사람이 넣은 Secret jenkins/foreman-webhook-token(키 token). 값은 foreman .env.bridge FOREMAN_WEBHOOK_TOKEN.
+    # 새도 FOREMAN에 가짜 빌드 이벤트를 넣는 정도다 — Jenkins API 토큰(= 관리자, 배포 경로 전체) 대신 이 방식을 고른 이유(foreman log/stage8_cicd_result.md)
+    - name: foreman-webhook-token
+      keyName: token
 
   JCasC:
     configScripts:
+      # FOREMAN 빌드 알림(2026-11-03) — 두 앱 Jenkinsfile 의 foremanNotify 가 POST http://192.168.122.1:8001/webhooks/jenkins 에 쓴다.
+      # 따로 둔 블록 — 지울 때 이 블록과 위 additionalExistingSecrets 항목만. configScripts 는 합쳐진다(credentials 목록이 이어 붙는다)
+      foreman: |
+        credentials:
+          system:
+            domainCredentials:
+              - credentials:
+                  - string:
+                      scope: GLOBAL
+                      id: foreman-webhook-token
+                      description: "FOREMAN 빌드 알림 토큰 — POST 192.168.122.1:8001/webhooks/jenkins(Authorization: Bearer)"
+                      secret: "${foreman-webhook-token-token}"
       petmint: |
         credentials:
           system:
