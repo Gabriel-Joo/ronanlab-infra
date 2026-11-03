@@ -8,11 +8,11 @@ B=~/k8s-cluster/backup/2026-11-03-runshoes-v13   # 덤프 — 데이터가 들�
 
 ## V13
 
-- `shoes.model_en VARCHAR(100) NULL` — 화면에 모델명 아래 작게 보이는 영어 이름(`FuelCell SuperComp Elite v6`).
+- `shoes.model_en VARCHAR(100) NULL` — 상세 모달 브랜드 줄에 가운뎃점으로 붙는 영어 이름(처음에는 카드 · 모달에 모델명 아래 한 줄 — 적재 뒤 사용자가 옮김)(`FuelCell SuperComp Elite v6`).
 - `shoes.model_alias VARCHAR(255) NULL` — 검색에만 쓰는 다른 표기, 쉼표로 나눈다(`SC Elite v6, 퓨어셀`). 화면에 보이지 않는다.
 - 검색(`?search=`)이 두 칸도 본다 — 홈 · 관리 화면 둘 다.
 - 맨 뒤 열 추가라 MySQL 8 INSTANT. 기존 행은 NULL — 배포 뒤 적재기가 채운다(앱 `catalog/names.mjs` 규칙, 01c 1-3 #8).
-- 앱 커밋 `(push 때 적는다)` → 이미지 `(…)`(infra `(…)`).
+- 앱 커밋 `39332f7` · `53a6969` → 이미지 `53a696940398`(infra `8d63c78`).
 
 ### 로컬 확인(2026-11-03)
 
@@ -45,3 +45,9 @@ B=~/k8s-cluster/backup/2026-11-03-runshoes-v13   # 덤프 — 데이터가 들�
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
+| 1 자동 Sync 끔 | 11-02 23:59 전 | 사용자. `automated` 없음(Claude 확인, push 직전) |
+| 2 push | 11-02 23:59 | `39332f7` · `53a6969` → infra `8d63c78`(00:04) 이미지 `53a696940398`. 운영은 옛 이미지 `e9dd648afa57` · OutOfSync |
+| 3 덤프 | 11-03 00:00:06 | `$B/runshoes-before-v13-20261103T000006Z.sql` 1,111,388 B · 600 · `Dump completed` · err 비밀번호 경고뿐 · sha256 `bb4339f6995aeec6d55a…`. 복원본: reviews 104 · 지문 `3e954039…`(운영 API 와 같음) · shoes 302 · users 34 · flyway 1~12 |
+| 4 Sync | 11-03 00:05 | 사용자. 새 Pod 00:05:14 — `Migrating … "13 - model en"` → `Successfully applied 1 migration … v13`(**60ms**), 6.6초에 기동. 이미지 `53a696940398` 2/2 · Synced/Healthy(rev `8d63c78`) · 공개 200 · `/api/shoes` 302켤레 · 키 43 · `modelEn` · `modelAlias` 모두 null. 건조 실행 PATCH 301(modelEn 301 · modelAlias 108 + 관리 화면 수정 22건) |
+| 5 자동 Sync 켬 | 11-03 00:06 | 사용자. `{"automated":{"prune":false,"selfHeal":false},…}`(Claude 확인) |
+| 6 적재 | 11-03 00:07:07 | `scripts/load-prod.sh --apply` — 관리 화면 수정 22건을 먼저 판단으로, PATCH 301(modelEn 301 · modelAlias 108 · specSources 1 — 클리프톤 11 발볼 출처 MAN(관리 화면에서 넣은 값) · sku 1 — 발로스 v1 MBALCE1 → MBALLA1, 관리 화면에서 바꾼 대표 이미지의 품번). 다시 건조 실행 PATCH 0. 기록 `~/k8s-cluster/backup/2026-11-03-runshoes-load/2026-11-03T00-07-07-422Z.json`(600). 운영 검색: "SC 페이서" 2 · "퓨어셀" 8 · "베이퍼플라이 넥스트" 2 · "겔 카야노" 2 · "supercomp elite" 2 · "에스랩" 4. 영어 이름 301 · 다른 표기 108(엔돌핀 스피드 4 는 카탈로그 밖이라 비어 있다) |
