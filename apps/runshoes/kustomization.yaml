@@ -23,6 +23,6 @@ resources:
 # 이 줄 모양을 바꾸면 Jenkinsfile의 sed도 바꾼다. latest 금지 — 어느 커밋이 도는지 태그로 알 수 있어야 한다
 images:
   - name: harbor.ronanlab.dev/runshoes/runshoes
-    newTag: "89d018b2b636"   # Jenkins가 바꾼다(커밋 해시 12자리). 맨 처음 값은 Harbor에 없는 자리값이었다 — 첫 빌드가 바꾼 뒤 Sync(README.md "처음 만드는 순서")
+    newTag: "2a1f06ace920"   # Jenkins가 바꾼다(커밋 해시 12자리). 맨 처음 값은 Harbor에 없는 자리값이었다 — 첫 빌드가 바꾼 뒤 Sync(README.md "처음 만드는 순서")
   - name: harbor.ronanlab.dev/runshoes/runshoes-chatbot
-    newTag: "89d018b2b636"   # 위와 같은 값이어야 한다(Jenkins sed가 두 줄을 함께 바꾼다)
+    newTag: "2a1f06ace920"   # 위와 같은 값이어야 한다(Jenkins sed가 두 줄을 함께 바꾼다)
