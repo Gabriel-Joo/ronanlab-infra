@@ -95,7 +95,27 @@ grep -v 'Using a password' $B/runshoes-before-v14-$TS.err       # → 아무것�
 sha256sum $B/runshoes-before-v14-$TS.sql | tee $B/runshoes-before-v14-$TS.sql.sha256
 ```
 
-복원 확인(로컬 `runshoes_restore_check` 에 넣고 리뷰 개수 · 지문을 공개 API 와 대조)도 V4 런북 2절 (2) · (3) 그대로.
+복원 확인 — 로컬 `runshoes_restore_check` 에 넣고 리뷰 개수 · 지문을 공개 API 와 대조(V4 런북 2절 (2) · (3) 을 고쳐 쓴 것).
+
+```bash
+docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS runshoes_restore_check; CREATE DATABASE runshoes_restore_check CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"'
+docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" --default-character-set=utf8mb4 runshoes_restore_check' < $B/runshoes-before-v14-$TS.sql
+curl -s -H "$H" $VIP/api/reviews | node -e '
+  const r=JSON.parse(require("fs").readFileSync(0)).sort((a,b)=>a.id-b.id);
+  console.log(r.length, require("crypto").createHash("sha256").update(r.map(x=>x.id+":"+x.shoeId).join(",")).digest("hex"))'
+docker exec -i runshoes-mysql-dev sh -c 'mysql -N -uroot -p"$MYSQL_ROOT_PASSWORD" runshoes_restore_check' <<'SQL'
+SET SESSION group_concat_max_len = 1048576;
+SELECT COUNT(*), SHA2(GROUP_CONCAT(CONCAT(r.id, ':', r.shoe_id) ORDER BY r.id SEPARATOR ','), 256)
+  FROM reviews r JOIN shoes s ON s.id = r.shoe_id AND s.deleted_at IS NULL;
+SELECT (SELECT COUNT(*) FROM shoes WHERE deleted_at IS NULL), (SELECT COUNT(*) FROM users),
+       (SELECT GROUP_CONCAT(CONCAT(version, ':', success) ORDER BY installed_rank) FROM flyway_schema_history);
+SQL
+# → 첫 두 줄(API · 복원본)의 개수 · 지문이 같고, 셋째 줄 shoes 310 · users(지금 수) · flyway 1:1 … 13:1
+docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE runshoes_restore_check"'
+```
+
+- **`SET SESSION group_concat_max_len` 이 꼭 있어야 한다.** MySQL 기본 1,024바이트에서 `GROUP_CONCAT` 이 잘린다 — 리뷰 1,800건은 14,131바이트라 V4 런북 그대로 치면 개수는 같고 지문만 다르다(2026-11-10 실제로 겪음. API 데이터를 1,024바이트에서 자르면 복원본의 틀린 지문과 똑같았다). V4 때는 104건(약 700바이트)이라 걸리지 않았다.
+- 복원본은 숨긴 신발의 리뷰를 빼고 센다 — 공개 API 가 V8 부터 숨긴 신발의 리뷰를 내주지 않는다.
 
 ## 3. Sync 뒤 확인(Claude — 읽기)
 

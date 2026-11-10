@@ -104,6 +104,7 @@ SELECT COUNT(*), SHA2(GROUP_CONCAT(CONCAT(id, ':', shoe_id) ORDER BY id SEPARATO
 SELECT (SELECT COUNT(*) FROM shoes), (SELECT COUNT(*) FROM users), (SELECT GROUP_CONCAT(CONCAT(version, ':', success) ORDER BY installed_rank) FROM flyway_schema_history);
 SQL
 # → 두 줄의 개수 · 지문이 같고, shoes 20 · users(그때 수) · flyway 1:1,2:1,3:1
+# 주의(2026-11-10): 리뷰가 많으면 GROUP_CONCAT 이 1,024바이트에서 잘려 지문이 틀린다 — SQL 앞에 SET SESSION group_concat_max_len = 1048576; 을 넣는다(v14-shoe-summaries.md 2절). 지금 쓰는 판은 거기
 docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE runshoes_restore_check"'
 ```
 
