@@ -16,7 +16,7 @@ mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 - 조회 `GET /api/shoes/{id}/summary` 는 이 표만 읽는다 — **Sync 뒤 첫 생성 전까지 상세 모달에 요약이 보이지 않는다**(빈 응답, 화면은 숨김). 응답에 `reviewCount` · `generatedAt` 이 더해진다.
 - 리뷰 쓰기 · 고치기 · 지우기는 같은 트랜잭션에서 stale 만 판단한다(리뷰 수 ±10% · 평균 ±0.3 · 처음 3건 · 3건 미만이면 행 삭제). 30일 조건은 배치 시작의 전체 재판단이 본다.
 - 관리 화면 제목 옆에 요약 건수(읽기 전용, `GET /api/admin/summaries`). 수동 실행 버튼은 없다 — 아래 5절 명령으로 한다.
-- 앱 커밋 `________` → 이미지 `________`(infra `________`).
+- 앱 커밋 `7be1e70` · `1a4304e` → 이미지 `1a4304e5baae`(infra `162a5ec`).
 
 ### CronJob `runshoes-summary`(`app/cronjob.yaml`)
 
@@ -198,10 +198,10 @@ mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -uroot -p
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 push | | |
-| 3 확인 · 덤프 | | |
-| 4 Sync | | |
-| 5 자동 Sync 켬 | | |
-| 6 첫 전체 생성 | | |
+| 1 자동 Sync 끔 | 11-10 04:2x 전 | 사용자. `{"syncOptions":["CreateNamespace=false"]}` — `automated` 없음(Claude 확인, push 직전). 처음 지시는 push 뒤 끄기였는데 켜진 채 push 하면 덤프 전에 V14 가 들어가 Claude 가 멈추고 먼저 끄게 했다 |
+| 2 push | 11-10 04:2x | 앱 `1a4304e` · infra `5949894` → Jenkins infra `162a5ec` 이미지 `1a4304e5baae`. ArgoCD OutOfSync(자동 Sync 꺼져 보기만) · 운영 `36430d9ae5a1` 그대로 · CronJob 없음 |
+| 3 확인 · 덤프 | 11-10 04:37:40 | 사용자. (1) Job 없음 (2) 세 워커 Ollama 닿음 (3) `$B/runshoes-before-v14-20261110T043740Z.sql` 2,268,777 B · 600 · `Dump completed on 2026-11-10  4:37:40` · err 비밀번호 경고뿐(85 B) · sha256 `8f071e64fb084e84…`. 복원본: reviews 1,800 · 지문 첫 시도 `3d3f530f…`(**GROUP_CONCAT 1,024바이트 잘림** — 2절 주의, Claude 가 API 데이터로 재현) → `group_concat_max_len` 늘려 `5b90995f…`(운영 API 와 같음) · shoes 310 · users 204 · flyway 1~13 |
+| 4 Sync | 11-10 04:44 | 사용자. 새 Pod `runshoes-66d4c6d76d-lzkxd` 04:44:02 `Migrating … "14 - shoe summaries"` → `Successfully applied 1 migration … v14`(**69ms**), 7.7초에 기동, ERROR · WARN 없음. 이미지 둘 `1a4304e5baae` · Synced/Healthy(rev `162a5ec`) · CronJob `SUSPEND True`. 옛 Pod 는 Terminating 중 Error — 새 Pod Ready 뒤 내려갔고 readiness 실패가 Killing 27초 뒤(preStop 5 + graceful 20 안). SIGTERM 종료 코드(JVM 143)로 보이나 Pod 가 지워져 확인 못 함. 공개 API 310켤레 요약: "아직 만들지 않음" **212** · "3개 미만" 98(리뷰 수로 센 것과 어긋남 0), 그동안 Ollama `/api/generate` 0 |
+| 5 자동 Sync 켬 | 11-10 04:4x | 사용자. `{"automated":{},…}`(Claude 확인) |
+| 6 첫 전체 생성 | 11-10 04:53:51 ~ 05:21:08 | 사용자 `summary-manual-20261110-1353`(w2-k8s), Complete 1/1. 시작 "stale 212 · 재판단으로 새로 선 0 · 지운 행 0" → 10켤레마다 진행 줄 63~94초 간격 → **성공 212 · 실패 0 · 재비교 0 · 27분 17초**(켤레당 7.7초). Ollama `/api/generate` 212건 · 평균 7.7초 · 최대 13.4초. 공개 API: 요약 212 · **JSON 덩어리 0** · negative null 4 · positive 26~117자(중앙 67) · `reviewCount` 가 신발의 리뷰 수와 모두 같다. 상세 모달(운영, shoe 2) "리뷰 34건 기준" 캡처 |
 | 7 suspend false | | |
