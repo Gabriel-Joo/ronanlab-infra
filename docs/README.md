@@ -7,7 +7,10 @@
 | --- | --- |
 | [01_cluster.md](01_cluster.md) | 클러스터 — 호스트 · VM · 네트워크 · 버전 · 노드 추가 절차(`cluster/`의 Vagrantfile · setup-node.sh) |
 | [02_availability.md](02_availability.md) | 가용성 — 노드 배치 목표 · 장애 시나리오 · 앱 분산(anti-affinity · PDB) · 노드 정비 절차 · 백업 · 알려진 한계 |
+| [runbooks/mysql-replica.md](runbooks/mysql-replica.md) | MySQL Replica 구성 · 다시 만들기 · 수동 승격 · 되돌리기, 시험 기록 |
 | [TODO.md](TODO.md) | 남은 일 — 한 줄에 하나, 상세는 각 문서 4절 |
+
+모니터링은 `apps/monitoring/README.md`(구성 · 데이터 출처 · 접속).
 
 아직 옮기지 않은 노션 하위 페이지(02 메트릭·스토리지·Ingress ~ 08 프로젝트 배포)는 [TODO.md](TODO.md)에 있다.
 앱별 운영 문서는 그 앱 디렉터리에 있다 — `apps/<앱>/README.md`, `apps/runshoes/runbooks/`.
