@@ -4,7 +4,7 @@
 > 운영 DB · 클러스터 쓰기는 **사람이 친다**. Claude 는 명령과 순서를 주고, 읽기(공개 API · `kubectl get` · 로그)로 확인만 한다.
 
 ```bash
-B=~/k8s-cluster/backup/<날짜>-runshoes-v15   # 덤프 — 데이터가 들어 있어 git 밖
+B=~/k8s-cluster/backup/2026-11-10-runshoes-v15   # 덤프 — 데이터가 들어 있어 git 밖
 VIP=http://192.168.122.240; H='Host: runshoes.ronanlab.dev'
 mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 ```
@@ -22,7 +22,7 @@ mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 - **첫 구문이 가드** — 무게 설명이 시드(V2) 원문 그대로인 행이 정확히 하나일 때만 진행. 누가 먼저 고쳤으면 `ERROR 1242` 로 멈추고 아무것도 바꾸지 않는다(그러면 새 Pod 가 뜨지 않는다 — 4절).
 - id 12 가 둘(weight · outsole)이라 id 가 아니라 `term_key` 로 고친다. 중복은 고치지 않는다.
 
-- 앱 커밋 `<커밋>` → 이미지 `<태그>`(infra `<커밋>`).
+- 앱 커밋 `1ba998b` · `83213c2` · `40586d6` → 이미지 `40586d6eb722`(infra `4ebbb11`).
 
 ### 로컬 확인(2026-11-10)
 
@@ -122,8 +122,8 @@ curl -s -H "$H" $VIP/api/shoes | node -e '
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 push | | |
-| 3 확인 · 덤프 | | |
-| 4 Sync | | |
-| 5 자동 Sync 켬 | | |
+| 1 자동 Sync 끔 | 11-10 06:45 전 | 사용자. `{"syncOptions":["CreateNamespace=false"]}` — `automated` 없음(Claude 확인, push 직전). 운영 `1a4304e5baae` Synced/Healthy |
+| 2 push | 11-10 06:45:01 | 앱 `e3b9e8a..40586d6`(worktree 브랜치를 fast-forward — `0c40cf9` · `1ba998b` · `83213c2` · `40586d6`) · infra `f0fd28b..5908d50` → Jenkins infra `4ebbb11`(06:49:17) 이미지 `40586d6eb722`. ArgoCD OutOfSync(보기만) · 운영 옛 이미지 그대로 |
+| 3 확인 · 덤프 | 11-10 07:02:00 | 사용자. (1) 도는 Job 없음(`summary-manual-20261110-1353` Complete 뿐) (2) `$B/runshoes-before-v15-20261110T070200Z.sql` 2,356,761 B · `Dump completed on 2026-11-10  7:02:00` · err 비어 있음 · sha256 `7dbce284a4a7dbcc…`. 복원본: reviews 1,800 · 지문 `5b90995f…`(운영 API 와 같음, `group_concat_max_len` 판) · shoes 310 · users 204 · flyway 1~14 |
+| 4 Sync | 11-10 07:04:43 | 사용자. 새 Pod `runshoes-7687cc5dcb-pcmw9`(w2) `Migrating … "15 - weight norm 270"` → `"16 - weight term"`(`v16 guard ok`) → `Successfully applied 2 migrations … v16`(**54ms**), 7.3초에 기동, ERROR · WARN 없음. Synced/Healthy/Succeeded(rev `4ebbb11`), 웹 · 챗봇 · CronJob 이미지 `40586d6eb722`(CronJob suspend false 그대로). 공개 API: 신발 310 · 환산값 281 · null 29 · 식과 다름 0 · 기준 사이즈 분포 그대로 · id 210 215g M8.5 → 220.59 · terms 13(id 12 둘) weight 설명 새 문구 · reviews 1,800. `/compare?ids=210,1,53,10,227` 1440px 캡처 — 환산 배지 · 아래 문구 · 그래프 281켤레 · 가로 넘침 없음 |
+| 5 자동 Sync 켬 | 11-10 07:2x | 사용자. `{"automated":{},…}` · Synced/Healthy(Claude 확인 07:21) |
