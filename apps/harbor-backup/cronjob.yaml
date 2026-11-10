@@ -1,0 +1,113 @@
+# Harbor DB 백업(2026-11-10, 가용성 묶음 1-3) — 하루 한 번 pg_dump → 호스트 NFS(/srv/nfs/backup/harbor ← 호스트 ~/backup/harbor).
+# petmint MySQL 백업(apps/petmint/backup/cronjob.yaml)과 같은 방식이다: CronJob → 호스트 NFS 쓰기 PV/PVC, .part → 검증 → 이름 바꿈 + sha256, 보존 30일 · 최신 7개.
+# - 대상: harbor-database(PostgreSQL, Helm 차트 harbor 의 내부 DB)의 registry 데이터베이스 하나. 프로젝트 · robot 계정 · 태그 · 정책이 여기 있다.
+#   이미지 레이어(harbor-registry PVC 20Gi)는 여기 없다 — 아래 "남은 것"
+# - 형식: pg_dump -Fc(custom, 압축 포함). 복구는 pg_restore — 테이블 단위 · 순서를 고를 수 있다. 절차는 apps/harbor-backup/README.md
+# - pg_dump 는 한 트랜잭션 스냅샷으로 뜬다(잠금 없음 — Harbor 가 계속 쓴다)
+# - 클라이언트는 서버와 같은 이미지(goharbor/harbor-db:v2.15.2 — PostgreSQL 18.3). Harbor 를 올리면 이 태그도 같이 올린다(pg_dump 는 서버보다 낮으면 실패)
+# - 비밀번호는 Secret harbor-database(차트가 만든다) → PGPASSWORD. 명령 인자에 넣지 않는다
+# - 03:45 KST — petmint MySQL 백업 · runshoes 요약 배치(03:30)와 겹치지 않게
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: harbor-db-backup
+  labels:
+    app.kubernetes.io/name: harbor-db-backup
+spec:
+  schedule: "45 3 * * *"
+  timeZone: Asia/Seoul
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: harbor-db-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsUser: 999          # 이미지의 postgres 사용자. NFS 는 all_squash 라 호스트에서는 kopo17 로 써진다
+            runAsGroup: 999
+            runAsNonRoot: true
+          containers:
+            - name: dump
+              image: docker.io/goharbor/harbor-db:v2.15.2   # 서버와 같은 이미지 — 같은 pg_dump 버전
+              env:
+                - name: PGHOST
+                  value: harbor-database
+                - name: PGUSER
+                  value: postgres
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef: { name: harbor-database, key: POSTGRES_PASSWORD }
+                - name: TZ
+                  value: Asia/Seoul
+                - name: RETAIN_DAYS
+                  value: "30"
+                - name: KEEP_MIN
+                  value: "7"
+              command: ["bash", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  umask 027
+                  D=/backup
+                  F="harbor-registry-$(date +%Y%m%d-%H%M%S).dump"
+                  find "$D" -maxdepth 1 -name '.harbor-registry-*.part' -mmin +60 -delete   # 지난 실패가 남긴 조각
+                  pg_dump -d registry -Fc -Z 6 --no-owner -f "$D/.$F.part"
+                  # 읽히는지 · 비어 있지 않은지 — 목차를 읽고 테이블 데이터 항목이 있어야 한다
+                  N=$(pg_restore -l "$D/.$F.part" | grep -c ' TABLE DATA ' || true)
+                  [ "$N" -gt 0 ] || { echo "덤프 목차에 테이블 데이터가 없다"; exit 1; }
+                  mv "$D/.$F.part" "$D/$F"
+                  (cd "$D" && sha256sum "$F" > "$F.sha256")
+                  echo "백업 $F $(stat -c %s "$D/$F")바이트, 테이블 데이터 ${N}개"
+                  # 보존 — 최신 KEEP_MIN개 뒤의 것 중 RETAIN_DAYS일 지난 것만 지운다
+                  ls -1t "$D"/harbor-registry-*.dump | tail -n +$((KEEP_MIN + 1)) | while read -r f; do
+                    if [ -n "$(find "$f" -mtime +$((RETAIN_DAYS - 1)))" ]; then rm -f "$f" "$f.sha256"; echo "지움 $(basename "$f")"; fi
+                  done
+                  echo "남은 백업 $(ls -1 "$D"/harbor-registry-*.dump | wc -l)개"
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 256Mi }
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: { drop: ["ALL"] }
+              volumeMounts:
+                - { name: backup, mountPath: /backup }
+          volumes:
+            - name: backup
+              persistentVolumeClaim: { claimName: harbor-backup }
+---
+# 백업을 쓰는 곳 — 호스트 NFS 쓰기 export 하나(호스트 설정: scripts/host-nfs-harbor-backup-setup.sh, sudo). all_squash → 호스트 kopo17
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-backup
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  capacity: { storage: 5Gi }          # NFS는 용량을 강제하지 않는다 — 바인딩용 표시
+  accessModes: ["ReadWriteMany"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  claimRef: { namespace: harbor, name: harbor-backup }
+  mountOptions: ["nfsvers=4.2"]
+  nfs: { server: 192.168.122.1, path: /srv/nfs/backup/harbor }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-backup
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: ""
+  volumeName: harbor-backup
+  resources:
+    requests: { storage: 5Gi }
