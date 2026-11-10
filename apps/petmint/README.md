@@ -6,10 +6,11 @@ ArgoCD Application `petmint`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 만
 ```
 kustomization.yaml     이미지 태그(images.newTag) — Jenkins가 커밋 해시 12자리로 바꿔 push한다. Namespace는 없다(아래)
 mysql/                 StatefulSet + headless Service. PVC(local-path 10Gi)는 Pod·StatefulSet을 지워도 남는다(Retain)
+                       replica.yaml — Replica(w2, 2026-11-10), 수동 승격: ronanlab-infra docs/runbooks/mysql-replica.md
 data/nfs.yaml          약관(chunks, graph)·고객 시드 픽스처 — 호스트 NFS 읽기 전용 PV 3개(ReadOnlyMany) + PVC
 app/configmap.yaml     비밀 아닌 접속 정보. GPU 호스트(Ollama·Milvus)는 192.168.122.1, search-service는 아직 없어 자리만(.invalid)
 jobs/init-db.yaml      초기화 Job(ArgoCD Sync hook): bootstrap → migrate(petmint) → migrate(insurance_core) → seed --if-empty
-app/                   Deployment(replicas 2, 노드 분산, 한 Pod씩 롤링) · PDB(minAvailable 1) · Service · Ingress(petmint.ronanlab.dev)
+app/                   Deployment(replicas 2, app 노드 w1 · w2에 하나씩, 옛 Pod를 먼저 내리는 롤링) · PDB(minAvailable 1) · Service · Ingress(petmint.ronanlab.dev)
 backup/cronjob.yaml    MySQL 백업 — CronJob(매일 03:30 KST mysqldump --single-transaction) + 호스트 NFS 쓰기 PV/PVC. 복구는 앱 리포 docs 12번 1-5절
 scripts/               create-secrets.sh (호스트 NFS 설정 host-nfs-setup.sh는 약관 경로가 있는 petmint-rag-chatbot deploy/scripts에 남았다)
 ```
@@ -71,8 +72,9 @@ ArgoCD는 hook의 `BeforeHookCreation`이 끝난 Job을 지우고 새로 만든�
 - **드리프트가 없다.** Milvus 색인을 만든 그 파일을 앱이 읽는다. 복사본·적재 절차(`load-data.sh`)가 없어졌다
 - **약관을 바꾸면 앱을 재시작한다.** 파일은 Pod에서 바로 보이지만 앱은 기동 때 메모리에 올린다:
   `kubectl -n petmint rollout restart deploy/petmint-app` (한 Pod씩 바뀐다 — 요청은 끊기지 않는다)
-- **노드에 묶이지 않는다.** replicas 2를 required anti-affinity로 노드 둘에 둔다. 롤링 때는 2+1개라 워커 3대가 다 필요하다 —
-  워커 하나가 빠진 동안 롤링하면 새 Pod가 Pending인 채 멈춘다(옛 Pod 둘이 계속 받는다)
+- **노드에 묶이지 않는다(약관은 NFS) — 배치는 app 노드로 고정했다(2026-11-10).** replicas 2를 required anti-affinity로 app 노드 둘(w1 · w2)에 둔다.
+  노드가 둘이라 롤링은 옛 Pod 하나를 먼저 내리고 새 Pod를 띄운다(maxSurge 0 · maxUnavailable 1 — 롤링 동안 잠깐 Pod 하나).
+  app 노드 하나가 빠지면 두 번째 Pod는 Pending, 롤링도 멈춘다(남은 하나가 받는다). 전에는 2+1 롤링이라 워커 3대가 다 필요했다
 - **읽기 전용은 세 겹이다.** 호스트 export `ro` · PV `readOnly`·mountOptions `ro` · Pod volumeMount `readOnly`.
   워커에서 rw로 마운트해도 서버가 `Read-only file system`으로 막는다
 - **호스트가 단일 장애점이 하나 더 는다.** 다만 Ollama·Milvus가 이미 거기 있어 호스트가 죽으면 어차피 서비스가 안 된다(14번 4절).

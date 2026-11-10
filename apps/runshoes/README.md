@@ -7,7 +7,8 @@ ArgoCD Application `runshoes`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 �
 kustomization.yaml       이미지 둘(runshoes, runshoes-chatbot) — 같은 태그. Jenkins가 커밋 해시 12자리로 두 줄을 함께 바꾼다
 mysql/statefulset.yaml   runshoes-mysql — MySQL 8.0.46, local-path 2Gi(Retain), w1 선호
 mysql/service.yaml       runshoes-mysql:3306 (headless)
-app/deployment.yaml      replicas 2 · required anti-affinity(노드 분산) · RollingUpdate(maxUnavailable 0). runshoes(Spring, :3000) + chatbot(:8766)
+mysql/replica.yaml       runshoes-mysql-replica — Replica(w2, 2026-11-10), 수동 승격: docs/runbooks/mysql-replica.md
+app/deployment.yaml      replicas 2 · app 노드(w1 · w2) + required anti-affinity · RollingUpdate(maxSurge 0, maxUnavailable 1 — 2026-11-10). runshoes(Spring, :3000) + chatbot(:8766)
                          activity_logs 정리(ACTIVITY_CLEANUP_CRON "-")는 꺼 둠 — ShedLock 전까지(2026-11-10)
 app/pdb.yaml             PDB minAvailable 1 — drain 때 하나는 남긴다(petmint 와 같다)
 app/cronjob.yaml         리뷰 요약 배치 runshoes-summary(V14) — 웹과 같은 이미지에 batch 프로필, 매일 03:30 KST(runbooks/v14-shoe-summaries.md)
