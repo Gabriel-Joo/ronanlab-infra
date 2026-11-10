@@ -16,6 +16,11 @@ controller:
 
   serviceType: ClusterIP
 
+  # w3(infra)에 고정(2026-11-10 가용성 묶음 2, ronanlab-infra cluster/label-nodes.sh). PVC(local-path)가 w3 에 있어 원래도 w3 에서만 떴다.
+  # 빌드 Pod(BuildKit)는 앱 저장소 Jenkinsfile 의 Pod 템플릿이 정한다 — 여기서 고정하지 않는다(docs/02_availability.md 4절)
+  nodeSelector:
+    node.ronanlab.dev/role: infra
+
   # admin 비밀번호는 차트가 만들지 않는다 — 사람이 넣은 Secret jenkins/jenkins-admin(키 jenkins-admin-user·jenkins-admin-password).
   # 차트 기본 JCasC 가 기동할 때마다 이 값으로 admin 을 박으므로, UI 에서 바꾼 비밀번호는 재시작하면 사라진다 — 바꾸려면 이 Secret 을 바꾼다
   admin:
