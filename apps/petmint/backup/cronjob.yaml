@@ -1,0 +1,107 @@
+# MySQL 백업(12번 1-5절) — 하루 한 번 mysqldump → 호스트 NFS(/srv/nfs/backup/petmint ← 호스트 ~/backup/mysql/petmint).
+# - 대상: petmint · insurance_core 두 데이터베이스(같은 인스턴스). mysql 시스템 DB(계정)는 뜨지 않는다 —
+#   계정은 초기화 Job(db.bootstrap)이 Secret 값으로 다시 만든다
+# - --single-transaction: InnoDB 일관 스냅샷, 테이블 락 없음(앱이 계속 쓴다). 모든 테이블이 InnoDB다
+# - 비밀번호는 Secret mysql-root → 환경변수 MYSQL_PWD. 명령 인자에 넣지 않는다(프로세스 목록 · 로그에 안 남는다)
+# - 반쯤 쓴 파일을 남기지 않는다: .part로 쓰고 gzip -t · 끝 줄 "Dump completed" 확인 뒤 이름을 바꾼다. 실패하면 Job이 실패한다
+# - 보존: 30일 지난 것을 지우되 최신 7개는 날짜와 상관없이 남긴다(CronJob이 오래 멈췄다 돌아도 전부 지우지 않는다)
+# 복구 절차는 petmint-rag-chatbot docs/02_pipeline/12_data_storage.md 1-5절.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup
+  labels:
+    app.kubernetes.io/name: mysql-backup
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Asia/Seoul
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: mysql-backup
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsUser: 999          # mysql 이미지의 mysql 사용자. NFS는 all_squash라 호스트에서는 kopo17로 써진다
+            runAsGroup: 999
+            runAsNonRoot: true
+          containers:
+            - name: dump
+              image: mysql:8.0.46   # 서버와 같은 버전의 mysqldump
+              env:
+                - name: MYSQL_PWD
+                  valueFrom:
+                    secretKeyRef: { name: mysql-root, key: MYSQL_ROOT_PASSWORD }
+                - name: TZ
+                  value: Asia/Seoul
+                - name: RETAIN_DAYS
+                  value: "30"
+                - name: KEEP_MIN
+                  value: "7"
+              command: ["bash", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  umask 027
+                  D=/backup
+                  F="petmint-$(date +%Y%m%d-%H%M%S).sql.gz"
+                  find "$D" -maxdepth 1 -name '.petmint-*.part' -mmin +60 -delete   # 지난 실패가 남긴 조각
+                  mysqldump -h mysql -uroot --single-transaction --quick --routines --triggers --events \
+                    --no-tablespaces --set-gtid-purged=OFF --hex-blob --databases petmint insurance_core \
+                    | gzip -9 > "$D/.$F.part"
+                  gzip -t "$D/.$F.part"
+                  zcat "$D/.$F.part" | tail -n 1 | grep -q '^-- Dump completed' || { echo "덤프 끝 줄이 없다"; exit 1; }
+                  mv "$D/.$F.part" "$D/$F"
+                  (cd "$D" && sha256sum "$F" > "$F.sha256")
+                  echo "백업 $F $(stat -c %s "$D/$F")바이트"
+                  # 보존 — 최신 KEEP_MIN개 뒤의 것 중 RETAIN_DAYS일 지난 것만 지운다
+                  ls -1t "$D"/petmint-*.sql.gz | tail -n +$((KEEP_MIN + 1)) | while read -r f; do
+                    if [ -n "$(find "$f" -mtime +$((RETAIN_DAYS - 1)))" ]; then rm -f "$f" "$f.sha256"; echo "지움 $(basename "$f")"; fi
+                  done
+                  echo "남은 백업 $(ls -1 "$D"/petmint-*.sql.gz | wc -l)개"
+              resources:
+                requests: { cpu: 50m, memory: 64Mi }
+                limits: { memory: 256Mi }
+              volumeMounts:
+                - { name: backup, mountPath: /backup }
+          volumes:
+            - name: backup
+              persistentVolumeClaim: { claimName: petmint-backup }
+---
+# 백업을 쓰는 곳 — 호스트 NFS 쓰기 export 하나(호스트 설정: petmint-rag-chatbot deploy/scripts/host-nfs-backup-setup.sh, sudo).
+# 약관 PV(data/nfs.yaml)와 달리 쓰기다. 이 export는 백업 디렉터리 하나만 연다(all_squash → 호스트 kopo17).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: petmint-backup
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  capacity: { storage: 5Gi }          # NFS는 용량을 강제하지 않는다 — 바인딩용 표시
+  accessModes: ["ReadWriteMany"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  claimRef: { namespace: petmint, name: petmint-backup }
+  mountOptions: ["nfsvers=4.2"]
+  nfs: { server: 192.168.122.1, path: /srv/nfs/backup/petmint }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: petmint-backup
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  accessModes: ["ReadWriteMany"]
+  storageClassName: ""
+  volumeName: petmint-backup
+  resources:
+    requests: { storage: 5Gi }

@@ -10,6 +10,7 @@ data/nfs.yaml          약관(chunks, graph)·고객 시드 픽스처 — 호스
 app/configmap.yaml     비밀 아닌 접속 정보. GPU 호스트(Ollama·Milvus)는 192.168.122.1, search-service는 아직 없어 자리만(.invalid)
 jobs/init-db.yaml      초기화 Job(ArgoCD Sync hook): bootstrap → migrate(petmint) → migrate(insurance_core) → seed --if-empty
 app/                   Deployment(replicas 2, 노드 분산, 한 Pod씩 롤링) · PDB(minAvailable 1) · Service · Ingress(petmint.ronanlab.dev)
+backup/cronjob.yaml    MySQL 백업 — CronJob(매일 03:30 KST mysqldump --single-transaction) + 호스트 NFS 쓰기 PV/PVC. 복구는 앱 리포 docs 12번 1-5절
 scripts/               create-secrets.sh (호스트 NFS 설정 host-nfs-setup.sh는 약관 경로가 있는 petmint-rag-chatbot deploy/scripts에 남았다)
 ```
 
