@@ -204,4 +204,5 @@ mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -uroot -p
 | 4 Sync | 11-10 04:44 | 사용자. 새 Pod `runshoes-66d4c6d76d-lzkxd` 04:44:02 `Migrating … "14 - shoe summaries"` → `Successfully applied 1 migration … v14`(**69ms**), 7.7초에 기동, ERROR · WARN 없음. 이미지 둘 `1a4304e5baae` · Synced/Healthy(rev `162a5ec`) · CronJob `SUSPEND True`. 옛 Pod 는 Terminating 중 Error — 새 Pod Ready 뒤 내려갔고 readiness 실패가 Killing 27초 뒤(preStop 5 + graceful 20 안). SIGTERM 종료 코드(JVM 143)로 보이나 Pod 가 지워져 확인 못 함. 공개 API 310켤레 요약: "아직 만들지 않음" **212** · "3개 미만" 98(리뷰 수로 센 것과 어긋남 0), 그동안 Ollama `/api/generate` 0 |
 | 5 자동 Sync 켬 | 11-10 04:4x | 사용자. `{"automated":{},…}`(Claude 확인) |
 | 6 첫 전체 생성 | 11-10 04:53:51 ~ 05:21:08 | 사용자 `summary-manual-20261110-1353`(w2-k8s), Complete 1/1. 시작 "stale 212 · 재판단으로 새로 선 0 · 지운 행 0" → 10켤레마다 진행 줄 63~94초 간격 → **성공 212 · 실패 0 · 재비교 0 · 27분 17초**(켤레당 7.7초). Ollama `/api/generate` 212건 · 평균 7.7초 · 최대 13.4초. 공개 API: 요약 212 · **JSON 덩어리 0** · negative null 4 · positive 26~117자(중앙 67) · `reviewCount` 가 신발의 리뷰 수와 모두 같다. 상세 모달(운영, shoe 2) "리뷰 34건 기준" 캡처 |
-| 7 suspend false | | |
+| 7 suspend false | 11-10 05:3x | 사용자 지시로 git 에서 false(infra `75bceb7`) → 자동 Sync, `SUSPEND False`(Claude 확인 05:31). 다음 회차 11-11 03:30 KST(11-10 18:30 UTC) — 결과는 아래 줄에 |
+| 8 첫 정기 회차 | | |
