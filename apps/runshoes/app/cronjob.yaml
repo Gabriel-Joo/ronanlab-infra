@@ -3,7 +3,7 @@
 # batch 프로필: 웹 서버 · Flyway · SeedPasswords · ActivityCleanup 을 끈다. 스키마는 웹 Pod 의 Sync 만 바꾼다(Job 은 validate 만 — 맞지 않으면 바로 실패).
 # stale 인 신발만 하나씩 만들고 끝난다. 겹치면 뒤에 온 쪽이 GET_LOCK 에서 바로 끝낸다(exit 0) — Forbid 는 손으로 띄운 Job 까지 막지 못한다.
 # 실패가 하나라도 있으면 exit 1(이력에 Failed). 다시 시도는 stale 플래그가 한다 — backoffLimit 0.
-# suspend: true 로 들어간다 — 첫 전체 생성(약 35분~1시간)은 사용자가 시각을 골라 손으로 띄운다. 그 뒤 git 에서 false 로(클러스터에서 patch 하지 않는다).
+# 처음에는 suspend: true 로 들어갔다 — 첫 전체 생성은 사용자가 시각을 골라 손으로 띄웠고(2026-11-10), 그 뒤 git 에서 false 로 바꿨다(클러스터에서 patch 하지 않는다).
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -14,7 +14,7 @@ spec:
   schedule: "30 3 * * *"
   timeZone: Asia/Seoul
   concurrencyPolicy: Forbid
-  suspend: true
+  suspend: false                     # 첫 전체 생성(2026-11-10, 212켤레 · 27분) 뒤 해제(2026-11-10 사용자)
   startingDeadlineSeconds: 3600
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
