@@ -1,0 +1,74 @@
+# Ollama /api/ps → Prometheus 지표(2026-11-10). 지금 VRAM 에 올라간 모델마다 한 줄:
+#   ollama_loaded_model_vram_bytes{model="tri-7b"}   (모델이 바뀌면 다른 model 라벨로 바뀐다 — 대시보드 「Ollama 모델」)
+# Ollama 는 /metrics 가 없다. Prometheus 작업 ollama 가 /probe?module=ollama_ps&target=http://192.168.122.1:11434/api/ps 로 부른다
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: json-exporter-config
+data:
+  config.yml: |
+    modules:
+      ollama_ps:
+        metrics:
+          - name: ollama_loaded_model
+            type: object
+            help: Ollama 에 올라간 모델(/api/ps)
+            path: '{.models[*]}'
+            labels:
+              model: '{.name}'
+            values:
+              vram_bytes: '{.size_vram}'
+              size_bytes: '{.size}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: json-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: json-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: json-exporter
+    spec:
+      nodeSelector:
+        node.ronanlab.dev/role: platform
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      containers:
+        - name: json-exporter
+          image: quay.io/prometheuscommunity/json-exporter:v0.7.0
+          args: ["--config.file=/config/config.yml"]
+          ports:
+            - name: http
+              containerPort: 7979
+          readinessProbe:
+            httpGet: { path: /metrics, port: http }
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: config, mountPath: /config }
+      volumes:
+        - name: config
+          configMap: { name: json-exporter-config }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: json-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: json-exporter
+  ports:
+    - name: http
+      port: 7979
+      targetPort: http

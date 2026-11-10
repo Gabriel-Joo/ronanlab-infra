@@ -1,0 +1,167 @@
+# Grafana Alloy — 노드마다 Pod 로그(/var/log/pods)를 읽어 Loki 로 보낸다(2026-11-10).
+# 넣지 않는 것(대화 기록은 DB 에 있다 — 사용자):
+#   - runshoes 챗봇이 남기는 질문 원문 줄(chatbot_server.py 의 print "[시각] 질문: …") — stage.drop
+#   - Jenkins 빌드 Pod(jenkins 네임스페이스에서 jenkins-0 이 아닌 것) — 빌드 출력
+# 라벨은 namespace · pod · container · node 넷만(시계열 · 색인을 작게).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alloy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-alloy
+rules:
+  - apiGroups: [""]
+    resources: [pods, nodes]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-alloy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: monitoring-alloy
+subjects:
+  - kind: ServiceAccount
+    name: alloy
+    namespace: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+data:
+  config.alloy: |
+    discovery.kubernetes "pods" {
+      role = "pod"
+      selectors {
+        role  = "pod"
+        field = "spec.nodeName=" + sys.env("NODE_NAME")
+      }
+    }
+
+    discovery.relabel "pods" {
+      targets = discovery.kubernetes.pods.targets
+      // Jenkins 빌드 Pod 는 넣지 않는다 — jenkins-0(컨트롤러)만
+      rule {
+        source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+        regex         = "jenkins;jenkins-0"
+        target_label  = "__keep_jenkins"
+        replacement   = "yes"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace", "__keep_jenkins"]
+        regex         = "jenkins;"
+        action        = "drop"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/*.log"
+      }
+    }
+
+    local.file_match "pods" {
+      path_targets = discovery.relabel.pods.output
+    }
+
+    loki.source.file "pods" {
+      targets    = local.file_match.pods.targets
+      forward_to = [loki.process.pods.receiver]
+    }
+
+    loki.process "pods" {
+      stage.cri {}
+      // runshoes 챗봇의 질문 원문 — 대화 기록이라 버린다
+      stage.match {
+        selector = "{namespace=\"runshoes\", container=\"chatbot\"}"
+        stage.drop {
+          expression = ".*질문: .*"
+        }
+      }
+      forward_to = [loki.write.default.receiver]
+    }
+
+    loki.write "default" {
+      endpoint {
+        url = "http://loki.monitoring.svc:3100/loki/api/v1/push"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: alloy
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alloy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alloy
+    spec:
+      serviceAccountName: alloy
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: alloy
+          image: docker.io/grafana/alloy:v1.8.0
+          args:
+            - run
+            - /etc/alloy/config.alloy
+            - --storage.path=/var/lib/alloy/data
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --disable-reporting
+          env:
+            - name: NODE_NAME
+              valueFrom: { fieldRef: { fieldPath: spec.nodeName } }
+          ports:
+            - name: http
+              containerPort: 12345
+          readinessProbe:
+            httpGet: { path: /-/ready, port: http }
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 256Mi }
+          # /var/log/pods 의 파일은 root 만 읽는다 — root 로 돌되 읽기 전용으로 붙인다
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"], add: ["DAC_READ_SEARCH"] }
+          volumeMounts:
+            - { name: config, mountPath: /etc/alloy }
+            - { name: varlogpods, mountPath: /var/log/pods, readOnly: true }
+            - { name: state, mountPath: /var/lib/alloy/data }
+      volumes:
+        - name: config
+          configMap: { name: alloy-config }
+        - name: varlogpods
+          hostPath: { path: /var/log/pods }
+        # 읽은 위치(positions)를 노드에 남긴다 — Pod 를 다시 띄워도 처음부터 다시 보내지 않게
+        - name: state
+          hostPath: { path: /var/lib/alloy-monitoring, type: DirectoryOrCreate }

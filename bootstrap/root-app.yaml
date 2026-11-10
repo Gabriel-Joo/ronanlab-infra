@@ -26,7 +26,7 @@ spec:
     directory:
       recurse: true
       include: '*/app.yaml'
-      exclude: 'monitoring/app.yaml'     # 모니터링은 자리만 잡았다 — 넣을 때 이 줄을 지운다(apps/monitoring/README.md)
+      # 2026-11-10 exclude: 'monitoring/app.yaml' 를 뺐다 — 모니터링(Prometheus · Grafana · Loki, w4)을 넣었다
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
