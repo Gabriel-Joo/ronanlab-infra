@@ -1,0 +1,12 @@
+# drain · 노드 점검 때 앱 Pod 둘을 한꺼번에 내보내지 않는다 — 하나는 늘 남아 요청을 받는다(apps/petmint/app/pdb.yaml 과 같다, 2026-11-10)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: runshoes
+  labels:
+    app.kubernetes.io/name: runshoes
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: runshoes
