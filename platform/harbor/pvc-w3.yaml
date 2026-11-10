@@ -1,0 +1,57 @@
+# Harbor 데이터를 w3 한 곳으로(2026-11-10 가용성 묶음 2). 차트가 만든 옛 PVC 는 지우지 않고 남겨 둔다(원본 보존):
+#   harbor-registry(w2) · harbor-jobservice(w1) — 차트가 helm.sh/resource-policy: keep 을 달아 helm upgrade 로도 지워지지 않는다
+#   database-data-harbor-database-0(w3) · data-harbor-redis-0(w1) · data-harbor-trivy-0(w2) — StatefulSet volumeClaimTemplates 가 만든 것, helm 이 관리하지 않는다
+# local-path 는 WaitForFirstConsumer 라 처음 붙는 Pod 의 노드에 생긴다 — Harbor 가 values.yaml 의 nodeSelector(w3)로 뜨므로 w3 에 생긴다.
+# 사람이 넣는다(platform/ 은 ArgoCD 밖): kubectl apply -f platform/harbor/pvc-w3.yaml
+# 지우지 않는다 — reclaimPolicy 가 Delete 라 PVC 를 지우면 데이터도 지워진다.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-registry-w3
+  namespace: harbor
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 30Gi } }   # 옛 20Gi — 16GB 를 쓰고 있었다
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-jobservice-w3
+  namespace: harbor
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 1Gi } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-database-w3
+  namespace: harbor
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 5Gi } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-redis-w3
+  namespace: harbor
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 1Gi } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-trivy-w3
+  namespace: harbor
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources: { requests: { storage: 5Gi } }
