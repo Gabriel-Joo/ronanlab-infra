@@ -8,6 +8,7 @@ kustomization.yaml       이미지 둘(runshoes, runshoes-chatbot) — 같은 �
 mysql/statefulset.yaml   runshoes-mysql — MySQL 8.0.46, local-path 2Gi(Retain), w1 선호
 mysql/service.yaml       runshoes-mysql:3306 (headless)
 app/deployment.yaml      replicas 1 · RollingUpdate(maxUnavailable 0). runshoes(Spring, :3000) + chatbot(:8766)
+app/cronjob.yaml         리뷰 요약 배치 runshoes-summary(V14) — 웹과 같은 이미지에 batch 프로필, 매일 03:30 KST(runbooks/v14-shoe-summaries.md)
 app/service.yaml         포트 http(80→3000) · chatbot(8766)
 app/ingress.yaml         / → http, /ws/chat → chatbot
 scripts/                 create-secrets.sh (runshoes-mysql · harbor-pull · runshoes-auth)

@@ -1,0 +1,60 @@
+# 리뷰 요약 배치(V14, 2026-11-10 사용자) — 앱 리포 docs/09_chatbot_rag.md 5절 · runbooks/v14-shoe-summaries.md
+# 웹 Deployment 와 같은 이미지 · 같은 main 에 --spring.profiles.active=batch 만 붙인다 — 태그는 kustomization images 가 함께 바꾼다(Jenkins 그대로).
+# batch 프로필: 웹 서버 · Flyway · SeedPasswords · ActivityCleanup 을 끈다. 스키마는 웹 Pod 의 Sync 만 바꾼다(Job 은 validate 만 — 맞지 않으면 바로 실패).
+# stale 인 신발만 하나씩 만들고 끝난다. 겹치면 뒤에 온 쪽이 GET_LOCK 에서 바로 끝낸다(exit 0) — Forbid 는 손으로 띄운 Job 까지 막지 못한다.
+# 실패가 하나라도 있으면 exit 1(이력에 Failed). 다시 시도는 stale 플래그가 한다 — backoffLimit 0.
+# suspend: true 로 들어간다 — 첫 전체 생성(약 35분~1시간)은 사용자가 시각을 골라 손으로 띄운다. 그 뒤 git 에서 false 로(클러스터에서 patch 하지 않는다).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: runshoes-summary
+  labels:
+    app.kubernetes.io/name: runshoes-summary
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Asia/Seoul
+  concurrencyPolicy: Forbid
+  suspend: true
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: runshoes-summary
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 7200          # Ollama 가 매달려도 2시간이면 끝난다
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: runshoes-summary
+        spec:
+          restartPolicy: Never
+          imagePullSecrets:
+            - name: harbor-pull
+          containers:
+            - name: summary
+              image: harbor.ronanlab.dev/runshoes/runshoes   # 태그는 kustomization images 가 붙인다
+              args: ["--spring.profiles.active=batch"]       # ENTRYPOINT(java -jar app.jar) 뒤에 붙는다
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  value: "jdbc:mysql://runshoes-mysql:3306/runshoes?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=UTC"
+                - name: SPRING_DATASOURCE_USERNAME
+                  value: runshoes
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom: { secretKeyRef: { name: runshoes-mysql, key: MYSQL_PASSWORD } }
+                - name: TZ
+                  value: UTC
+                - name: OLLAMA_URL
+                  value: "http://192.168.122.1:11434"
+              # 배치는 인증을 쓰지 않는다. 그래도 같은 Secret 을 받는다 — 같은 이미지라 신뢰 범위가 같고, JWT 키 빈이 JWT_SECRET 없이 뜨지 않는다(2026-11-10 사용자).
+              # 최소 권한으로 좁힐 때는 인증 빈을 batch 프로필에서 빼고 이 envFrom 을 지운다
+              envFrom:
+                - secretRef:
+                    name: runshoes-auth
+              securityContext:
+                runAsNonRoot: true
+              resources:
+                requests: { cpu: 100m, memory: 512Mi }
+                limits: { memory: 1Gi }

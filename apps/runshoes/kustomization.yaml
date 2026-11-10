@@ -15,6 +15,7 @@ resources:
   - mysql/service.yaml
   - mysql/statefulset.yaml
   - app/deployment.yaml
+  - app/cronjob.yaml          # 리뷰 요약 배치(V14) — 같은 이미지, images 의 newTag 를 같이 받는다
   - app/service.yaml
   - app/ingress.yaml
   # Secret은 여기 없다 — 평문을 저장소에 두지 않는다. scripts/create-secrets.sh가 클러스터에 직접 만든다
