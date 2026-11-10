@@ -1,6 +1,6 @@
-# runshoes — V15 무게를 270mm(M9)로 맞춘 값(weight_norm_270)
+# runshoes — V15 · V16 무게를 270mm(M9)로 맞춘 값(weight_norm_270) · 무게 용어 설명
 
-> 2026-11-10 — 사용자 결정(앱 리포 `docs/09_chatbot_rag.md` 4절 · 환산 규칙 `docs/01a_catalog_sources.md` 1-3a). **이미지 Sync 가 곧 V15 적용**이다.
+> 2026-11-10 — 사용자 결정(앱 리포 `docs/09_chatbot_rag.md` 4절 · 환산 규칙 `docs/01a_catalog_sources.md` 1-3a). **이미지 Sync 가 곧 V15 · V16 적용**이다(한 이미지 · 한 Sync — 자동 Sync 를 끄고 켜는 일은 한 번).
 > 운영 DB · 클러스터 쓰기는 **사람이 친다**. Claude 는 명령과 순서를 주고, 읽기(공개 API · `kubectl get` · 로그)로 확인만 한다.
 
 ```bash
@@ -15,13 +15,21 @@ mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 - **VIRTUAL 이라 행을 다시 쓰지 않는다** — 값은 읽을 때 계산한다. 데이터는 바뀌지 않지만 Sync 가 곧 DDL 이라 절차는 V14 와 같다(06 1-7).
 - 기준 사이즈가 없거나 다섯 값 밖이면 NULL. 실측 무게(`measured_weight_g`)는 쓰지 않는다.
 - API 응답 끝에 `weightNorm270` 키가 더해진다. 비교하기의 등수 · 그래프 · 비슷한 신발이 이 값을 쓴다(화면은 같은 이미지에 들어 있다).
+
+## V16
+
+- 무게 용어(`terms.term_key = 'weight'`) 설명을 환산 규칙(반 사이즈당 약 2.6%)에 맞춘다 — 옛 "10mm 커질 때마다 5~10g" · "220g 이하 가벼운 편"을 바꾼다. name · short 는 그대로.
+- **첫 구문이 가드** — 무게 설명이 시드(V2) 원문 그대로인 행이 정확히 하나일 때만 진행. 누가 먼저 고쳤으면 `ERROR 1242` 로 멈추고 아무것도 바꾸지 않는다(그러면 새 Pod 가 뜨지 않는다 — 4절).
+- id 12 가 둘(weight · outsole)이라 id 가 아니라 `term_key` 로 고친다. 중복은 고치지 않는다.
+
 - 앱 커밋 `<커밋>` → 이미지 `<태그>`(infra `<커밋>`).
 
 ### 로컬 확인(2026-11-10)
 
-- 백엔드 단위 시험 통과(`ChangedFieldsTest` — weightNorm270 은 수정 이력에 넣지 않는다), 프런트 `npm test` 10건.
+- 백엔드 단위 시험 통과(`ChangedFieldsTest` — weightNorm270 은 수정 이력에 넣지 않는다), 프런트 `npm test` 11건.
 - 계약: v6 에 X136 ~ X146(기준 M10.5 · 무게 300 · M8.5 · 실측 PATCH 는 그대로 · 본문의 weightNorm270 은 버림 · W7.5 → null · M10 · 기준 지우기 → null · 새 신발 POST M9.5 · PUT M9 · 끝 상태). 저장 직후 응답에 새 값이 나오고 값이 계수와 같다(297 ÷ 1.026³ = 274.988…, 300 × 1.026 = 307.8 …). 결과 수는 앱 리포 `contract/README.md`.
 - 화면: 운영 공개 API 에 같은 식으로 값을 붙여 1440 · 390px 캡처(281켤레가 그래프에 들어간다).
+- V16: 새 시드 DB 에서 가드 통과 · 설명 바뀜(계약 v3 R03 의 다른 칸은 weight description 하나 — v3 100/12), 이미 고친 DB 에 가드를 다시 치면 `ERROR 1242`.
 
 ## 1. 순서 (누가)
 
@@ -30,7 +38,7 @@ mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 | 1 | 자동 Sync 끄기 | 사람 | `automated` 없음(Claude 확인) — **push 전에** |
 | 2 | 앱 커밋 push → Jenkins → newTag 커밋, infra 커밋(이 런북) push | Claude(사용자가 push 하라고 할 때) | 운영은 옛 이미지 |
 | 3 | Sync 전 확인 — 도는 Job 없음 · 덤프 | 사람(명령은 2절) · Claude(읽기) | 2절 |
-| 4 | Sync = V15 적용 + 새 이미지(웹 · CronJob 같은 태그) | 사람 | 3절 |
+| 4 | Sync = V15 · V16 적용 + 새 이미지(웹 · CronJob 같은 태그) | 사람 | 3절 |
 | 5 | 자동 Sync 다시 켜기 | 사람 | `automated` 다시 있음 |
 
 - **03:30 KST(요약 CronJob) 근처를 피한다.** 그 시각에 Sync 하면 옛 이미지 Job 이 도는 중에 스키마가 바뀐다 — 2절 (1).
@@ -80,7 +88,12 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 ## 3. Sync 뒤 확인(Claude — 읽기)
 
-- 새 Pod 로그 `Migrating … "15 - weight norm 270"` → `Successfully applied 1 migration … v15`, 2/2 Running, Synced/Healthy, 공개 200.
+- 새 Pod 로그 `Migrating … "15 - weight norm 270"` · `Migrating … "16 - weight term"`(그 사이 `v16 guard ok`) → `Successfully applied 2 migrations … v16`, 2/2 Running, Synced/Healthy, 공개 200.
+- 공개 API `/api/terms` 의 weight 설명이 "…약 2.6% 정도 무거워집니다. … 통상적으로 240g 이하면 가벼운 편이고, 300g 이상이면 무거운 편입니다."이고 용어 13개 그대로(id 12 둘):
+
+```bash
+curl -s -H "$H" $VIP/api/terms | node -e 'const t=JSON.parse(require("fs").readFileSync(0));console.log(t.length, t.find(x=>x.key==="weight").description)'
+```
 - `kubectl -n runshoes get cronjob runshoes-summary -o jsonpath='{..image}'` — 웹과 같은 태그(배치도 새 엔티티로 `validate` 를 통과해야 한다 — 다음 03:30 회차가 Complete 인지도 본다).
 - 공개 API — 환산값 수 · 계수:
 
@@ -99,8 +112,10 @@ curl -s -H "$H" $VIP/api/shoes | node -e '
 
 ## 4. 실패했을 때
 
-- 마이그레이션 실패 → 새 Pod 가 뜨지 않는다(옛 Pod 유지). 자동 Sync 꺼진 채로 원인 확인. 생성 컬럼 추가뿐이라 기존 데이터는 그대로 — 덤프 복원은 대개 필요 없다.
-- 되돌리기 — infra 태그 커밋 `git revert` → push → Sync. 옛 이미지는 `weight_norm_270` 을 모르지만 `validate` 는 엔티티에 있는 칸만 보므로 뜬다(컬럼은 남는다, 해가 없다). 화면은 옛 동작(M9 끼리만)으로 돌아간다.
+- 마이그레이션 실패 → 새 Pod 가 뜨지 않는다(옛 Pod 유지). 자동 Sync 꺼진 채로 원인 확인.
+  - V15 실패: 생성 컬럼 추가뿐이라 기존 데이터는 그대로 — 덤프 복원은 대개 필요 없다.
+  - V16 첫 가드(`ERROR 1242`, `v16 guard: weight term differs from seed`): 운영 무게 설명이 시드와 다르다. V15 는 적용됐고 V16 은 아무것도 바꾸지 않았다(UPDATE 전). 바뀐 것은 `flyway_schema_history` 의 실패 행(version 16, success 0) 하나 — V3 런북 5.1 과 같다. 지금 설명을 사람이 읽어 알리고, V16 을 어떻게 할지 정한 뒤 실패 행만 지우고(`flyway repair` 와 같다) 고친 이미지로 다시. 그동안 웹은 옛 Pod 로 돈다.
+- 되돌리기 — infra 태그 커밋 `git revert` → push → Sync. 옛 이미지는 `weight_norm_270` 을 모르지만 `validate` 는 엔티티에 있는 칸만 보므로 뜬다(컬럼은 남는다, 해가 없다). 화면은 옛 동작(M9 끼리만)으로 돌아간다. 무게 용어 설명은 V16 그대로 남는다(되돌리려면 옛 설명으로 UPDATE — 사람이).
 - 배치 Job 이 `Schema-validation` 으로 실패 → 이미지와 스키마가 다르다(웹 Pod 의 Sync 가 먼저여야 한다).
 
 ## 5. 실행 기록 (UTC)
