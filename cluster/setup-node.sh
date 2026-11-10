@@ -18,7 +18,10 @@ sudo sysctl --system
 
 # 2. swap 비활성화
 sudo swapoff -a
-sudo sed -i '/ swap / s/^/#/' /etc/fstab
+# fstab 은 탭으로 구분돼 있다 — 공백만 찾던 옛 패턴(' swap ')은 맞지 않아 재부팅 뒤 swap 이 다시 켜졌다(2026-10-13 m · w1~w3 손으로 고침,
+# 2026-11-10 w4 에서 같은 줄이 살아 있는 것을 찾아 고침). 공백 · 탭 둘 다, 이미 주석인 줄은 건드리지 않는다
+sudo sed -i -E '/^[^#].*[[:space:]]swap[[:space:]]/ s/^/#/' /etc/fstab
+grep -qE '^[^#].*[[:space:]]swap[[:space:]]' /etc/fstab && { echo "fstab 에 swap 줄이 남았다"; exit 1; }
 
 # 3. containerd 설치
 # 버전은 지금 돌고 있는 노드와 정확히 같게 고정한다(2026-11-10 w4 를 만들며 — 저장소만 고정하면 그날의 최신 패치가 들어온다)
