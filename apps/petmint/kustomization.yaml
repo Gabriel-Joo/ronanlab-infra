@@ -16,6 +16,7 @@ labels:
 resources:
   - mysql/service.yaml
   - mysql/statefulset.yaml
+  - mysql/replica.yaml      # Replica(w2) — 수동 승격(ronanlab-infra docs/runbooks/mysql-replica.md, 2026-11-10)
   - data/nfs.yaml
   - app/configmap.yaml
   - jobs/init-db.yaml

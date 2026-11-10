@@ -14,6 +14,7 @@ labels:
 resources:
   - mysql/service.yaml
   - mysql/statefulset.yaml
+  - mysql/replica.yaml        # Replica(w2) — 수동 승격(docs/runbooks/mysql-replica.md, 2026-11-10)
   - app/deployment.yaml
   - app/cronjob.yaml          # 리뷰 요약 배치(V14) — 같은 이미지, images 의 newTag 를 같이 받는다
   - app/service.yaml
