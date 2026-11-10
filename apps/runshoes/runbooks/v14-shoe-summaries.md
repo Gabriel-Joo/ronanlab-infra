@@ -35,9 +35,13 @@ mk() { ~/k8s-cluster/backup/2026-10-15-before-metallb/mk "$@"; }
 
 **batch 프로필이 끄는 것 — 배치를 더할 때마다 같은 점검을 한다**
 
-1. 웹 서버(`spring.main.web-application-type: none`) — 웹 보안 필터 체인도 웹일 때만(`@ConditionalOnWebApplication`)
-2. **Flyway** — 스키마는 웹 Pod 의 Sync 만 바꾼다. `ddl-auto: validate` 는 남아, 스키마가 맞지 않으면 Job 이 바로 실패한다(맞는 동작)
-3. 기동 때 저절로 도는 것 — `SeedPasswords`(ApplicationRunner) · `ActivityCleanup`(@Scheduled) 은 `@Profile("!batch")`
+| # | 끄는 것 | 어떻게 | 끄지 않으면 |
+|---|---|---|---|
+| 1 | 웹 서버 | `application-batch.yml` `spring.main.web-application-type: none` | Job 이 포트를 열고 끝나지 않는다 |
+| 2 | **Flyway** | `application-batch.yml` `spring.flyway.enabled: false` | Job 이 스키마를 바꿀 수 있다 — 스키마는 웹 Pod 의 Sync 만 바꾼다. `ddl-auto: validate` 는 남아, 스키마가 맞지 않으면 Job 이 바로 실패한다(맞는 동작) |
+| 3 | `SeedPasswords`(ApplicationRunner) | `@Profile("!batch")` | 매 회차 시드 계정 비밀번호 칸을 본다 |
+| 4 | `ActivityCleanup`(@Scheduled 04:00) | `@Profile("!batch")` | 배치 안에서 활동 로그 정리가 돈다 |
+| 5 | 웹 보안 필터 체인(`SecurityConfig.securityFilterChain`) | `@ConditionalOnWebApplication` | **Job 이 뜨지 않는다** — 웹 서버가 없으면 `HttpSecurity` 빈이 없다(2026-11-10 로컬에서 실패 확인). JWT 키 · 인코더 빈은 남는다(그래서 `runshoes-auth` 를 받는다) |
 
 ### 로컬 확인(2026-11-10)
 
@@ -115,10 +119,36 @@ mk "kubectl -n runshoes logs -f job/$NAME" | grep --line-buffered -E 'summary-ba
 mk "kubectl -n runshoes get job $NAME"          # → COMPLETIONS 1/1(실패가 있으면 0/1 · Failed — 남은 것은 stale 로 다음 회차가)
 ```
 
+도는 동안 볼 것(함께 본다):
+
+- 진행 줄이 10켤레마다 찍힌다 — 한 켤레 약 9.8초(최근 30일 Ollama `/api/generate` 중앙값)면 약 100초마다 한 줄, 전체 약 35분. 첫 켤레는 모델을 올리느라 1분쯤 더 걸릴 수 있다
+- 진행 줄의 `실패 N` — 0 이 아니면 그 줄 위 `shoeId=… 실패` 의 이유(연결 · 시간 초과 40초 · 500)
+- 한 켤레 시간 — 진행 줄의 초 ÷ 켤레 수. 15초를 넘게 이어지면 GPU 를 다른 일(펫퍼민트 학습 · 챗봇)이 쓰고 있다
+
 - suspend 인 CronJob 에서도 `--from` 은 된다(suspend 는 정기 실행만 멈춘다).
 - 실패가 있으면 같은 명령으로 다시 띄워도 된다 — stale 인 것만 다시 한다.
 
-확인(Claude — 읽기): 관리 화면 "리뷰 요약 212켤레 · 다시 만들 것 0", 공개 API 몇 켤레의 `reviewCount` · `generatedAt`, `docker logs ollama` 의 `/api/generate` 가 그 시간대에 212번(실패 · 다시 한 것 더), 상세 모달에 "리뷰 N건 기준".
+끝난 뒤 확인(Claude — 읽기):
+
+- 관리 화면 "리뷰 요약 212켤레 · 다시 만들 것 0"(그 사이 쓰인 리뷰로 stale 이 섰으면 그만큼)
+- 공개 API 로 요약이 212켤레 — 조회는 이제 DB 만 읽어 GPU 를 쓰지 않는다:
+  ```bash
+  # 공개 주소로(Node fetch 는 Host 헤더를 바꿀 수 없어 VIP 로는 못 부른다)
+  curl -s https://runshoes.ronanlab.dev/api/shoes | node -e '
+    const ids = JSON.parse(require("fs").readFileSync(0)).map((s) => s.id);
+    (async () => {
+      let n = 0; const blob = [];
+      for (const id of ids) {
+        const j = await (await fetch("https://runshoes.ronanlab.dev/api/shoes/" + id + "/summary")).json();
+        if (j.summary) { n++; if (/^\s*[{\[]|"positive"\s*:/.test(j.summary.positive)) blob.push(id); }
+      }
+      console.log("요약", n, "· positive 에 JSON 덩어리", blob.length, blob.join(","));
+    })()'
+  # → 요약 212 · JSON 덩어리 0
+  ```
+- **positive 에 JSON 덩어리가 통째로 든 행** — 모델 응답에서 JSON 을 못 읽었거나 `positive` 키가 없어 응답 전문을 담은 것(파싱 실패, 2026-11-10 사용자). 몇 건이면 그 신발만 6절로 다시, 많으면 프롬프트를 본다(프롬프트를 바꾸는 것은 따로 정한다)
+- `docker logs ollama` 의 `/api/generate` 가 그 시간대에 212번(실패 · 다시 한 것만큼 더)
+- 상세 모달 몇 켤레에 요약과 "리뷰 N건 기준"
 
 ## 5. suspend 를 끈다(git)
 
