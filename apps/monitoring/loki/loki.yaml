@@ -1,0 +1,110 @@
+# Loki(2026-11-10) — 서버 로그만, 보존 7일(사용자). 단일 바이너리 · 파일시스템 저장 · w4(platform) local-path PVC.
+# - 대화 기록은 넣지 않는다 — DB(petmint turns 등)에 있다. 수집기(Alloy, alloy/)가 질문 원문을 남기는 줄을 버린다
+# - 보존: compactor 가 retention_period(168h)를 지난 것을 지운다. 인증 없음(클러스터 안 ClusterIP — Grafana 만 부른다)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+data:
+  loki.yaml: |
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+      log_level: warn
+    common:
+      path_prefix: /loki
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+      storage:
+        filesystem:
+          chunks_directory: /loki/chunks
+          rules_directory: /loki/rules
+    schema_config:
+      configs:
+        - from: "2026-11-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    limits_config:
+      retention_period: 168h        # 7일
+      ingestion_rate_mb: 4
+      ingestion_burst_size_mb: 8
+      max_query_lookback: 168h
+    compactor:
+      working_directory: /loki/compactor
+      retention_enabled: true
+      delete_request_store: filesystem
+    analytics:
+      reporting_enabled: false
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+spec:
+  serviceName: loki
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki
+    spec:
+      nodeSelector:
+        node.ronanlab.dev/role: platform
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        fsGroup: 10001
+      containers:
+        - name: loki
+          image: docker.io/grafana/loki:3.5.0
+          args: ["-config.file=/etc/loki/loki.yaml", "-target=all"]
+          ports:
+            - name: http
+              containerPort: 3100
+          readinessProbe:
+            httpGet: { path: /ready, port: http }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 768Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: config, mountPath: /etc/loki }
+            - { name: data, mountPath: /loki }
+      volumes:
+        - name: config
+          configMap: { name: loki-config }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+spec:
+  selector:
+    app.kubernetes.io/name: loki
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http

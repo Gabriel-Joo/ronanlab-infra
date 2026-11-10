@@ -16,3 +16,27 @@ data:
         editable: false
         jsonData:
           timeInterval: 30s     # scrape_interval과 같게 — rate() 창이 이보다 짧으면 빈 그래프가 된다
+      # 서버 로그(2026-11-10) — 7일 보존, 대화 기록은 없다(alloy/)
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki.monitoring.svc:3100
+        editable: false
+      # petmint 턴 로그(2026-11-10) — Replica(w2)를 읽는다(운영 Primary 에 부하를 주지 않게).
+      # 계정 grafana_ro 는 컬럼 단위 SELECT 만 있다: turns(분류 · 시간 · 상태), sessions(mode · 시작 시각), feedback(rating).
+      # 질문 · 답 · 코멘트 · 고객 · 상담원 컬럼은 권한이 없어 읽을 수 없다(ronanlab-infra apps/monitoring/README.md「petmint DB 읽기 계정」)
+      - name: petmint-turns
+        uid: petmint-mysql
+        type: mysql
+        url: mysql-replica.petmint.svc:3306
+        user: grafana_ro
+        editable: false
+        jsonData:
+          database: petmint
+          maxOpenConns: 3
+          maxIdleConns: 1
+          connMaxLifetime: 14400
+          timezone: "+00:00"     # DB 는 UTC 로 적는다
+        secureJsonData:
+          password: $MYSQL_RO_PASSWORD

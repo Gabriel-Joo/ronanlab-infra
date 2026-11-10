@@ -1,0 +1,765 @@
+{
+ "uid": "petmint-overview",
+ "title": "petmint — 운영",
+ "tags": [
+  "petmint"
+ ],
+ "timezone": "browser",
+ "schemaVersion": 39,
+ "version": 1,
+ "editable": false,
+ "refresh": "1m",
+ "time": {
+  "from": "now-30d",
+  "to": "now"
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "상단 — 파드 · 트래픽",
+   "id": 1,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "panels": []
+  },
+  {
+   "type": "stat",
+   "title": "앱 Pod Ready",
+   "description": "petmint-app Pod 중 Ready 인 수(목표 2 — w1 · w2)",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum(kube_pod_status_ready{namespace=\"petmint\",condition=\"true\",pod=~\"petmint-app-.*\"})",
+     "legendFormat": "",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "none"
+   },
+   "id": 2,
+   "gridPos": {
+    "h": 6,
+    "w": 4,
+    "x": 0,
+    "y": 1
+   }
+  },
+  {
+   "type": "stat",
+   "title": "재시작(24시간)",
+   "description": "petmint 네임스페이스 컨테이너 재시작 합",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"petmint\"}[24h]))",
+     "legendFormat": "",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "colorMode": "value",
+    "graphMode": "none"
+   },
+   "id": 3,
+   "gridPos": {
+    "h": 6,
+    "w": 4,
+    "x": 4,
+    "y": 1
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "요청 수(초당, 상태코드별)",
+   "description": "ingress-nginx 기준 — 앱에 /metrics 가 없어 입구에서 센다. WebSocket 은 연결 한 번이 요청 하나",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum by (status) (rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\"}[5m]))",
+     "legendFormat": "{{status}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "reqps",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 4,
+   "gridPos": {
+    "h": 6,
+    "w": 8,
+    "x": 8,
+    "y": 1
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "에러율(5xx 비율)",
+   "description": "ingress-nginx 기준 5xx / 전체",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\"}[5m])), 1e-9)",
+     "legendFormat": "5xx",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 5,
+   "gridPos": {
+    "h": 6,
+    "w": 8,
+    "x": 16,
+    "y": 1
+   }
+  },
+  {
+   "type": "row",
+   "title": "중간 — 질문(턴 로그, DB Replica)",
+   "id": 6,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 7
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "모드별 질문 수(시간당)",
+   "description": "일반 · 사내규정 · 업무특화. 턴 = 질문 하나",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT $__timeGroupAlias(t.created_at, '1h'), s.mode AS metric, COUNT(*) AS value\nFROM turns t JOIN sessions s ON s.session_id = t.session_id\nWHERE $__timeFilter(t.created_at)\nGROUP BY 1, 2 ORDER BY 1",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60,
+      "stacking": {
+       "mode": "normal"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 7,
+   "gridPos": {
+    "h": 8,
+    "w": 14,
+    "x": 0,
+    "y": 8
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "시간대별 질문 수(KST)",
+   "description": "고른 기간 전체를 시(0~23)별로 합친 것. DB 는 UTC 라 +9시간",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT LPAD(HOUR(DATE_ADD(created_at, INTERVAL 9 HOUR)), 2, '0') AS `시(KST)`, COUNT(*) AS `질문`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1",
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "options": {
+    "orientation": "auto",
+    "showValue": "auto",
+    "legend": {
+     "showLegend": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "id": 8,
+   "gridPos": {
+    "h": 8,
+    "w": 10,
+    "x": 14,
+    "y": 8
+   }
+  },
+  {
+   "type": "row",
+   "title": "하단 — 답",
+   "id": 9,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 16
+   },
+   "panels": []
+  },
+  {
+   "type": "text",
+   "title": "거절률",
+   "options": {
+    "mode": "markdown",
+    "content": "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 \"거절했다\" 칸이 없다. 답 본문을 읽어야 판단할 수 있는데, 이 대시보드는 대화 본문을 읽지 않는다(읽기 계정에 권한이 없다).\n\n앱이 턴마다 거절 여부를 적으면(예: `turns.refused`) 여기에 붙인다."
+   },
+   "id": 10,
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 0,
+    "y": 17
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "규칙별 발동 수(code_rule)",
+   "description": "코드가 약관 기준으로 직접 답한 턴의 규칙 이름",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT code_rule AS `규칙`, COUNT(*) AS `발동`\nFROM turns\nWHERE code_rule IS NOT NULL AND $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 2 DESC",
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "options": {
+    "orientation": "auto",
+    "showValue": "auto",
+    "legend": {
+     "showLegend": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "id": 11,
+   "gridPos": {
+    "h": 8,
+    "w": 9,
+    "x": 6,
+    "y": 17
+   }
+  },
+  {
+   "type": "piechart",
+   "title": "코드 답 vs 모델 답",
+   "description": "code_rule 이 있으면 코드 답",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT CASE WHEN code_rule IS NULL THEN '모델 답' ELSE '코드 답' END AS `종류`, COUNT(*) AS `턴`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1",
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "values": true,
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "pieType": "donut",
+    "displayLabels": [
+     "name",
+     "value",
+     "percent"
+    ],
+    "legend": {
+     "displayMode": "list",
+     "placement": "right"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "id": 12,
+   "gridPos": {
+    "h": 8,
+    "w": 9,
+    "x": 15,
+    "y": 17
+   }
+  },
+  {
+   "type": "piechart",
+   "title": "👍👎",
+   "description": "상담원 평가(feedback.rating). 코멘트는 읽지 않는다",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT CASE rating WHEN 'up' THEN '👍' ELSE '👎' END AS `평가`, COUNT(*) AS `수`\nFROM feedback WHERE $__timeFilter(created_at)\nGROUP BY 1",
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "values": true,
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "pieType": "donut",
+    "displayLabels": [
+     "name",
+     "value",
+     "percent"
+    ],
+    "legend": {
+     "displayMode": "list",
+     "placement": "right"
+    }
+   },
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "id": 13,
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 0,
+    "y": 25
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "응답 시간 p50 / p90(일별)",
+   "description": "turns.latency_ms(답 끝까지) · first_token_ms(첫 토큰까지), status=ok 만. MySQL 에 분위수 함수가 없어 PERCENT_RANK 로",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `전체 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `전체 p90`\nFROM (SELECT DATE(created_at) AS d, latency_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY latency_ms) AS pr\n      FROM turns WHERE status = 'ok' AND latency_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    },
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `첫 토큰 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `첫 토큰 p90`\nFROM (SELECT DATE(created_at) AS d, first_token_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY first_token_ms) AS pr\n      FROM turns WHERE status = 'ok' AND first_token_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 14,
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 6,
+    "y": 25
+   }
+  },
+  {
+   "type": "text",
+   "title": "검색 지연",
+   "options": {
+    "mode": "markdown",
+    "content": "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 검색(search-service) 시간이 없다. 앱이 턴마다 검색 시간을 적거나(`turns.search_ms`) `/metrics` 히스토그램으로 내면 여기에 붙인다."
+   },
+   "id": 15,
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 18,
+    "y": 25
+   }
+  },
+  {
+   "type": "row",
+   "title": "별도 — GPU · Ollama",
+   "id": 16,
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 33
+   },
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "GPU 사용률",
+   "description": "호스트 nvidia-gpu-exporter(scripts/host-gpu-exporter.sh) — 띄우기 전에는 비어 있다",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "nvidia_smi_utilization_gpu_ratio * 100",
+     "legendFormat": "GPU {{uuid}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 17,
+   "gridPos": {
+    "h": 7,
+    "w": 8,
+    "x": 0,
+    "y": 34
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "VRAM",
+   "description": "호스트 nvidia-gpu-exporter",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "nvidia_smi_memory_used_bytes",
+     "legendFormat": "사용",
+     "refId": "A"
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "nvidia_smi_memory_total_bytes",
+     "legendFormat": "전체",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 18,
+   "gridPos": {
+    "h": 7,
+    "w": 8,
+    "x": 8,
+    "y": 34
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Ollama 에 올라간 모델(VRAM)",
+   "description": "/api/ps(json-exporter). 선이 바뀌면 모델이 교체된 것. 아무것도 없으면 모델이 내려가 있다(유휴 5분 뒤 언로드)",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     },
+     "expr": "ollama_loaded_model_vram_bytes",
+     "legendFormat": "{{model}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 19,
+   "gridPos": {
+    "h": 7,
+    "w": 8,
+    "x": 16,
+    "y": 34
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "턴이 쓴 모델(시간당)",
+   "description": "turns.model — 베이스(tri-7b) · RAG 어댑터 교대",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT $__timeGroupAlias(created_at, '1h'), model AS metric, COUNT(*) AS value\nFROM turns WHERE $__timeFilter(created_at) AND model IS NOT NULL\nGROUP BY 1, 2 ORDER BY 1",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60,
+      "stacking": {
+       "mode": "normal"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 20,
+   "gridPos": {
+    "h": 7,
+    "w": 12,
+    "x": 0,
+    "y": 41
+   }
+  },
+  {
+   "type": "logs",
+   "title": "서버 로그(petmint 앱)",
+   "datasource": {
+    "type": "loki",
+    "uid": "loki"
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "loki",
+      "uid": "loki"
+     },
+     "expr": "{namespace=\"petmint\", container=\"app\"}",
+     "refId": "A"
+    }
+   ],
+   "options": {
+    "showTime": true,
+    "wrapLogMessage": true,
+    "sortOrder": "Descending"
+   },
+   "description": "Loki 7일. 대화 본문은 없다(서버 로그만)",
+   "id": 21,
+   "gridPos": {
+    "h": 7,
+    "w": 12,
+    "x": 12,
+    "y": 41
+   }
+  }
+ ],
+ "templating": {
+  "list": []
+ },
+ "annotations": {
+  "list": []
+ }
+}

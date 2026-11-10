@@ -99,8 +99,8 @@ kubectl -n runshoes rollout restart deploy/runshoes    && kubectl -n runshoes ro
   | 따라잡음 확인 + `STOP REPLICA; RESET REPLICA ALL; read_only 끔` | 0.2초 |
   | Service selector 전환 → 그 이름으로 새 쪽(server_id 2)에 붙음 | 0.1초 |
   | 새 Primary에 쓰기(시험 데이터베이스 만들기 · 넣기 · 지우기) | 합계 0.5초 |
-  | 앱 재시작(rollout restart, 2 Pod) | 4단계 배치 고정 뒤 측정 — 아래 |
+  | 앱 재시작(`rollout restart`, 2 Pod 한 개씩 — 배치 고정 뒤) | runshoes 82초 · petmint 23초, 그동안 1초 탐침 실패 0 |
   | 시험 뒤 Replica 다시 만들기 + 확인 | 10초 |
 
-- 기계가 하는 일은 1초가 안 된다. **승격에 걸리는 시간은 사람이 정한다** — 장애를 알아채고(알림), w1이 돌아오지 않는다고 판단하고, git에 selector를 반영하는 시간.
+- 기계가 하는 일은 승격 1초 안 + 앱 재시작 1~1.5분이다(합쳐 약 2분). **승격에 걸리는 시간은 사람이 정한다** — 장애를 알아채고(알림), w1이 돌아오지 않는다고 판단하고, git에 selector를 반영하는 시간.
   앱 트래픽까지 옮기는 진짜 전환은 운영 쓰기를 멈춰야 하고 되돌리는 데 전환이 한 번 더 들어서 이번에는 하지 않았다 — 그때 이 표의 앱 재시작 · 앱 확인 칸을 다시 잰다
