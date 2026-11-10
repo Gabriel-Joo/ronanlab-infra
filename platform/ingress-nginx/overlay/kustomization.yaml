@@ -6,3 +6,13 @@ resources:
   - ../base
 patches:
   - path: service-patch.yaml
+  - path: deployment-patch.yaml        # replicas 2 · 분산 · 메트릭 포트(2026-11-10)
+  # --enable-metrics=false(업스트림 마지막 인자, index 8) → true. 업스트림을 올려 인자 순서가 바뀌면 test 가 실패해 apply 가 멈춘다
+  - target: { kind: Deployment, name: ingress-nginx-controller }
+    patch: |-
+      - op: test
+        path: /spec/template/spec/containers/0/args/8
+        value: --enable-metrics=false
+      - op: replace
+        path: /spec/template/spec/containers/0/args/8
+        value: --enable-metrics=true
