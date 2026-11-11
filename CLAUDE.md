@@ -25,6 +25,7 @@
 - **push는 관리자가 한다. 세션은 커밋까지만 한다**(FOREMAN과 같다, 2026-11-11 사용자 지시). 자동 Sync 앱은 push가 곧 배포라는 것을 관리자가 알고 push한다
 - 클러스터는 호스트에 kubectl이 없다 — `cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`로 m-k8s에서 kubectl을 친다
 - 단계마다 확인한다. **확인에 실패하면 되돌리고 멈춰서 보고한다**
+- 맡은 범위 밖이 막히면 혼자 우회하지 말고 멈추고 알린다(2026-11-11 FOREMAN 297이 막혔다고 알리는 대신 링크를 직접 만들어 우회한 일이 있었다)
 - 서비스가 끊기는 단계(재시작 · 노드 정비 등) 직전에는 사용자에게 알린다
 - `apps/cloudflared/configmap.yaml`을 바꾸면 Sync만으로는 반영되지 않는다 — `rollout restart`까지(그 README)
 
@@ -41,6 +42,7 @@
 
 - `.env*` · kubeconfig · 토큰 · DB 암호를 화면 · 로그 · 커밋에 내지 않는다. 저장소에는 Secret이 없다 — 사람이 `kubectl create secret`으로 만든다(각 README 「처음 한 번」)
 - 비밀값이 든 파일은 Edit · Write로 고치지 않는다. 값이 있는지는 개수로만 센다(`/usr/bin/grep -cF`)
+- 값을 셀 때는 `/usr/bin/grep`을 쓴다 — 셸의 `grep`은 CC 실행 파일에 기대는 함수라 CC가 스스로 업데이트하는 순간 실패한다. 개수가 0으로 보여도 못 센 것일 수 있다(2026-11-11 FOREMAN에서 실제로 겪음)
 - Loki에는 서버 로그만 넣는다 — 대화 기록(질문 · 답 원문)은 넣지 않는다(`apps/monitoring/alloy/alloy.yaml`이 버린다)
 
 ## 5. 문서 자리
