@@ -123,7 +123,7 @@ kubectl wait --for=condition=Ready node/<노드> && kubectl uncordon <노드>
 - **옛 Harbor PVC 다섯이 디스크를 쓰고 있다**(registry 16GB w2 등) — 지울 때까지
 - **Jenkins 빌드 Pod는 배치가 고정되지 않았다.** Jenkinsfile(앱 저장소)의 Pod 템플릿에 nodeSelector를 넣어야 한다 — 빌드(상한 3Gi)가 app 노드에 뜨면 앱과 메모리를 나눈다
 - **ingress-nginx 재시작 때 짧은 끊김.** 1개일 때 12초(묶음 1, 원인 미확인), 2개로 늘린 뒤 롤링에서 1초 한 번(2026-11-10 21:13:29) — 0은 아니다
-- **모니터링**: GPU exporter를 아직 띄우지 않았다(호스트 컨테이너, 사람이 띄운다) · Milvus 지표는 9091이 호스트 127.0.0.1에만 열려 닿지 않는다 · 거절률 · 검색 지연은 턴 로그에 칸이 없어 앱 계측이 필요하다 · Grafana는 바깥 주소가 없다(port-forward) · 알림(Alertmanager) 없음 · Prometheus · Loki 한 대씩
+- **모니터링**: GPU exporter를 아직 띄우지 않았다(호스트 컨테이너, 사람이 띄운다) · Milvus 지표는 9091이 호스트 127.0.0.1에만 열려 닿지 않는다 · 거절률 · 검색 지연은 턴 로그에 칸이 없어 앱 계측이 필요하다 · Grafana · Prometheus 바깥 주소는 2026-11-11 클러스터 쪽(Ingress · 인증서 · 터널)까지 — Access · DNS는 사람이 대시보드에서(Prometheus는 자체 로그인이 없어 Access가 먼저) · 알림(Alertmanager) 없음 · Prometheus · Loki 한 대씩
 
 #### 5. 검증 항목 · 기록
 

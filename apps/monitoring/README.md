@@ -41,12 +41,15 @@ kubectl -n monitoring create secret generic grafana-mysql --from-literal=passwor
 # GPU: 호스트에서 bash scripts/host-gpu-exporter.sh (docker 그룹, sudo 불필요)
 ```
 
-## 확인 · 접속 (전부 ClusterIP — port-forward. 바깥 주소는 아직 없다)
+## 확인 · 접속
+
+`https://grafana.ronanlab.dev` · `https://prometheus.ronanlab.dev`(2026-11-11, `ingress.yaml`) — argocd · harbor · jenkins와 같은 모양:
+터널(`apps/cloudflared`, 호스트 7개) → ingress-nginx, 인증서는 cert-manager(letsencrypt-prod). 바깥 인증은 Cloudflare Access 「운영도구」 앱(대시보드에서 사람이 건다).
+**Prometheus는 자체 로그인이 없다** — 바깥에서는 Access가 유일한 문이라, Access를 건 뒤에 DNS(CNAME)를 연다. port-forward는 대시보드 동시 요청에서 connection reset으로 끊겨 쓰지 않는다.
 
 ```
-kubectl -n monitoring port-forward svc/grafana 3000:3000      # 대시보드 → petmint — 운영
-kubectl -n monitoring get secret grafana-admin -o jsonpath='{.data.admin-password}' | base64 -d; echo   # admin 비밀번호
-kubectl -n monitoring port-forward svc/prometheus 9090:9090   # Status → Targets
+kubectl -n monitoring get secret grafana-admin -o jsonpath='{.data.admin-password}' | base64 -d; echo   # Grafana admin 비밀번호
+# 사설망(호스트)에서 DNS 없이: curl --resolve grafana.ronanlab.dev:443:192.168.122.240 https://grafana.ronanlab.dev/api/health
 ```
 
 2026-11-10 확인: 수집 대상 kube-state-metrics 1/1 · kubelet-cadvisor 5/5 · node-exporter 5/5 · kubernetes-pods 5/5(ingress 포함) · ollama 1/1 · prometheus 1/1 up,
