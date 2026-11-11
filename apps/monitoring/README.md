@@ -54,6 +54,8 @@ kubectl -n monitoring get secret grafana-admin -o jsonpath='{.data.admin-passwor
 
 2026-11-10 확인: 수집 대상 kube-state-metrics 1/1 · kubelet-cadvisor 5/5 · node-exporter 5/5 · kubernetes-pods 5/5(ingress 포함) · ollama 1/1 · prometheus 1/1 up,
 milvus 0/1(9091이 호스트 127.0.0.1에만 — 15번 4절 그대로) · nvidia-gpu 0/1(exporter 아직 안 띄움).
+2026-11-11: milvus 1/1 — 호스트 compose(petmint-rag-chatbot `deploy/host/milvus`)에서 9091을 192.168.122.1에도 게시했다(19530과 같은 방식, etcd 2379는 닫힌 채).
+9091에는 `/debug/pprof` · `/log/level`도 인증 없이 응답한다 — 19530이 이미 같은 망에 인증 없이 열려 있어 새 위험은 작다고 봤다(앱 리포 docs 15번 4절).
 Loki에 12개 네임스페이스 로그가 들어오고 챗봇 질문 줄 · Jenkins 빌드 Pod 로그는 0건. Grafana 데이터소스 셋 OK, MySQL 패널 쿼리가 값을 돌려준다(모드별 사내규정 56 · 업무특화 89 · 일반 17).
 
 ## 크기 — 무엇을 근거로 정했나 (2026-10-18 실측)
