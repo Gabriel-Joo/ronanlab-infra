@@ -20,9 +20,10 @@
 
 ## 2. 일하는 방식
 
-- **worktree 없이 원본 폴더 `~/ronanlab-infra`의 `main`에서 일한다.** worktree나 다른 브랜치는 ArgoCD가 보지 않아 확인을 할 수 없다. FOREMAN 공통 규칙의 「worktree 세션은 push하지 않는다」는 여기 맞지 않는다
+- **클러스터를 만지는 일(kubectl · helm · vagrant · Sync)은 원본 폴더 `~/ronanlab-infra`의 `main`에서 한 번에 한 세션만 한다.** worktree나 다른 브랜치는 ArgoCD가 보지 않아 클러스터에서 확인할 수 없다. 파일만 고치는 일(문서 · 매니페스트 초안)은 worktree에서 한다 — 나누기와 까닭은 8절
+- 지워도 되는 것은 시험용으로 자기가 만든 것뿐이다. 지우기 · 덮어쓰기 전에 대상을 먼저 본다
 - 커밋 전 `git status` — 남이 고친 것(커밋 안 된 변경)은 건드리지 않고 **자기 파일만 `git add`**. push 전에 `git pull --rebase`(Jenkins 태그 커밋과 엇갈린다)
-- **push는 관리자가 한다. 세션은 커밋까지만 한다**(FOREMAN과 같다, 2026-11-11 사용자 지시). 자동 Sync 앱은 push가 곧 배포라는 것을 관리자가 알고 push한다
+- **push는 관리자가 한다. 세션은 커밋까지만 한다**(2026-11-11 사용자 지시). 자동 Sync 앱은 push가 곧 배포라는 것을 관리자가 알고 push한다
 - 클러스터는 호스트에 kubectl이 없다 — `cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`로 m-k8s에서 kubectl을 친다
 - 단계마다 확인한다. **확인에 실패하면 되돌리고 멈춰서 보고한다**
 - 맡은 범위 밖이 막히면 혼자 우회하지 말고 멈추고 알린다(2026-11-11 FOREMAN 297이 막혔다고 알리는 대신 링크를 직접 만들어 우회한 일이 있었다)
@@ -36,7 +37,6 @@
 - 서버 · VM 재부팅 · 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함)
 - `sudo`가 필요한 호스트 명령 — 직접 치지 않고 사용자에게 한 줄로 알린다(예: `scripts/host-*.sh`)
 - Cloudflare(터널 DNS · Access) 바꾸기 — 대시보드는 사람이 한다
-- 지워도 되는 것은 시험용으로 자기가 만든 것뿐. 지우기 · 덮어쓰기 전에 대상을 먼저 본다
 
 ## 4. 비밀값
 
@@ -79,15 +79,19 @@
 
 범위(scope)는 지금 쓰지 않는다. Jenkins가 만드는 이미지 태그 커밋(`<앱>: 이미지 태그 <해시>`)은 기계가 쓰는 것이라 이 꼴을 따르지 않는다
 
-## 7. FOREMAN 공통
+## 7. 공통 규칙
 
 - 항상 한국어로 답하고 쓴다
-- 파일은 Edit · Write로 고친다 — `sed -i` · `perl -i` · heredoc 덧붙이기(`cat >> f <<EOF`) · `tee`로 저장소 파일을 고치지 않는다. 임시 파일은 세션 스크래치에
+- 파일은 Edit · Write로 고친다 — `sed -i` · `perl -i` · heredoc 덧붙이기(`cat >> f <<EOF`) · `tee`를 저장소 파일을 고치는 데 쓰지 않는다. 읽기만 하는 것(`sed -n` · `grep` 등)은 괜찮다. 임시 파일은 세션 스크래치에
 - 다른 저장소(foreman · runshoes · petmint-rag-chatbot)는 읽기만 한다. 그쪽 일은 그 프로젝트 관리자에게 부탁한다(아래)
 
-## 8. 관리자(원본 폴더 세션) — FOREMAN 프로젝트별 관리자
+## 8. 관리자
 
-- 이 저장소 관리자는 원본 폴더에서 도는 역할 manager 세션 하나다. 관리자와 다른 세션의 일 나누기(누가 매니페스트를 고치는지 · 합치기가 있는지)는 **정해지지 않음** — worktree가 없으므로 FOREMAN 다른 저장소의 「코더는 worktree, 관리자는 합치기」를 그대로 쓰지 않는다
+- 이 저장소 관리자는 원본 폴더에서 도는 역할 manager 세션 하나다
+- 일 나누기(2026-11-11 사용자 결정):
+  - **파일만 고치는 일**(문서 · 매니페스트 초안): worktree에서 일하고 커밋만 한다. 관리자가 합치고 push한다
+  - **클러스터를 만지는 일**(kubectl · helm · vagrant · Sync): 원본 폴더 `main`에서 한 번에 한 세션만 한다
+  - 까닭: 클러스터는 하나라 worktree로 갈라도 갈라지지 않는다. 같은 앱을 둘이 동시에 patch하거나, `helm upgrade --reuse-values`로 앞의 값을 덮거나, 노드를 비우면 남의 작업도 끊긴다. 이 저장소는 확인과 되돌리기가 클러스터에서 일어나므로, 그 일을 worktree로 쪼개면 고치고 확인하고 되돌리는 고리가 끊긴다
 - FOREMAN API는 이 프로젝트 토큰으로만 부른다:
   `T=$(sed -n 's/^FOREMAN_TOKEN_RONANLAB_INFRA=//p' ~/AI_programming/foreman/.env.project_tokens)` — 셸 변수로만 쓰고 값은 화면 · 로그 · 커밋에 내지 않는다. 이 토큰은 이 프로젝트 세션 · 방 API만 연다
   - 토큰 파일: `~/AI_programming/foreman/.env.project_tokens` 있음(2026-11-11 확인 — 권한 600, 소유 kopo17, `FOREMAN_TOKEN_RONANLAB_INFRA=` 줄 1개)
