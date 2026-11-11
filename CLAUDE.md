@@ -11,14 +11,18 @@
   - 자동 Sync 켜고 끄기의 실제 스위치는 클러스터의 `kubectl patch`이고 `app.yaml`은 기록이다(루트가 `spec.syncPolicy`를 덮지 않는다 — `bootstrap/root-app.yaml` 머리 주석)
   - 수동 Sync: `kubectl -n argocd patch app <앱> --type merge -p '{"operation":{"sync":{"revision":"<커밋>"}}}'`
 - `platform/`(cert-manager · coredns · ingress-nginx · metallb · harbor · jenkins · argocd ingress)은 **ArgoCD 밖**이다 — push해도 바뀌지 않는다. helm · kubectl로 사람이(또는 지시받은 세션이) 손으로 넣는다
-- `cluster/`는 VM 정의(Vagrantfile · setup-node.sh · label-nodes.sh). 실제로 `vagrant`를 돌리는 곳은 호스트 `~/k8s-cluster/`이고 `cluster/`는 그 사본이다(어느 쪽을 원본으로 둘지는 정해지지 않음)
+- **`cluster/`와 호스트 `~/k8s-cluster/`** — 2026-11-11 직접 본 것:
+  - `~/k8s-cluster/`(git 아님): `Vagrantfile` · `setup-node.sh` · `.vagrant/`(VM 다섯 대의 상태 · SSH 키 — `machines/m-k8s` · `w1-k8s` ~ `w4-k8s`) · `backup/`(작업 날짜별 폴더 33개, 195M — 덤프 · 되돌리기 · 매니페스트 스냅숏, 호스트용 kubectl 래퍼 `backup/2026-10-15-before-metallb/mk`). 실제로 `vagrant`가 도는 자리
+  - `cluster/`(git): `Vagrantfile` · `setup-node.sh` · `label-nodes.sh`(노드 역할 라벨 — 저장소에만 있다). 기록 · 검토용
+  - 겹치는 둘(`Vagrantfile` · `setup-node.sh`)은 **링크가 아니라 따로 복사한 파일**이고(서로 다른 inode) 지금 내용이 같다(`cmp`). `Vagrantfile`은 `setup-node.sh`를 부르지 않는다 — 노드 설치는 `cat setup-node.sh | vagrant ssh <노드> -- 'bash -s'`로 사람이 넣는다(`docs/01_cluster.md`)
+  - **어디로 가나**: VM 만들기 · 끄기 · `vagrant ssh`는 `~/k8s-cluster`에서(`.vagrant/` 상태가 거기에만 있다 — `cluster/`에서 `vagrant up`을 치면 기존 VM을 모르고 새로 만들려 한다). 설정을 바꾸면 **양쪽을 같이 고치고** `cluster/`를 커밋한다. 백업 · 덤프는 `~/k8s-cluster/backup/<날짜>-<일>/`(git에 올리지 않는다)
 - `main`에는 다른 쓰는 이가 있다: Jenkins(`Jenkins runshoes-app` · `Jenkins petmint-app`)가 이미지 태그를 커밋하고, 다른 세션도 문서를 커밋한다
 
 ## 2. 일하는 방식
 
 - **worktree 없이 원본 폴더 `~/ronanlab-infra`의 `main`에서 일한다.** worktree나 다른 브랜치는 ArgoCD가 보지 않아 확인을 할 수 없다. FOREMAN 공통 규칙의 「worktree 세션은 push하지 않는다」는 여기 맞지 않는다
 - 커밋 전 `git status` — 남이 고친 것(커밋 안 된 변경)은 건드리지 않고 **자기 파일만 `git add`**. push 전에 `git pull --rebase`(Jenkins 태그 커밋과 엇갈린다)
-- **push**: 2026-11-10~11에는 이 저장소 세션이 사용자 지시로 직접 push했다. 관리자 체계에서 누가 push하는지는 **정해지지 않음** — 정해질 때까지 사용자 지시가 있을 때만 push한다
+- **push는 관리자가 한다. 세션은 커밋까지만 한다**(FOREMAN과 같다, 2026-11-11 사용자 지시). 자동 Sync 앱은 push가 곧 배포라는 것을 관리자가 알고 push한다
 - 클러스터는 호스트에 kubectl이 없다 — `cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`로 m-k8s에서 kubectl을 친다
 - 단계마다 확인한다. **확인에 실패하면 되돌리고 멈춰서 보고한다**
 - 서비스가 끊기는 단계(재시작 · 노드 정비 등) 직전에는 사용자에게 알린다
@@ -57,5 +61,7 @@
 - 이 저장소 관리자는 원본 폴더에서 도는 역할 manager 세션 하나다. 관리자와 다른 세션의 일 나누기(누가 매니페스트를 고치는지 · 합치기가 있는지)는 **정해지지 않음** — worktree가 없으므로 FOREMAN 다른 저장소의 「코더는 worktree, 관리자는 합치기」를 그대로 쓰지 않는다
 - FOREMAN API는 이 프로젝트 토큰으로만 부른다:
   `T=$(sed -n 's/^FOREMAN_TOKEN_RONANLAB_INFRA=//p' ~/AI_programming/foreman/.env.project_tokens)` — 셸 변수로만 쓰고 값은 화면 · 로그 · 커밋에 내지 않는다. 이 토큰은 이 프로젝트 세션 · 방 API만 연다
-- 다른 프로젝트에 부탁할 일: `POST http://127.0.0.1:8000/api/managers/<프로젝트>/ask {"text": "…"}`(헤더에 `$T`). 관리자가 없으면 사람에게 텔레그램으로 간다
+  - 토큰 파일: `~/AI_programming/foreman/.env.project_tokens` 있음(2026-11-11 확인 — 권한 600, 소유 kopo17, `FOREMAN_TOKEN_RONANLAB_INFRA=` 줄 1개)
+  - 싣는 법: `-H "Authorization: Bearer $T"`
+- 다른 프로젝트에 부탁할 일: `curl -s -H "Authorization: Bearer $T" -H 'Content-Type: application/json' -d '{"text": "…"}' http://127.0.0.1:8000/api/managers/<프로젝트>/ask`. 관리자가 없으면 사람에게 텔레그램으로 간다
 - 교장이 넘긴 계획(입력 칸에 「[교장 계획 #N …]」)은 고칠 것이 없으면 적힌 명령(`/api/foreman/start` `{"dispatch_id": N, "use_saved": true}`)으로 띄운다. 틀렸으면 띄우지 말고 사람에게 묻는다
