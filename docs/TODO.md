@@ -10,7 +10,8 @@
 - Jenkins 빌드 Pod 에 nodeSelector(infra) — 앱 저장소 Jenkinsfile 일 → 02 4절
 - petmint 앱 계측 — 거절 여부 · 검색 시간을 턴 로그에(또는 `/metrics`) → 대시보드 빈 패널 둘 → 02 4절
 - Milvus 지표 — 9091 게시 주소를 사설망으로(호스트 docker) → `apps/monitoring/README.md`
-- Grafana 바깥 주소(터널 + Access) · 알림(Alertmanager) → 02 4절
+- grafana · prometheus.ronanlab.dev — Cloudflare Access 「운영도구」 앱에 두 호스트 → 그 뒤 DNS CNAME(사람, 대시보드). 클러스터 쪽은 2026-11-11 끝 → `apps/monitoring/README.md`
+- 알림(Alertmanager) → 02 4절
 - ingress-nginx 재시작 끊김 원인(1개일 때 12초, 2개일 때 1초) → 02 4절
 
 ## 그 밖
