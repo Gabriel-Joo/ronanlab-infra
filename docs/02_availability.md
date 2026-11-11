@@ -46,7 +46,7 @@ Jenkins 빌드 Pod(BuildKit)는 앱 저장소 Jenkinsfile이 정해 아무 워�
 
 | 앱 | replicas | 분산 | PDB | 롤링 |
 | --- | --- | --- | --- | --- |
-| petmint | 2 | app 노드(w1 · w2) + required anti-affinity | minAvailable 1 | maxSurge 0 · maxUnavailable 1 (수동 Sync) |
+| petmint | 2 | app 노드(w1 · w2) + required anti-affinity | minAvailable 1 | maxSurge 0 · maxUnavailable 1 (자동 Sync, 2026-11-11~) |
 | runshoes | 2 | 같음 | minAvailable 1 | 같음 (자동 Sync) |
 
 - app 노드가 둘뿐이라 새 Pod를 먼저 띄우는 롤링(2+1)은 세 번째 Pod가 갈 곳이 없다 → **옛 Pod 하나를 먼저 내리고 새 Pod**. 롤링 동안 잠깐 Pod가 하나다(처리 용량 절반, 서비스는 이어진다 — 2026-11-10 1초 탐침 실패 0)

@@ -22,12 +22,18 @@ ArgoCD가 넘겨받은 뒤(2026-10-16)로는 **이 디렉터리를 `kubectl appl
 
 | 하고 싶은 것 | 하는 방법 |
 | --- | --- |
-| 새 이미지 배포 | 앱 리포 main에 push → Jenkins 빌드 → Jenkins가 `newTag` 커밋 → ArgoCD에서 Sync |
-| 설정(ConfigMap·replicas 등) 변경 | 이 디렉터리를 고쳐 push → ArgoCD에서 Sync |
+| 새 이미지 배포 | 앱 리포 main에 push → Jenkins 빌드 → Jenkins가 `newTag` 커밋 → ArgoCD가 자동 Sync(2026-11-11~) |
+| 설정(ConfigMap·replicas 등) 변경 | 이 디렉터리를 고쳐 push → 자동 Sync. ConfigMap만 바뀌면 Pod는 다시 뜨지 않는다 — `rollout restart` |
 | 되돌리기 | 이 저장소 커밋을 revert해 push → Sync(DB 마이그레이션은 되돌아가지 않는다, 14번 4절) |
 | 급한 확인(재시작 등) | `kubectl -n petmint rollout restart deploy/petmint-app`는 git이 정한 값을 바꾸지 않는다. replicas·이미지·env는 kubectl로 바꾸지 않는다 |
 
-- **Sync는 지금 수동이다.** 매니페스트가 의도대로 반영되는지 확인한 뒤 자동으로 바꾼다. prune도 꺼져 있다 — git에서 지운 리소스는 클러스터에 남는다(손으로 지운다)
+- **Sync는 자동이다(2026-11-11~, 그 전은 수동).** prune·selfHeal은 꺼져 있다 — git에서 지운 리소스는 클러스터에 남고(손으로 지운다), kubectl로 바꾼 것을 되돌리지 않는다.
+  **초기화 Job(마이그레이션)도 Sync마다 돈다** — 앱 커밋에 마이그레이션이 들어 있으면 push만으로 운영 DB에 적용된다.
+  사람이 지켜보며 넣어야 하는 배포(되돌리기 어려운 스키마 변경 · DB 복구)는 먼저 끄고, 끝나면 다시 켠다(실제 스위치 — app.yaml은 기록):
+  ```
+  kubectl -n argocd patch application petmint --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'   # 끄기
+  kubectl -n argocd patch application petmint --type merge -p '{"spec":{"syncPolicy":{"automated":{"prune":false,"selfHeal":false}}}}'   # 켜기
+  ```
 - **Application에 finalizer가 없다.** Application을 지워도 앱·MySQL·PV는 남는다
 - **Namespace는 사람이 만든다.** petmint 네임스페이스에는 사람이 넣은 Secret 4개가 있다. ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다.
   공개 주소 터널(cloudflared)도 예전에는 여기 있었다 — 2026-10-18 따로 뺐다(지금 `apps/cloudflared`, 네임스페이스 `cloudflared`)
