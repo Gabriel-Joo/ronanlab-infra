@@ -205,4 +205,4 @@ mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -uroot -p
 | 5 자동 Sync 켬 | 11-10 04:4x | 사용자. `{"automated":{},…}`(Claude 확인) |
 | 6 첫 전체 생성 | 11-10 04:53:51 ~ 05:21:08 | 사용자 `summary-manual-20261110-1353`(w2-k8s), Complete 1/1. 시작 "stale 212 · 재판단으로 새로 선 0 · 지운 행 0" → 10켤레마다 진행 줄 63~94초 간격 → **성공 212 · 실패 0 · 재비교 0 · 27분 17초**(켤레당 7.7초). Ollama `/api/generate` 212건 · 평균 7.7초 · 최대 13.4초. 공개 API: 요약 212 · **JSON 덩어리 0** · negative null 4 · positive 26~117자(중앙 67) · `reviewCount` 가 신발의 리뷰 수와 모두 같다. 상세 모달(운영, shoe 2) "리뷰 34건 기준" 캡처 |
 | 7 suspend false | 11-10 05:3x | 사용자 지시로 git 에서 false(infra `75bceb7`) → 자동 Sync, `SUSPEND False`(Claude 확인 05:31). 다음 회차 11-11 03:30 KST(11-10 18:30 UTC) — 결과는 아래 줄에 |
-| 8 첫 정기 회차 | | |
+| 8 첫 정기 회차 | 11-10 18:30:08 (11-11 03:30 KST) | CronJob `runshoes-summary-29905590` Complete 1/1 · 10초. 로그 "시작 — 만들 신발 0켤레: 쓰기 시점에 이미 서 있던 stale 0 · 재판단으로 새로 선 stale 0" → "끝 — 대상 0 · 성공 0 · 실패 0 · 재비교로 다시 stale 0 · 그 사이 3건 미만 0" — 리뷰가 거의 안 쓰여 대상 0(정상). Claude 확인(11-11, 읽기만) |
