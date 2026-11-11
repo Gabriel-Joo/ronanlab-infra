@@ -25,7 +25,7 @@ Prometheus · Grafana · node-exporter · kube-state-metrics + Loki · Alloy · 
 | 거절률 · 검색 지연 | **없다** — 턴 로그에 칸이 없다. 앱 계측이 필요하다(대시보드에 그렇게 적은 텍스트 패널) |
 
 **petmint DB 읽기 계정** `grafana_ro`@`%`: 컬럼 단위 SELECT만 —
-`turns`(turn_id · session_id · code_rule · model · first_token_ms · latency_ms · status · created_at · clarified · context_kind),
+`turns`(turn_id · session_id · code_rule · model · first_token_ms · latency_ms · status · created_at · clarified · context_kind · refused · search_ms — 마지막 둘은 2026-11-11, 앱 0009),
 `sessions`(session_id · mode · started_at), `feedback`(turn_id · rating · created_at). 질문 · 답 · 코멘트 · 고객 · 상담원 컬럼은 권한이 없다
 (2026-11-10 시험: `SELECT question` · `SELECT comment` → ERROR 1143). Primary에서 만들어 Replica로 복제됐다. 최대 연결 5.
 
