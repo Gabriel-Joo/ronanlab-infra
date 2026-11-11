@@ -18,7 +18,9 @@ deployment.yaml      커넥터 2개. readinessProbe /ready · maxUnavailable 0 �
 
 ArgoCD·Jenkins·Harbor UI가 전부 이 터널로 들어온다. 그래서:
 
-- **Sync는 수동이고 자동으로 바꾸지 않는다.** 잘못된 커밋이 바로 반영되면 고칠 UI가 같이 사라진다
+- **Sync는 수동이고 자동으로 바꾸지 않는다(2026-11-11 다시 정함 — 다른 Application은 자동).** 터널이 깨지면 공개 주소 7개(petmint · runshoes · argocd · harbor · jenkins · grafana · prometheus)가
+  한꺼번에 안 보인다. 서비스만이 아니라 고칠 도구(ArgoCD UI)와 볼 도구(Grafana)도 같이 사라지고, 되돌리기는 m-k8s에서 kubectl로만 된다(아래 「설정 바꾸기」).
+  잘못된 커밋이 바로 반영되면 이 상태가 사람 손을 거치지 않고 온다 — 그래서 사람이 Sync를 누르고 롤링을 지켜본다
 - **터널 없이 쓰는 길**: m-k8s(`192.168.122.10`)에 ssh로 `kubectl`. UI는 호스트에서 MetalLB VIP로 —
   `curl --resolve argocd.ronanlab.dev:443:192.168.122.240 https://argocd.ronanlab.dev/` (Let's Encrypt 인증서 그대로, Access를 거치지 않는다)
 - **커넥터가 여럿이어도 된다.** 같은 터널에 붙은 커넥터는 엣지가 나눠 받는다. 설정이 다르면 요청마다 결과가 달라지므로 커넥터끼리 설정은 늘 같아야 한다
