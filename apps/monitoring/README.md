@@ -78,7 +78,7 @@ apiserver·kubelet /metrics는 긁지 않는다(시계열이 가장 많고 1절�
 | 구성 | requests | limits | 근거 |
 |---|---|---|---|
 | Prometheus | 100m / 384Mi | 500m / 768Mi | 시계열 1.5만 × 헤드 ~8KB ≈ 120Mi + 런타임 ~100Mi + 압축·쿼리 여유. limit은 request의 2배 |
-| Grafana | 50m / 128Mi | 250m / 256Mi | 대시보드 몇 개·사용자 1~2명 기준 기동 상주 80~120Mi |
+| Grafana | 100m / 384Mi | 1 / 1Gi | **2026-11-11 고침**: 처음 값 50m/128Mi · 250m/256Mi는 Grafana 13에 모자랐다 — 기동만으로 ~240Mi, Dashboards 화면(검색 인덱스)에서 넘어 OOMKilled → 바깥에서 502/503. 패널 쿼리를 돌린 뒤 253Mi |
 | node-exporter ×4 | 20m / 32Mi | 100m / 64Mi | 수집기 기본값에서 15~25Mi |
 | kube-state-metrics | 20m / 64Mi | 100m / 128Mi | 객체 수백 개 규모 30~50Mi |
 | **합** | **270m / 704Mi** | **1,370m / 1,408Mi** | 노드 하나에 몰려도 requests 704Mi |
