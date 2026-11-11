@@ -9,7 +9,6 @@
 - MySQL 승격을 앱 트래픽까지 옮겨 한 번 해 보기(점검 시간에) — 앱 재시작 · 앱 확인 시간을 다시 잰다 → [runbooks/mysql-replica.md](runbooks/mysql-replica.md)
 - Jenkins 빌드 Pod 에 nodeSelector(infra) — 앱 저장소 Jenkinsfile 일 → 02 4절
 - petmint 앱 계측 — 거절 여부 · 검색 시간을 턴 로그에(또는 `/metrics`) → 대시보드 빈 패널 둘 → 02 4절
-- Milvus 지표 — 9091 게시 주소를 사설망으로(호스트 docker) → `apps/monitoring/README.md`
 - 알림(Alertmanager) → 02 4절
 - ingress-nginx 재시작 끊김 원인(1개일 때 12초, 2개일 때 1초) → 02 4절
 
