@@ -1,7 +1,9 @@
 # 펫퍼민트 — apps/petmint 를 본다. 이미지 태그는 Jenkins(petmint-rag-chatbot Jenkinsfile)가 apps/petmint/kustomization.yaml 을 바꿔 push 한다.
 # 적용: 루트 Application(bootstrap/root-app.yaml)이 apps/*/app.yaml 을 읽어 만든다 — 2026-11-02 App of Apps. 손으로 apply 하지 않는다
 #
-# - Sync 는 수동(automated 없음). 매니페스트가 의도대로 반영되는지 확인한 뒤 자동으로 바꾼다
+# - Sync 는 자동(2026-11-11, 사용자 지시) — prune · selfHeal 끔(runshoes 와 같다). 앱 push → Jenkins 태그 커밋 → ArgoCD 가 바로 반영한다.
+#   실제 스위치는 클러스터의 kubectl patch 다(루트가 자식 syncPolicy 를 덮지 않는다 — bootstrap/root-app.yaml). 이 파일은 기록이다.
+#   2026-10-16~11-10 은 수동이었다
 # - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
 # - finalizer 없음 — Application 을 지워도 앱·MySQL·PV 는 남는다(resources-finalizer.argocd.argoproj.io 를 달지 않는다)
 # - Namespace 는 만들지도 소유하지도 않는다 — petmint 에 사람이 넣은 Secret 이 있다(apps/petmint/README.md). cloudflared 는 2026-10-18 따로 뺐다(지금 apps/cloudflared)
@@ -21,5 +23,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: petmint
   syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
     syncOptions:
       - CreateNamespace=false

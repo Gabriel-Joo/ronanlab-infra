@@ -16,7 +16,7 @@
  "panels": [
   {
    "type": "row",
-   "title": "상단 — 파드 · 트래픽",
+   "title": "서비스 상태 · 접속량",
    "id": 1,
    "collapsed": false,
    "gridPos": {
@@ -29,8 +29,8 @@
   },
   {
    "type": "stat",
-   "title": "앱 Pod Ready",
-   "description": "petmint-app Pod 중 Ready 인 수(목표 2 — w1 · w2)",
+   "title": "응답 가능한 서버 수 (정상 2)",
+   "description": "챗봇 서버 2대 중 지금 요청을 받을 수 있는 수. 2가 정상, 1이면 한 대가 재시작 중이거나 고장, 0이면 서비스가 멈춘 것. 배포 중에는 잠깐 1이 될 수 있다.\n\n출처: kube-state-metrics, petmint-app Pod Ready",
    "targets": [
     {
      "datasource": {
@@ -67,8 +67,8 @@
   },
   {
    "type": "stat",
-   "title": "재시작(24시간)",
-   "description": "petmint 네임스페이스 컨테이너 재시작 합",
+   "title": "서버 재시작 횟수 (최근 24시간)",
+   "description": "챗봇 서버 · DB · 백업 작업이 오류로 꺼졌다가 스스로 다시 켜진 횟수. 0이 정상. 배포로 서버를 새것으로 바꾸는 것은 세지 않는다.\n\n출처: kube-state-metrics, petmint 네임스페이스 컨테이너 재시작 합",
    "targets": [
     {
      "datasource": {
@@ -105,8 +105,8 @@
   },
   {
    "type": "timeseries",
-   "title": "요청 수(초당, 상태코드별)",
-   "description": "ingress-nginx 기준 — 앱에 /metrics 가 없어 입구에서 센다. WebSocket 은 연결 한 번이 요청 하나",
+   "title": "접속 요청량 (초당, 결과별)",
+   "description": "바깥(상담원 브라우저)에서 들어온 요청 수를 결과 번호별로. 200번대 = 정상, 300번대 = 다른 주소로 안내, 400번대 = 로그인 안 됨 · 없는 주소 등 요청 쪽 문제, 500번대 = 서버 오류. 대화창 연결은 질문 수가 아니라 연결 한 번이 1건이다 — 질문 수는 아래 「모드별 질문 수」.\n\n출처: ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)",
    "targets": [
     {
      "datasource": {
@@ -150,8 +150,8 @@
   },
   {
    "type": "timeseries",
-   "title": "에러율(5xx 비율)",
-   "description": "ingress-nginx 기준 5xx / 전체",
+   "title": "서버 오류 비율",
+   "description": "전체 요청 중 서버 오류(500번대)의 비율. 0%가 정상. 화면이 안 열리거나 고객 조회가 안 되는 경우가 여기 잡힌다. 대화창에서 답을 만들다 실패한 것은 여기 안 잡히고 아래 「답변 실패 · 중단 비율」에 나온다.\n\n출처: ingress-nginx 5xx / 전체",
    "targets": [
     {
      "datasource": {
@@ -159,7 +159,7 @@
       "uid": "prometheus"
      },
      "expr": "sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\"}[5m])), 1e-9)",
-     "legendFormat": "5xx",
+     "legendFormat": "서버 오류",
      "refId": "A"
     }
    ],
@@ -195,7 +195,7 @@
   },
   {
    "type": "row",
-   "title": "중간 — 질문(턴 로그, DB Replica)",
+   "title": "질문량",
    "id": 6,
    "collapsed": false,
    "gridPos": {
@@ -208,8 +208,8 @@
   },
   {
    "type": "timeseries",
-   "title": "모드별 질문 수(시간당)",
-   "description": "일반 · 사내규정 · 업무특화. 턴 = 질문 하나",
+   "title": "모드별 질문 수 (시간당)",
+   "description": "상담원이 보낸 질문 수. 일반 = 일반 대화, 사내규정 = 인사규정 질문, 업무특화 = 고객 약관 상담. 되묻기에 답한 것도 질문 하나로 센다.\n\n출처: 턴 로그(turns) · 세션 모드(sessions.mode), DB 복제본",
    "targets": [
     {
      "datasource": {
@@ -255,15 +255,15 @@
   },
   {
    "type": "barchart",
-   "title": "시간대별 질문 수(KST)",
-   "description": "고른 기간 전체를 시(0~23)별로 합친 것. DB 는 UTC 라 +9시간",
+   "title": "시간대별 질문 수 (한국 시간)",
+   "description": "고른 기간 전체를 0~23시로 합친 분포. 어느 시간대에 질문이 몰리는지 본다.\n\n출처: turns.created_at(UTC) + 9시간",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT LPAD(HOUR(DATE_ADD(created_at, INTERVAL 9 HOUR)), 2, '0') AS `시(KST)`, COUNT(*) AS `질문`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1",
+     "rawSql": "SELECT LPAD(HOUR(DATE_ADD(created_at, INTERVAL 9 HOUR)), 2, '0') AS `시`, COUNT(*) AS `질문`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1",
      "format": "table",
      "rawQuery": true,
      "editorMode": "code",
@@ -291,7 +291,7 @@
   },
   {
    "type": "row",
-   "title": "하단 — 답",
+   "title": "답변 품질 · 속도",
    "id": 9,
    "collapsed": false,
    "gridPos": {
@@ -304,8 +304,8 @@
   },
   {
    "type": "timeseries",
-   "title": "거절률(일별)",
-   "description": "turns.refused(2026-11-11~) — 답이 거절 문구인 턴 / status=ok 턴. 판정은 평가와 같은 함수(앱 data/refusal.py). 코드 답 턴도 들어간다(코드 답은 거절 문구를 쓰지 않는다). 그 전 턴은 NULL이라 빠진다",
+   "title": "확인 불가 응답 비율 (일별)",
+   "description": "답이 \"확인되지 않습니다\" · \"인사부서에 확인하세요\"처럼 끝난 비율(모드별). 세 가지가 섞여 있어 이 숫자만으로는 가를 수 없다:\n① 정상 — 약관 · 규정에 원래 없는 질문(예: 보험료)\n② 검색이 맞는 조항을 못 찾아 확인 불가로 답한 것 — 개선 대상\n③ 조항은 찾았는데 모델이 지나치게 조심한 것 — 개선 대상\n검색 서비스가 멈춰 답을 못 한 경우는 여기 들어가지 않고 「답변 실패 · 중단 비율」에 나온다. 정상으로 끝난 답만 센다. 2026-11-11부터 집계(그 전 질문은 빠진다). 판정은 문구 기준이라, 확인 불가 문구 없이 얼버무린 답은 세지 못한다.\n\n출처: turns.refused — 평가와 같은 판정(앱 data/refusal.py)",
    "targets": [
     {
      "datasource": {
@@ -350,16 +350,63 @@
    }
   },
   {
-   "type": "barchart",
-   "title": "규칙별 발동 수(code_rule)",
-   "description": "코드가 약관 기준으로 직접 답한 턴의 규칙 이름",
+   "type": "timeseries",
+   "title": "답변 실패 · 중단 비율 (일별)",
+   "description": "질문 중 답을 끝까지 주지 못한 비율. 상담원이 막힌 질문이다.\n· 실패(오류) — 검색 서비스나 AI 모델에 닿지 않거나 서버 오류로 답을 만들지 못했다. 상담원은 \"잠시 뒤 다시 물어 주세요\"를 봤다. 0%가 정상\n· 중단 — 답이 끝나기 전에 상담원이 새 질문을 보냈거나 창을 닫았다. 되묻기에 답하지 않고 넘어간 것도 들어간다. 늘 조금은 있고, 갑자기 늘면 답이 너무 느린지 본다\n\n출처: turns.status(error · cancelled) / 전체 질문",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT code_rule AS `규칙`, COUNT(*) AS `발동`\nFROM turns\nWHERE code_rule IS NOT NULL AND $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 2 DESC",
+     "rawSql": "SELECT $__timeGroupAlias(created_at, '1d'),\n  AVG(status = 'error') AS `실패(오류)`,\n  AVG(status = 'cancelled') AS `중단`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   },
+   "id": 11,
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 6,
+    "y": 17
+   }
+  },
+  {
+   "type": "barchart",
+   "title": "정해진 규칙으로 답한 횟수 (규칙별)",
+   "description": "AI 모델이 글을 짓지 않고 프로그램이 약관 · 인사 원장 기준으로 바로 답한 질문을 규칙별로 센다(보험금 계산, 미가입 특약, 병명 되묻기, 직원 본인 연차 등). 숫자 · 조항이 정확해야 하는 질문을 맡는다.\n\n출처: turns.code_rule(규칙 이름은 앱 code_rules.RULES · docs 16번)",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT CASE code_rule WHEN 'reply_turn' THEN '되물은 질문에 이어 답' WHEN 'not_enrolled' THEN '미가입 특약 안내' WHEN 'annual' THEN '올해 받은·남은 보험금' WHEN 'needs_amount' THEN '금액 되묻기' WHEN 'hypothetical' THEN '가정 등급 한도' WHEN 'legal' THEN '법률비용 계산' WHEN 'question_turn' THEN '치료비 계산' WHEN 'limit' THEN '한도표' WHEN 'age' THEN '가입 나이' WHEN 'exclusion' THEN '부담보 안내' WHEN 'proviso' THEN '면책 단서' WHEN 'named_cover' THEN '병명 보장 대조' WHEN 'injury_followup' THEN '상해 후속 안내' WHEN 'disease_ask' THEN '병명 되묻기' WHEN 'hr_personal' THEN '직원 본인 인사 정보(연차·퇴직금 등)' ELSE code_rule END AS `규칙`, COUNT(*) AS `횟수`\nFROM turns\nWHERE code_rule IS NOT NULL AND $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 2 DESC",
      "format": "table",
      "rawQuery": true,
      "editorMode": "code",
@@ -377,25 +424,25 @@
     "defaults": {},
     "overrides": []
    },
-   "id": 11,
+   "id": 12,
    "gridPos": {
     "h": 8,
-    "w": 9,
-    "x": 6,
+    "w": 6,
+    "x": 12,
     "y": 17
    }
   },
   {
    "type": "piechart",
-   "title": "코드 답 vs 모델 답",
-   "description": "code_rule 이 있으면 코드 답",
+   "title": "답한 방식: 규칙 / AI 모델",
+   "description": "정해진 규칙으로 답한 질문과 AI 모델이 글을 지어 답한 질문의 비율. 규칙 답은 숫자 · 조항이 정확하고 1초 안에 나온다.\n\n출처: turns.code_rule 있음 = 규칙",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT CASE WHEN code_rule IS NULL THEN '모델 답' ELSE '코드 답' END AS `종류`, COUNT(*) AS `턴`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1",
+     "rawSql": "SELECT CASE WHEN code_rule IS NULL THEN 'AI 모델' ELSE '정해진 규칙' END AS `방식`, COUNT(*) AS `질문`\nFROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1",
      "format": "table",
      "rawQuery": true,
      "editorMode": "code",
@@ -424,18 +471,18 @@
     "defaults": {},
     "overrides": []
    },
-   "id": 12,
+   "id": 13,
    "gridPos": {
     "h": 8,
-    "w": 9,
-    "x": 15,
+    "w": 6,
+    "x": 18,
     "y": 17
    }
   },
   {
    "type": "piechart",
-   "title": "👍👎",
-   "description": "상담원 평가(feedback.rating). 코멘트는 읽지 않는다",
+   "title": "상담원 평가 (👍 / 👎)",
+   "description": "상담원이 답에 남긴 좋아요 · 싫어요 수. 평가를 남기지 않은 답은 세지 않는다. 코멘트 내용은 이 화면에서 읽지 않는다.\n\n출처: feedback.rating",
    "targets": [
     {
      "datasource": {
@@ -471,7 +518,7 @@
     "defaults": {},
     "overrides": []
    },
-   "id": 13,
+   "id": 14,
    "gridPos": {
     "h": 8,
     "w": 6,
@@ -481,15 +528,15 @@
   },
   {
    "type": "timeseries",
-   "title": "응답 시간 p50 / p90(일별)",
-   "description": "turns.latency_ms(답 끝까지) · first_token_ms(첫 토큰까지), status=ok 만. MySQL 에 분위수 함수가 없어 PERCENT_RANK 로",
+   "title": "답변 걸린 시간 (보통 / 느린 편, 일별)",
+   "description": "질문을 보낸 뒤 첫 글자가 나올 때까지, 답이 끝날 때까지 걸린 시간. 「보통」은 그날 질문의 절반이 이보다 빨랐던 값, 「느린 편」은 10번 중 9번이 이보다 빨랐던 값(중앙값 · 90번째 백분위). 끝까지 답한 질문만 센다. 정해진 규칙 답(1초 미만)과 AI 모델 답(수 초)이 섞여 있다. 모드를 바꾼 직후 첫 답은 모델을 바꿔 올리느라 더 걸린다.\n\n출처: turns.latency_ms · first_token_ms",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `전체 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `전체 p90`\nFROM (SELECT DATE(created_at) AS d, latency_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY latency_ms) AS pr\n      FROM turns WHERE status = 'ok' AND latency_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `답 끝까지 · 보통`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `답 끝까지 · 느린 편`\nFROM (SELECT DATE(created_at) AS d, latency_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY latency_ms) AS pr\n      FROM turns WHERE status = 'ok' AND latency_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
      "format": "time_series",
      "rawQuery": true,
      "editorMode": "code",
@@ -500,7 +547,7 @@
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `첫 토큰 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `첫 토큰 p90`\nFROM (SELECT DATE(created_at) AS d, first_token_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY first_token_ms) AS pr\n      FROM turns WHERE status = 'ok' AND first_token_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `첫 글자까지 · 보통`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `첫 글자까지 · 느린 편`\nFROM (SELECT DATE(created_at) AS d, first_token_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY first_token_ms) AS pr\n      FROM turns WHERE status = 'ok' AND first_token_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
      "format": "time_series",
      "rawQuery": true,
      "editorMode": "code",
@@ -529,7 +576,7 @@
      "mode": "multi"
     }
    },
-   "id": 14,
+   "id": 15,
    "gridPos": {
     "h": 8,
     "w": 12,
@@ -539,15 +586,15 @@
   },
   {
    "type": "timeseries",
-   "title": "검색 지연 p50 / p90(일별)",
-   "description": "turns.search_ms(2026-11-11~) — 한 턴에서 search-service(/search · /embed)를 기다린 시간 합, status=ok 만. 검색하지 않은 턴(일반 · 사내규정 개인화)은 NULL이라 빠진다. 업무특화 코드 답 턴은 검색 뒤에 답하므로 들어간다",
+   "title": "조항 검색 걸린 시간 (보통 / 느린 편, 일별)",
+   "description": "답을 만들기 전에 약관 · 인사규정에서 관련 조항을 찾는 데 걸린 시간. 「보통」은 그날 질문의 절반이 이보다 빨랐던 값, 「느린 편」은 10번 중 9번이 이보다 빨랐던 값(중앙값 · 90번째 백분위). 끝까지 답한 질문만 센다. 일반 대화와 직원 본인 질문(연차 · 퇴직금 등)은 검색하지 않아 빠진다. 업무특화는 규칙으로 답한 질문도 먼저 검색하므로 들어간다. 2026-11-11부터.\n\n출처: turns.search_ms(search-service 호출 시간 합)",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "petmint-mysql"
      },
-     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `검색 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `검색 p90`\nFROM (SELECT DATE(created_at) AS d, search_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY search_ms) AS pr\n      FROM turns WHERE status = 'ok' AND search_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `검색 · 보통`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `검색 · 느린 편`\nFROM (SELECT DATE(created_at) AS d, search_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY search_ms) AS pr\n      FROM turns WHERE status = 'ok' AND search_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
      "format": "time_series",
      "rawQuery": true,
      "editorMode": "code",
@@ -576,7 +623,7 @@
      "mode": "multi"
     }
    },
-   "id": 15,
+   "id": 16,
    "gridPos": {
     "h": 8,
     "w": 6,
@@ -586,8 +633,8 @@
   },
   {
    "type": "row",
-   "title": "별도 — GPU · Ollama",
-   "id": 16,
+   "title": "AI 서버 (GPU)",
+   "id": 17,
    "collapsed": false,
    "gridPos": {
     "h": 1,
@@ -600,7 +647,7 @@
   {
    "type": "timeseries",
    "title": "GPU 사용률",
-   "description": "호스트 nvidia-gpu-exporter(scripts/host-gpu-exporter.sh) — 띄우기 전에는 비어 있다",
+   "description": "AI 모델을 돌리는 그래픽카드가 일하는 비율. 답을 만드는 동안 올라가고 쉬면 0에 가깝다. 수집기를 띄우기 전에는 비어 있다.\n\n출처: 호스트 nvidia-gpu-exporter(scripts/host-gpu-exporter.sh)",
    "targets": [
     {
      "datasource": {
@@ -634,7 +681,7 @@
      "mode": "multi"
     }
    },
-   "id": 17,
+   "id": 18,
    "gridPos": {
     "h": 7,
     "w": 8,
@@ -644,8 +691,8 @@
   },
   {
    "type": "timeseries",
-   "title": "VRAM",
-   "description": "호스트 nvidia-gpu-exporter",
+   "title": "GPU 메모리 사용량",
+   "description": "그래픽카드 메모리 사용량과 전체 용량. AI 모델 · 검색 모델이 여기 올라간다. 가득 차면 모델을 내리고 다시 올리느라 답이 느려진다.\n\n출처: 호스트 nvidia-gpu-exporter",
    "targets": [
     {
      "datasource": {
@@ -688,7 +735,7 @@
      "mode": "multi"
     }
    },
-   "id": 18,
+   "id": 19,
    "gridPos": {
     "h": 7,
     "w": 8,
@@ -698,8 +745,8 @@
   },
   {
    "type": "timeseries",
-   "title": "Ollama 에 올라간 모델(VRAM)",
-   "description": "/api/ps(json-exporter). 선이 바뀌면 모델이 교체된 것. 아무것도 없으면 모델이 내려가 있다(유휴 5분 뒤 언로드)",
+   "title": "메모리에 올라간 AI 모델",
+   "description": "지금 그래픽카드에 올라가 있는 답변 모델과 크기. 선이 바뀌면 모델이 교체된 것이다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다.\n\n출처: Ollama /api/ps(json-exporter)",
    "targets": [
     {
      "datasource": {
@@ -733,7 +780,7 @@
      "mode": "multi"
     }
    },
-   "id": 19,
+   "id": 20,
    "gridPos": {
     "h": 7,
     "w": 8,
@@ -743,8 +790,8 @@
   },
   {
    "type": "timeseries",
-   "title": "턴이 쓴 모델(시간당)",
-   "description": "turns.model — 베이스(tri-7b) · RAG 어댑터 교대",
+   "title": "질문별로 쓴 AI 모델 (시간당)",
+   "description": "일반 · 사내규정은 기본 모델(tri-7b), 업무특화는 약관으로 학습한 모델(kabyul-…)이 답한다. 모드가 섞여 들어오면 두 모델을 번갈아 올리므로 그때 답이 느려질 수 있다.\n\n출처: turns.model",
    "targets": [
     {
      "datasource": {
@@ -780,7 +827,7 @@
      "mode": "multi"
     }
    },
-   "id": 20,
+   "id": 21,
    "gridPos": {
     "h": 7,
     "w": 12,
@@ -790,7 +837,7 @@
   },
   {
    "type": "logs",
-   "title": "서버 로그(petmint 앱)",
+   "title": "서버 기록 (최근 7일)",
    "datasource": {
     "type": "loki",
     "uid": "loki"
@@ -810,8 +857,8 @@
     "wrapLogMessage": true,
     "sortOrder": "Descending"
    },
-   "description": "Loki 7일. 대화 본문은 없다(서버 로그만)",
-   "id": 21,
+   "description": "챗봇 서버가 남긴 동작 기록. 오류가 났을 때 무슨 일이 있었는지 찾는 데 쓴다. 대화 내용(질문 · 답)은 들어 있지 않다.\n\n출처: Loki, petmint 앱 컨테이너 로그 7일 보존",
+   "id": 22,
    "gridPos": {
     "h": 7,
     "w": 12,
