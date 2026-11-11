@@ -303,11 +303,43 @@
    "panels": []
   },
   {
-   "type": "text",
-   "title": "거절률",
+   "type": "timeseries",
+   "title": "거절률(일별)",
+   "description": "turns.refused(2026-11-11~) — 답이 거절 문구인 턴 / status=ok 턴. 판정은 평가와 같은 함수(앱 data/refusal.py). 코드 답 턴도 들어간다(코드 답은 거절 문구를 쓰지 않는다). 그 전 턴은 NULL이라 빠진다",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT $__timeGroupAlias(t.created_at, '1d'), s.mode AS metric, AVG(t.refused) AS value\nFROM turns t JOIN sessions s ON s.session_id = t.session_id\nWHERE t.refused IS NOT NULL AND $__timeFilter(t.created_at)\nGROUP BY 1, 2 ORDER BY 1",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
    "options": {
-    "mode": "markdown",
-    "content": "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 \"거절했다\" 칸이 없다. 답 본문을 읽어야 판단할 수 있는데, 이 대시보드는 대화 본문을 읽지 않는다(읽기 계정에 권한이 없다).\n\n앱이 턴마다 거절 여부를 적으면(예: `turns.refused`) 여기에 붙인다."
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
    },
    "id": 10,
    "gridPos": {
@@ -506,11 +538,43 @@
    }
   },
   {
-   "type": "text",
-   "title": "검색 지연",
+   "type": "timeseries",
+   "title": "검색 지연 p50 / p90(일별)",
+   "description": "turns.search_ms(2026-11-11~) — 한 턴에서 search-service(/search · /embed)를 기다린 시간 합, status=ok 만. 검색하지 않은 턴(일반 · 사내규정 개인화)은 NULL이라 빠진다. 업무특화 코드 답 턴은 검색 뒤에 답하므로 들어간다",
+   "targets": [
+    {
+     "datasource": {
+      "type": "mysql",
+      "uid": "petmint-mysql"
+     },
+     "rawSql": "SELECT TIMESTAMP(d) AS time,\n  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `검색 p50`,\n  MAX(CASE WHEN pr <= 0.9 THEN v END) / 1000 AS `검색 p90`\nFROM (SELECT DATE(created_at) AS d, search_ms AS v,\n        PERCENT_RANK() OVER (PARTITION BY DATE(created_at) ORDER BY search_ms) AS pr\n      FROM turns WHERE status = 'ok' AND search_ms IS NOT NULL AND $__timeFilter(created_at)) x\nGROUP BY d ORDER BY d",
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "stacking": {
+       "mode": "none"
+      }
+     }
+    },
+    "overrides": []
+   },
    "options": {
-    "mode": "markdown",
-    "content": "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 검색(search-service) 시간이 없다. 앱이 턴마다 검색 시간을 적거나(`turns.search_ms`) `/metrics` 히스토그램으로 내면 여기에 붙인다."
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
    },
    "id": 15,
    "gridPos": {

@@ -84,8 +84,13 @@ add(bar("시간대별 질문 수(KST)",
 y += 8
 
 row("하단 — 답")
-add(text("거절률", "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 \"거절했다\" 칸이 없다. 답 본문을 읽어야 판단할 수 있는데, "
-         "이 대시보드는 대화 본문을 읽지 않는다(읽기 계정에 권한이 없다).\n\n앱이 턴마다 거절 여부를 적으면(예: `turns.refused`) 여기에 붙인다."), 6, 8, 0)
+add(ts("거절률(일별)", [sql(
+    "SELECT $__timeGroupAlias(t.created_at, '1d'), s.mode AS metric, AVG(t.refused) AS value\n"
+    "FROM turns t JOIN sessions s ON s.session_id = t.session_id\n"
+    "WHERE t.refused IS NOT NULL AND $__timeFilter(t.created_at)\nGROUP BY 1, 2 ORDER BY 1")],
+    unit="percentunit",
+    desc="turns.refused(2026-11-11~) — 답이 거절 문구인 턴 / status=ok 턴. 판정은 평가와 같은 함수(앱 data/refusal.py). "
+         "코드 답 턴도 들어간다(코드 답은 거절 문구를 쓰지 않는다). 그 전 턴은 NULL이라 빠진다"), 6, 8, 0)
 add(bar("규칙별 발동 수(code_rule)",
     "SELECT code_rule AS `규칙`, COUNT(*) AS `발동`\nFROM turns\n"
     "WHERE code_rule IS NOT NULL AND $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 2 DESC",
@@ -109,8 +114,9 @@ PCT = ("SELECT TIMESTAMP(d) AS time,\n"
 add(ts("응답 시간 p50 / p90(일별)", [sql(PCT.format(n="전체", c="latency_ms"), ref="A"),
                                        sql(PCT.format(n="첫 토큰", c="first_token_ms"), ref="B")],
        unit="s", desc="turns.latency_ms(답 끝까지) · first_token_ms(첫 토큰까지), status=ok 만. MySQL 에 분위수 함수가 없어 PERCENT_RANK 로"), 12, 8, 6)
-add(text("검색 지연", "**데이터 없음 — 앱 계측 필요.**\n\n턴 로그에 검색(search-service) 시간이 없다. "
-         "앱이 턴마다 검색 시간을 적거나(`turns.search_ms`) `/metrics` 히스토그램으로 내면 여기에 붙인다."), 6, 8, 18)
+add(ts("검색 지연 p50 / p90(일별)", [sql(PCT.format(n="검색", c="search_ms"), ref="A")], unit="s",
+       desc="turns.search_ms(2026-11-11~) — 한 턴에서 search-service(/search · /embed)를 기다린 시간 합, status=ok 만. "
+            "검색하지 않은 턴(일반 · 사내규정 개인화)은 NULL이라 빠진다. 업무특화 코드 답 턴은 검색 뒤에 답하므로 들어간다"), 6, 8, 18)
 y += 8
 
 row("별도 — GPU · Ollama")
