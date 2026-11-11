@@ -1,7 +1,7 @@
 # apps/monitoring
 
 Prometheus · Grafana · node-exporter · kube-state-metrics + Loki · Alloy · json-exporter (petmint-rag-chatbot `docs/15_monitoring.md`). Alertmanager는 없다 — 알림 설계 전.
-차트 없이 손으로 쓴 매니페스트다(14번 1-9절 — 설정을 저장소에 남긴다). ArgoCD Application `monitoring`(수동 Sync)이 이 디렉터리를 본다.
+차트 없이 손으로 쓴 매니페스트다(14번 1-9절 — 설정을 저장소에 남긴다). ArgoCD Application `monitoring`(자동 Sync, 2026-11-11~ — prune · selfHeal 끔)이 이 디렉터리를 본다. 대시보드는 `dashboards/gen_petmint.py`를 고쳐 push하면 반영된다.
 
 상태: ✓ 설치(2026-11-10, 가용성 묶음 2). 전부 w4(`node.ronanlab.dev/role=platform`)에 — node-exporter · alloy 만 DaemonSet이라 모든 노드에.
 
@@ -37,7 +37,7 @@ R(){ head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32; }
 kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password="$(R)"
 kubectl -n monitoring create secret generic grafana-mysql --from-literal=password="$(R)"
 # petmint Primary 에 읽기 계정 — 비밀번호는 표준 입력으로, 권한은 위 컬럼만(GRANT SELECT (컬럼, …) ON petmint.<테이블>)
-# Application: bootstrap/root-app.yaml 의 exclude 줄을 지웠다(2026-11-10) → 루트가 app.yaml 로 만든다. Sync 는 수동
+# Application: bootstrap/root-app.yaml 의 exclude 줄을 지웠다(2026-11-10) → 루트가 app.yaml 로 만든다. Sync 는 처음 수동, 2026-11-11부터 자동
 # GPU: 호스트에서 bash scripts/host-gpu-exporter.sh (docker 그룹, sudo 불필요)
 ```
 

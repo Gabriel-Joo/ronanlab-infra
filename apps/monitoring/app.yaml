@@ -1,9 +1,9 @@
 # 모니터링 — apps/monitoring 을 본다(2026-11-02 platform/monitoring 에서 옮겼다. Prometheus·Grafana·node-exporter·kube-state-metrics, petmint-rag-chatbot docs/15_monitoring.md).
-# 적용: 루트 Application(bootstrap/root-app.yaml)이 만든다. 아직 클러스터에 넣지 않았다(2026-10-18 작성) — 루트의 exclude 한 줄이 막고 있다.
-#   넣을 때: bootstrap/root-app.yaml 의 exclude 를 지우고 push → 루트가 이 Application 을 만든다(Sync 는 수동)
+# 적용: 루트 Application(bootstrap/root-app.yaml)이 만든다(2026-11-10 exclude 를 지워 넣었다).
 #
 # petmint.yaml 과 같은 규칙:
-# - Sync 는 수동(automated 없음)
+# - Sync 는 자동(2026-11-11, 사용자 지시 — petmint 가 자동인데 대시보드만 수동인 것은 맞지 않고, 대시보드는 깨져도 서비스에 영향이 없고 되돌리기 쉽다).
+#   prune · selfHeal 끔(petmint 와 같다). 실제 스위치는 kubectl patch(루트가 자식 syncPolicy 를 덮지 않는다), 이 파일은 기록. 2026-11-10~11 은 수동
 # - prune 없음 — git 에서 지운 리소스는 클러스터에 남는다
 # - finalizer 없음 — Application 을 지워도 Prometheus PVC 는 남는다
 # - Namespace 는 만들지도 소유하지도 않는다 — Secret grafana-admin 을 사람이 넣는다(apps/monitoring/README.md)
@@ -22,5 +22,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
     syncOptions:
       - CreateNamespace=false
