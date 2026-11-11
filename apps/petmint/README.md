@@ -97,7 +97,9 @@ ArgoCD는 hook의 `BeforeHookCreation`이 끝난 Job을 지우고 새로 만든�
   남은 것은 인증 하나: Harbor `petmint` 프로젝트가 비공개라 pull 전용 robot 계정으로
   `HARBOR_USER=... HARBOR_PASSWORD=... apps/petmint/scripts/create-secrets.sh` 를 돌려 `harbor-pull`을 만들어야 한다
   (없으면 `pull access denied … no basic auth credentials`)
-- **GPU 호스트 방화벽**: VM 사설 네트워크에서 11434·8100·19530(도커 포트 — ufw를 거치지 않는다)과 2049(NFS, `host-nfs-setup.sh`가 ufw에 연다)
+- **GPU 호스트 방화벽**(열린 포트 기록): VM 사설 네트워크(192.168.122.1)에서 11434(Ollama)·19530(Milvus) — 도커 포트라 ufw를 거치지 않는다,
+  8100(systemd `petmint-search`, 호스트 프로세스), 8200(systemd `model-service` — KURE-v1 · bge-reranker 공용, 2026-11-11 전환 중. 펫퍼민트 search-service는 호스트 안에서 부르고, Pod로는 런슈즈 챗봇이 쓴다),
+  2049(NFS, `host-nfs-setup.sh`가 ufw에 연다). 호스트 ufw는 inactive(2026-11-11 확인)라 지금은 모두 막힘 없이 닿는다
 - **WebSocket**: Ingress 읽기·쓰기 제한을 1시간으로 늘렸다. 그 사이 연결은 uvicorn ping(20초)이 유지한다.
   Cloudflare 쪽 WebSocket 제한은 별도다 — 끊기면 프런트가 다음 질문 때 다시 연결한다
 
