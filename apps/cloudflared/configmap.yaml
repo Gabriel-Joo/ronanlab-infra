@@ -1,4 +1,4 @@
-# 터널 설정(locally-managed). 호스트 다섯 개가 한 파일에 들어 있다 — 터널 하나를 클러스터가 같이 쓴다(docs/13 2-3절).
+# 터널 설정(locally-managed). 호스트 일곱 개가 한 파일에 들어 있다 — 터널 하나를 클러스터가 같이 쓴다(docs/13 2-3절).
 # 원점은 전부 ingress-nginx ClusterIP(Service DNS :443) — 호스트 구분은 nginx가 Host 헤더로 한다. NodePort·VIP를 쓰지 않는다.
 # cloudflared는 이 파일을 기동 때만 읽는다 — 바꾼 뒤 Sync만으로는 반영되지 않는다. README.md "바꿀 때"의 rollout restart까지.
 # 터널 ID는 비밀이 아니다(자격 증명은 Secret cloudflared-credentials).
@@ -29,6 +29,15 @@ data:
           noTLSVerify: true
       # 2026-10-18 추가 — 그 전에는 호스트 systemd cloudflared-runshoes(runshoes-tunnel)가 학교 인그레스로 보냈다. Access 없음(공개 사이트)
       - hostname: runshoes.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      # 2026-11-11 추가 — 모니터링(apps/monitoring/ingress.yaml). Access 「운영도구」 앱(argocd · harbor · jenkins 와 같은 앱)을 건 뒤 DNS 를 연다
+      - hostname: grafana.ronanlab.dev
+        service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
+      - hostname: prometheus.ronanlab.dev
         service: https://ingress-nginx-controller.ingress-nginx.svc.cluster.local:443
         originRequest:
           noTLSVerify: true

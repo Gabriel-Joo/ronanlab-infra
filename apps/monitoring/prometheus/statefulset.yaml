@@ -35,6 +35,7 @@ spec:
             - --storage.tsdb.path=/prometheus
             - --storage.tsdb.retention.time=15d       # 2026-11-10 7d → 15d(사용자)
             - --storage.tsdb.retention.size=9GB      # PVC 10Gi보다 먼저 지운다 — 시계열이 예상보다 늘어도 디스크를 채우지 않게
+            - --web.external-url=https://prometheus.ronanlab.dev   # UI 링크 · 리다이렉트 기준(ingress.yaml, 2026-11-11). 경로는 / 그대로
           ports:
             - name: http
               containerPort: 9090
