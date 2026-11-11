@@ -1,0 +1,82 @@
+# grafana.ronanlab.dev · prometheus.ronanlab.dev(2026-11-11) — port-forward 는 동시 요청이 많은 대시보드에서 connection reset 으로 끊겼다.
+# 다른 운영 도구(argocd · harbor · jenkins)와 같다:
+# - 바깥: Cloudflare 터널(apps/cloudflared) → ingress-nginx ClusterIP. 인증은 Cloudflare Access 「운영도구」 앱(대시보드에서 사람이 건다)
+# - 안(사설망): MetalLB VIP 192.168.122.240 → 같은 Ingress. TLS 는 cert-manager(letsencrypt-prod, DNS-01) — 아래 Certificate
+# - Prometheus 는 자체 로그인이 없다 — 바깥에서는 Access 가 유일한 문이다. Access 를 건 뒤에 DNS(CNAME)를 연다.
+#   사설망 VIP 로는 Access 없이 닿는다(호스트 · VM 만 있는 망 — argocd 등과 같은 구조). admin API 는 켜지 않았다(--web.enable-admin-api 없음)
+# - Grafana 는 자체 로그인(grafana-admin) + Access 두 겹
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+spec:
+  secretName: grafana-tls
+  dnsNames:
+    - grafana.ronanlab.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: prometheus-tls
+spec:
+  secretName: prometheus-tls
+  dnsNames:
+    - prometheus.ronanlab.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  labels:
+    app.kubernetes.io/name: grafana
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"          # 터널은 https 로 붙는다 — argocd · harbor · jenkins 와 같다
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"     # Grafana Live(WebSocket /api/live/ws)
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: grafana-tls
+      hosts: [grafana.ronanlab.dev]
+  rules:
+    - host: grafana.ronanlab.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: prometheus-tls
+      hosts: [prometheus.ronanlab.dev]
+  rules:
+    - host: prometheus.ronanlab.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  name: http

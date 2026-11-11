@@ -26,6 +26,7 @@ resources:
   - loki/loki.yaml                  # 서버 로그 7일(2026-11-10)
   - alloy/alloy.yaml                # 로그 수집 DaemonSet — 대화 원문 줄은 버린다
   - json-exporter/json-exporter.yaml  # Ollama /api/ps → 지표
+  - ingress.yaml                    # grafana · prometheus .ronanlab.dev + 인증서(2026-11-11)
 
 configMapGenerator:
   - name: grafana-dashboards
