@@ -5,22 +5,25 @@
 
 ## 차례
 
-Notion 게시는 이 표의 순서를 따른다. 「노션 제목」은 각 문서 맨 위 제목 줄과 같다.
+Notion 게시는 이 표의 순서를 따른다. 「노션 제목」은 각 문서 맨 위 제목 줄과 같다. 줄 순서가 곧 차례다.
+첫 칸은 백틱 파일 이름만 둔다(게시기가 읽는다, FOREMAN bridge/docsync.py table_rows).
 
-| 순서 | 문서 | 노션 제목 | 내용 |
-| --- | --- | --- | --- |
-| 1 | [00_server.md](00_server.md) | 인프라/서버 구축 포트폴리오 문서 | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
-| 2 | [kubernetes_install.md](kubernetes_install.md) | 쿠버네티스 설치 | 01~09의 머리: 목표, 전체 구조, 설계 원칙, 13단계 순서와 진행 상황 |
-| 3 | [01_cluster.md](01_cluster.md) | 01. 클러스터 구축 | KVM/libvirt · Vagrant VM 5대, containerd · kubeadm 1.35.9, Calico, 노드 추가 · 메모리 절차 |
-| 4 | [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md) | 02. 메트릭·스토리지·Ingress | metrics-server, local-path, ingress-nginx, MetalLB, cert-manager, CoreDNS rewrite |
-| 5 | [03_cloudflare_tunnel.md](03_cloudflare_tunnel.md) | 03. Cloudflare Tunnel 연결 | 도메인, ronanlab-tunnel(공개 주소 일곱) · ollama-tunnel, Access |
-| 6 | [04_argocd.md](04_argocd.md) | 04. ArgoCD | 설치, App of Apps, 자동 · 수동 Sync, 웹훅 · 알림 |
-| 7 | [05_harbor.md](05_harbor.md) | 05. Harbor | Helm 설치, values, 스토리지(w3), DB 백업 |
-| 8 | [06_jenkins.md](06_jenkins.md) | 06. Jenkins | Helm 설치, BuildKit rootless, 로봇 계정, 플러그인 고정, 파이프라인 |
-| 9 | [07_project_deploy.md](07_project_deploy.md) | 07. 프로젝트 배포 | petmint · runshoes: Secret, Kustomize, Jenkins → Harbor → ArgoCD, MySQL, Ingress |
-| 10 | [08_scale_out.md](08_scale_out.md) | 08. 구조 확장·이관 | 가용성: 노드 역할 배치, 앱 분산, Harbor · ArgoCD 이사, MySQL Replica, 노드 정비 절차 |
-| 11 | [09_monitoring.md](09_monitoring.md) | 09. 모니터링 | Prometheus · Grafana · Loki를 왜 이렇게 세웠나, 설치 기록(지금 구성은 `apps/monitoring/README.md`) |
-| 12 | [history/cloudflare_tunnel_vcluster.md](history/cloudflare_tunnel_vcluster.md) | Cloudflare Tunnel 세팅 (vcluster 시절) | 학교 vcluster 시절 RUNSHOES 터널 · CI 기록과 시행착오 |
+| 파일 | 노션 제목 | 내용 |
+| --- | --- | --- |
+| `00_server.md` | [인프라/서버 구축 포트폴리오 문서](00_server.md) | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
+| `kubernetes_install.md` | [쿠버네티스 설치](kubernetes_install.md) | 01~09의 머리: 목표, 전체 구조, 설계 원칙, 13단계 순서와 진행 상황 |
+| `01_cluster.md` | [01. 클러스터 구축](01_cluster.md) | KVM/libvirt · Vagrant VM 5대, containerd · kubeadm 1.35.9, Calico, 노드 추가 · 메모리 절차 |
+| `02_metrics_storage_ingress.md` | [02. 메트릭·스토리지·Ingress](02_metrics_storage_ingress.md) | metrics-server, local-path, ingress-nginx, MetalLB, cert-manager, CoreDNS rewrite |
+| `03_cloudflare_tunnel.md` | [03. Cloudflare Tunnel 연결](03_cloudflare_tunnel.md) | 도메인, ronanlab-tunnel(공개 주소 일곱) · ollama-tunnel, Access |
+| `04_argocd.md` | [04. ArgoCD](04_argocd.md) | 설치, App of Apps, 자동 · 수동 Sync, 웹훅 · 알림 |
+| `05_harbor.md` | [05. Harbor](05_harbor.md) | Helm 설치, values, 스토리지(w3), DB 백업 |
+| `06_jenkins.md` | [06. Jenkins](06_jenkins.md) | Helm 설치, BuildKit rootless, 로봇 계정, 플러그인 고정, 파이프라인 |
+| `07_project_deploy.md` | [07. 프로젝트 배포](07_project_deploy.md) | petmint · runshoes: Secret, Kustomize, Jenkins → Harbor → ArgoCD, MySQL, Ingress |
+| `08_scale_out.md` | [08. 구조 확장·이관](08_scale_out.md) | 가용성: 노드 역할 배치, 앱 분산, Harbor · ArgoCD 이사, MySQL Replica, 노드 정비 절차 |
+| `09_monitoring.md` | [09. 모니터링](09_monitoring.md) | Prometheus · Grafana · Loki를 왜 이렇게 세웠나, 설치 기록(지금 구성은 `apps/monitoring/README.md`) |
+| `history/cloudflare_tunnel_vcluster.md` | [Cloudflare Tunnel 세팅 (vcluster 시절)](history/cloudflare_tunnel_vcluster.md) | 학교 vcluster 시절 RUNSHOES 터널 · CI 기록과 시행착오 |
+
+history/ 아래 문서는 게시기가 표 순서로 읽지 못해 맨 뒤에 붙는다.
 
 모든 문서는 같은 꼴이다: 제목 줄, 머리 세 줄(요약 · 날짜 · 범위 · 코드), 절 다섯(1. 지금 구성 / 2. 왜 이렇게 했나 / 3. 진행 기록 / 4. 남은 한계 / 5. 확인 방법). 말투는 한다체.
 
