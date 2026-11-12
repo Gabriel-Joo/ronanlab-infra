@@ -105,6 +105,69 @@ libvirt `default` 망(virbr0)의 DHCP 범위는 192.168.122.100~199다. 2026-10-
 - `answer auto`는 응답 이름을 `harbor.ronanlab.dev`로 되돌린다. AAAA는 빈 응답이라 공개 IPv6로 새지 않는다
 - 클러스터의 Corefile에 이 rewrite 블록이 들어 있다(2026-11-12 확인)
 
+### 처음 한 번 (다시 세울 때)
+
+`platform/`은 ArgoCD 밖이라 사람이 넣는다. MetalLB · cert-manager를 넣은 helm 명령은 어디에도 남아 있지 않아(호스트 `~/k8s-cluster/backup/2026-10-15-before-metallb/ROLLBACK.md`에는 순서 · 시각만), 2026-11-12 배포된 릴리스에서 차트 저장소 · 이름 · 버전 · values를 뽑아 다시 적었다. 값(토큰)은 적지 않는다.
+
+**확인한 것(2026-11-12, 조회만)**
+- helm 릴리스 넷(metallb · cert-manager · harbor · jenkins)의 사용자 values가 저장소 `platform/*/values.yaml`과 같다. 다른 것은 Harbor `registry.size`(배포 20Gi, 저장소 30Gi, existingClaim이라 쓰이지 않음) 하나와 저장소에 두지 않는 `harborAdminPassword`
+- 저장소 values로 `helm template`한 매니페스트가 배포된 매니페스트(`helm get manifest`)와 같다. Secret(무작위 값) · checksum 줄을 빼고 비교했고, 렌더에만 있는 것은 hook · test(cert-manager `startupapicheck`, jenkins `jenkins-ui-test`)뿐이다
+- `kubectl diff`가 0줄: `platform/metallb/pool.yaml`, `platform/cert-manager/` 다섯 파일, `platform/coredns/configmap.yaml`, `platform/argocd/ingress.yaml`, `platform/harbor/pvc-w3.yaml`, `kubectl diff -k platform/ingress-nginx/overlay`
+- metallb-system · cert-manager 네임스페이스에는 helm `--create-namespace`가 붙이는 `name` 레이블이 있다(그 옵션으로 만들었다)
+
+**저장소를 m-k8s로 옮기기**: m-k8s에는 이 저장소가 없다(옛 `~/infra`만 있다). 호스트에서 `platform/`을 묶어 넘기고, 아래 명령은 m-k8s의 `~/platform-apply`에서 친다.
+
+```bash
+# 호스트
+cd ~/ronanlab-infra && tar czf - platform | (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'rm -rf ~/platform-apply && mkdir ~/platform-apply && tar xzf - -C ~/platform-apply')
+cd ~/k8s-cluster && vagrant ssh m-k8s        # 이후 m-k8s: cd ~/platform-apply
+```
+
+**순서**(kubeadm · Calico는 [01_cluster.md](01_cluster.md))
+
+```bash
+# 1. metrics-server: 처음엔 latest 로 깔았다(2026-10-06). 지금 이미지가 v0.9.0 이라 그 버전으로 고정해 적는다
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+kubectl -n kube-system patch deployment metrics-server --type=json \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+# 2. local-path-provisioner, 기본 StorageClass
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml
+kubectl patch storageclass local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+# 3. MetalLB(먼저 호스트에서 libvirt DHCP 범위를 .100~.199 로 줄인다, 아래)
+helm repo add metallb https://metallb.github.io/metallb && helm repo update
+helm install metallb metallb/metallb --version 0.16.1 -n metallb-system --create-namespace -f platform/metallb/values.yaml
+kubectl apply -f platform/metallb/pool.yaml                       # 컨트롤러 webhook 이 Ready 된 뒤
+
+# 4. ingress-nginx(base 만 apply 하지 않는다. Service 가 NodePort 로 돌아간다)
+kubectl apply -k platform/ingress-nginx/overlay
+
+# 5. cert-manager
+helm repo add jetstack https://charts.jetstack.io && helm repo update
+helm install cert-manager jetstack/cert-manager --version v1.21.2 -n cert-manager --create-namespace -f platform/cert-manager/values.yaml
+#     Cloudflare API 토큰: 대시보드 My Profile → API Tokens 에서 권한 Zone·DNS·Edit / Zone·Zone·Read, 영역 ronanlab.dev
+#     (권한은 펫퍼민트 docs/02_pipeline/14_deployment.md). 값은 표준 입력으로만
+read -rs CF && printf %s "$CF" | kubectl -n cert-manager create secret generic cloudflare-api-token --from-file=api-token=/dev/stdin; unset CF
+kubectl apply -f platform/cert-manager/cluster-issuer.yaml       # staging · prod. 처음 발급은 staging 으로 확인(운영은 주간 한도)
+#     Certificate 는 그 네임스페이스가 생긴 뒤: argocd-certificate(04) · harbor-certificate(05) · jenkins-certificate(06).
+#     grafana · prometheus 인증서는 apps/monitoring/ingress.yaml 에 있어 ArgoCD 가 넣는다
+
+# 6. CoreDNS rewrite(Harbor 를 안쪽으로). kubeadm upgrade 뒤에도 다시 확인한다
+kubectl apply -f platform/coredns/configmap.yaml
+```
+
+```bash
+# 호스트(libvirt 그룹, sudo 없이): MetalLB 풀 · 노드 고정 IP 와 겹치지 않게 DHCP 범위를 줄인다(2026-10-15)
+virsh -c qemu:///system net-update default delete ip-dhcp-range "<range start='192.168.122.2' end='192.168.122.254'/>" --live --config
+virsh -c qemu:///system net-update default add    ip-dhcp-range "<range start='192.168.122.100' end='192.168.122.199'/>" --live --config
+# 노드 /etc/hosts 의 harbor.ronanlab.dev → 192.168.122.240 은 cluster/Vagrantfile 프로비저너가 넣는다(VM 을 처음 만들 때. 기존 VM 은 vagrant provision <노드>)
+```
+
+- helm 차트 버전은 `--version`으로 고정한다. 저장소 이름(`metallb` · `jetstack`)은 2026-11-12 m-k8s `helm repo list`와 같다
+- 클러스터에만 있는 비밀값은 Secret `cert-manager/cloudflare-api-token`(키 `api-token`) 하나다. 나머지 cert-manager · MetalLB Secret(`letsencrypt-*-account`, `cert-manager-webhook-ca`, `metallb-memberlist`, `metallb-webhook-cert`)은 컨트롤러 · 차트가 만든다
+- metrics-server를 v0.9.0 매니페스트로 깔면 지금 것과 같은지는 확인하지 않았다(처음엔 latest였다)
+
 ## 2. 왜 이렇게 했나
 
 ### metrics-server가 무엇이고 왜 필요한가
