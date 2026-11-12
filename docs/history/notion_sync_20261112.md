@@ -83,12 +83,21 @@
 - `kubectl diff -k`를 칠 자리: m-k8s에는 이 저장소가 없다(02)
 - `harborAdminPassword`가 저장소 values에는 없고 배포된 릴리스 값에만 있다. 다음 `helm upgrade` 때 넣는 법이 정해지지 않았다(05)
 - 알림 설정(argocd-notifications-cm) · 웹훅 시크릿이 클러스터에만 있다(04)
-- 코드 주석이 실제와 다르다(매니페스트라 고치지 않았다):
-  - `platform/harbor/pvc-w3.yaml` 「reclaimPolicy 가 Delete」, 실제 PV는 Retain
-  - `platform/metallb/pool.yaml` 「노드 고정 IP(.10–.13)」, w4(.14)가 있다
-  - `apps/cloudflared/app.yaml` · `kustomization.yaml` 주석의 호스트 다섯
-  - `apps/runshoes/app/deployment.yaml` 주석의 「maxUnavailable 0」
-- `apps/monitoring/README.md`: 거절률 · 검색 지연 「없다」, GPU 「띄우기 전」, 크기 표(Grafana · Loki · node-exporter ×4), 「PVC 5Gi(보존 7일)」가 낡았다
+- `platform/harbor/values.yaml` registry `size: 20Gi`: 실제 PVC는 existingClaim `harbor-registry-w3` 30Gi다. 설정 값이라 손대지 않았다(existingClaim이 있으면 차트가 이 값을 쓰지 않는 것으로 보이나 확인하지 않음)
+
+### 4-1. 같은 날 뒤이어 고친 것(사용자 지시)
+
+주석도 다음 사람이 믿고 판단하는 글이라 실제와 맞췄다. 바꾼 줄은 모두 주석 · README이고 설정 값은 그대로다(`git diff`에서 주석 아닌 줄 0).
+
+| 파일 | 적혀 있던 것 | 실제(2026-11-12 다시 확인) |
+| --- | --- | --- |
+| `platform/harbor/pvc-w3.yaml` | reclaimPolicy Delete, PVC를 지우면 데이터도 지워진다 | PV 다섯 모두 Retain(StorageClass 기본만 Delete) |
+| `platform/metallb/pool.yaml` | 노드 고정 IP .10–.13 | .10–.14(w4) |
+| `apps/cloudflared/app.yaml` · `kustomization.yaml` | 공개 주소 다섯 | 일곱 |
+| `apps/runshoes/app/deployment.yaml` | maxSurge 1 · maxUnavailable 0 | 0 · 1 |
+| `apps/monitoring/prometheus/statefulset.yaml` | 보존 7일, PVC 5Gi | 15일(또는 9GB), 10Gi |
+| `apps/harbor-backup/cronjob.yaml` · `README.md` | 레이어 PVC `harbor-registry` 20Gi | `harbor-registry-w3` 30Gi |
+| `apps/monitoring/README.md` | 거절률 · 검색 지연 없음, GPU 띄우기 전, 자원 표에 Loki · json-exporter · Alloy 없음 · node-exporter ×4, PVC 5Gi · 7일 | 2026-11-11 연결(`ba7bd28`), GPU exporter 2026-11-11 09:22부터, 표를 지금 매니페스트로, 10Gi · 15일 · 9GB |
 - Cloudflare Access 칸은 저장소 주석 · 펫퍼민트 docs 13을 옮긴 것이고 대시보드는 보지 않았다(03)
 
 ## 5. 확인 방법
