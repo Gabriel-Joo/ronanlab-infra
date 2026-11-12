@@ -46,6 +46,65 @@ ArgoCD v2.13.2를 `install.yaml`로 깔고 Ingress와 기존 Cloudflare 터널�
 | 알림 | `argocd-notifications-cm`: 서비스 `service.webhook.foreman`(`http://192.168.122.1:8001`, 토큰은 `argocd-notifications-secret`의 `$foreman-webhook-token`), 트리거 여섯 `foreman-out-of-sync` · `foreman-sync-running` · `foreman-sync-succeeded` · `foreman-sync-failed` · `foreman-health-degraded` · `foreman-deployed`, 구독 선택자 `app.kubernetes.io/instance=root`(루트가 만든 Application) |
 | `argocd-cm` | `data` 비어 있음(2026-11-12 조회) |
 
+### 처음 한 번 (다시 세울 때)
+
+값은 여기 적지 않는다. `kubectl`은 m-k8s에서 치고, 저장소 파일은 호스트에 있으므로 `cd ~/k8s-cluster && vagrant ssh m-k8s -c '…' < 파일`처럼 표준 입력으로 넘긴다. 비밀값은 셸 변수 · 표준 입력으로만 다루고 명령 인자 · 화면에 내지 않는다.
+
+**클러스터에만 있는 것(2026-11-12 조회, 이름만)**
+
+| 무엇 | 자리 | 저장소 |
+| --- | --- | --- |
+| 알림 설정 | ConfigMap `argocd/argocd-notifications-cm` 키 9개(서비스 · 템플릿 · 트리거 6 · 구독) | `platform/argocd/notifications-cm.yaml`(2026-11-12 옮김, kubectl diff 0) |
+| 알림 토큰 | Secret `argocd/argocd-notifications-secret` 키 `foreman-webhook-token`. 값은 foreman `.env.bridge`의 `FOREMAN_WEBHOOK_TOKEN`(Jenkins `jenkins/foreman-webhook-token`과 같은 값) | 없음(아래 명령) |
+| GitHub 웹훅 시크릿 | Secret `argocd/argocd-secret` 키 `webhook.github.secret`. Jenkins의 `github-webhook-secret`과는 다른 값 | 없음(아래 명령) |
+| admin 비밀번호 | Secret `argocd/argocd-secret` 키 `admin.password`(bcrypt). 2026-10-18 03:12 UTC에 바뀌었다(`admin.passwordMtime`). 바꾼 방법은 기록이 없다 | 없음 |
+| 저장소 읽기 키 | Secret `argocd/repo-ronanlab-infra` | `scripts/make-deploy-keys.sh` |
+| 저장소 밖(사람이 대시보드에서) | GitHub `ronanlab-infra` 웹훅 · Deploy key, Cloudflare Access Bypass 앱(`/api/webhook`), DNS CNAME | 이 절의 순서 |
+
+**순서**
+
+```bash
+# 1~5는 m-k8s 에서. 저장소 파일은 호스트에서 넘긴다:
+#   매니페스트 vagrant ssh m-k8s -c 'kubectl apply -f -' < <파일>,  스크립트 vagrant ssh m-k8s -c 'bash -s' < <파일>
+# 1. 설치(v2.13.2 고정). 매니페스트는 저장소에 없다
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.2/manifests/install.yaml
+bash platform/argocd/pin-infra.sh                      # w3(infra)에 고정. install.yaml 을 다시 apply 하면 다시 돌린다
+
+# 2. admin 비밀번호: 설치가 만든 argocd-initial-admin-secret 으로 처음 로그인 → UI(User Info → Update Password)에서 바꾼다 → 그 Secret 을 지운다
+kubectl -n argocd delete secret argocd-initial-admin-secret
+
+# 3. 바깥 주소: 인증서(02의 cert-manager가 먼저) → Ingress
+kubectl apply -f platform/cert-manager/argocd-certificate.yaml
+kubectl apply -f platform/argocd/ingress.yaml
+
+# 4. 저장소 읽기 deploy key → 출력된 공개 키를 GitHub ronanlab-infra → Settings → Deploy keys(쓰기 끔)
+#    ssh -i <m-k8s 키> vagrant@192.168.122.10 'bash -s' < scripts/make-deploy-keys.sh
+
+# 5. 루트 Application. 나머지 Application 은 루트가 apps/*/app.yaml 로 만든다
+kubectl apply -f bootstrap/root-app.yaml
+```
+
+```bash
+# 6. GitHub 웹훅 시크릿(호스트에서). 값은 셸 변수로만 만들고, GitHub 에는 사람이 붙여 넣는다
+S=$(head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
+printf '{"stringData":{"webhook.github.secret":"%s"}}' "$S" \
+  | (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n argocd patch secret argocd-secret --type merge --patch-file /dev/stdin')
+(cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n argocd rollout restart deploy/argocd-server')   # 시크릿을 바꾸면 다시 띄워야 읽는다(3절 트러블슈팅)
+#    GitHub ronanlab-infra → Settings → Webhooks: Payload URL https://argocd.ronanlab.dev/api/webhook, Secret = $S, push 이벤트
+#    (Content type은 기록이 없다). Cloudflare Access 에 /api/webhook 만 Bypass 하는 앱을 둔다. 끝나면 unset S
+
+# 7. 알림(호스트에서). 토큰은 foreman 파일에서 셸 변수로 읽는다
+T=$(sed -n 's/^FOREMAN_WEBHOOK_TOKEN=//p' ~/AI_programming/foreman/.env.bridge)
+printf '{"stringData":{"foreman-webhook-token":"%s"}}' "$T" \
+  | (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n argocd patch secret argocd-notifications-secret --type merge --patch-file /dev/stdin'); unset T
+(cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl apply -f -') < platform/argocd/notifications-cm.yaml
+```
+
+- `argocd-notifications-secret` · `argocd-secret`은 `install.yaml`이 빈 채로 만든다. 그래서 `create`가 아니라 `patch`다
+- 1의 `install.yaml`에도 빈 `argocd-notifications-cm`이 있다. 다시 apply하면 알림 설정이 지워질 수 있다(확인하지 않음). 그 뒤에 7의 apply를 다시 한다
+- 확인: `kubectl -n argocd get secret argocd-secret -o jsonpath='{.data}' | python3 -c 'import json,sys; print(sorted(json.load(sys.stdin)))'`에 `webhook.github.secret`, 같은 방식으로 `argocd-notifications-secret`에 `foreman-webhook-token`이 보이면 된다(값은 보지 않는다)
+
 ## 2. 왜 이렇게 했나
 
 ### GitOps가 뭘 바꾸나
