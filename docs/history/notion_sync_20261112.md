@@ -79,7 +79,8 @@
 - 공유기 설정(192.168.0.17 · 포트포워딩 5001 → 22)은 볼 수 없어 노션 그대로다(00)
 - CUDA 13.0의 설치 방법을 모른다. `/usr/local/cuda-13.0`은 있으나 dpkg · apt에 흔적이 없다(00)
 - Ollama `/opt/models`가 RW로 붙은 것이 의도인지, 호스트 컨테이너 `mysql`(127.0.0.1:3306)의 용도, kopo02의 VNC · 포트 규칙이 지금도 쓰이는지 기록이 없다(00)
-- ArgoCD admin 비밀번호를 2026-10-18에 바꾼 방법, Jenkins admin 사용자 이름, metrics-server를 v0.9.0 매니페스트로 깔면 지금 것과 같은지, `install.yaml`을 다시 apply하면 알림 ConfigMap이 지워지는지는 확인하지 못했다(04 · 06 · 02)
+- `install.yaml`을 다시 apply하면 알림 ConfigMap이 지워지는지는 확인하지 않는다(해보면 알림이 끊길 수 있다, 사용자 결정). 문서는 「그 뒤에 다시 apply한다」(04)
+- 같은 날 채운 것: ArgoCD admin 비밀번호는 사람이 웹 화면에서 바꿨다(04), Jenkins admin 사용자 이름 admin(06), ArgoCD 웹훅 Content type application/json(04, 사람이 GitHub에서 확인), metrics-server는 v0.9.0이고 그 매니페스트와 patch 한 줄 말고 같다(02)
 
 ### 4-2. 같은 날 뒤이어 푼 것
 

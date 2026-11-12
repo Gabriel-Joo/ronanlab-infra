@@ -166,7 +166,7 @@ virsh -c qemu:///system net-update default add    ip-dhcp-range "<range start='1
 
 - helm 차트 버전은 `--version`으로 고정한다. 저장소 이름(`metallb` · `jetstack`)은 2026-11-12 m-k8s `helm repo list`와 같다
 - 클러스터에만 있는 비밀값은 Secret `cert-manager/cloudflare-api-token`(키 `api-token`) 하나다. 나머지 cert-manager · MetalLB Secret(`letsencrypt-*-account`, `cert-manager-webhook-ca`, `metallb-memberlist`, `metallb-webhook-cert`)은 컨트롤러 · 차트가 만든다
-- metrics-server를 v0.9.0 매니페스트로 깔면 지금 것과 같은지는 확인하지 않았다(처음엔 latest였다)
+- metrics-server: 지금 도는 것은 v0.9.0이고(처음엔 latest로 깔았다), v0.9.0 매니페스트와 같다. 2026-11-12 `kubectl diff -f`(v0.9.0 `components.yaml`)에서 다른 것은 위 1의 patch로 더한 `--kubelet-insecure-tls` 한 줄뿐이다
 
 ## 2. 왜 이렇게 했나
 
