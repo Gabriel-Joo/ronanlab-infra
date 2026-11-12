@@ -20,9 +20,9 @@ Prometheus · Grafana · node-exporter · kube-state-metrics + Loki · Alloy · 
 | Pod 상태 · 재시작 | kube-state-metrics |
 | 요청 수 · 에러율 | ingress-nginx 메트릭(`platform/ingress-nginx/overlay` — 2026-11-10 켬, Pod 주석으로 긁는다) |
 | 모드별 · 시간대별 질문, code_rule, 코드 답 vs 모델 답, 👍👎, 응답 시간 p50/p90, 턴이 쓴 모델 | petmint 턴 로그(DB) — **Replica**(`mysql-replica.petmint.svc`)를 읽는다 |
-| GPU 사용률 · VRAM | 호스트 컨테이너 nvidia-gpu-exporter(`scripts/host-gpu-exporter.sh`) — 사람이 띄운다, 띄우기 전에는 빈 칸 |
+| GPU 사용률 · VRAM | 호스트 컨테이너 nvidia-gpu-exporter(`utkuozdemir/nvidia_gpu_exporter:1.3.1`, `192.168.122.1:9835`, `scripts/host-gpu-exporter.sh`) — 사람이 띄운다. 2026-11-11 09:22 띄움 |
 | Ollama 모델 교체 | json-exporter(`/api/ps`) + 턴 로그의 `model` |
-| 거절률 · 검색 지연 | **없다** — 턴 로그에 칸이 없다. 앱 계측이 필요하다(대시보드에 그렇게 적은 텍스트 패널) |
+| 거절률 · 검색 지연 | petmint 턴 로그 `turns.refused` · `turns.search_ms`(2026-11-11, 앱 0009 — `ba7bd28`로 패널 연결). 그 전 턴은 NULL이라 빈 칸 |
 
 **petmint DB 읽기 계정** `grafana_ro`@`%`: 컬럼 단위 SELECT만 —
 `turns`(turn_id · session_id · code_rule · model · first_token_ms · latency_ms · status · created_at · clarified · context_kind · refused · search_ms — 마지막 둘은 2026-11-11, 앱 0009),
@@ -56,6 +56,7 @@ kubectl -n monitoring get secret grafana-admin -o jsonpath='{.data.admin-passwor
 milvus 0/1(9091이 호스트 127.0.0.1에만 — 15번 4절 그대로) · nvidia-gpu 0/1(exporter 아직 안 띄움).
 2026-11-11: milvus 1/1 — 호스트 compose(petmint-rag-chatbot `deploy/host/milvus`)에서 9091을 192.168.122.1에도 게시했다(19530과 같은 방식, etcd 2379는 닫힌 채).
 9091에는 `/debug/pprof` · `/log/level`도 인증 없이 응답한다 — 19530이 이미 같은 망에 인증 없이 열려 있어 새 위험은 작다고 봤다(앱 리포 docs 15번 4절).
+2026-11-11: nvidia-gpu 1/1 — 호스트에 exporter를 띄웠다(09:22). 2026-11-12 다시 보니 수집 대상 전부 up(milvus · nvidia-gpu 포함).
 Loki에 12개 네임스페이스 로그가 들어오고 챗봇 질문 줄 · Jenkins 빌드 Pod 로그는 0건. Grafana 데이터소스 셋 OK, MySQL 패널 쿼리가 값을 돌려준다(모드별 사내규정 56 · 업무특화 89 · 일반 17).
 
 ## 크기 — 무엇을 근거로 정했나 (2026-10-18 실측)
@@ -81,16 +82,23 @@ apiserver·kubelet /metrics는 긁지 않는다(시계열이 가장 많고 1절�
 |---|---|---|---|
 | Prometheus | 100m / 384Mi | 500m / 768Mi | 시계열 1.5만 × 헤드 ~8KB ≈ 120Mi + 런타임 ~100Mi + 압축·쿼리 여유. limit은 request의 2배 |
 | Grafana | 100m / 384Mi | 1 / 1Gi | **2026-11-11 고침**: 처음 값 50m/128Mi · 250m/256Mi는 Grafana 13에 모자랐다 — 기동만으로 ~240Mi, Dashboards 화면(검색 인덱스)에서 넘어 OOMKilled → 바깥에서 502/503. 패널 쿼리를 돌린 뒤 253Mi |
-| node-exporter ×4 | 20m / 32Mi | 100m / 64Mi | 수집기 기본값에서 15~25Mi |
 | kube-state-metrics | 20m / 64Mi | 100m / 128Mi | 객체 수백 개 규모 30~50Mi |
-| **합** | **270m / 704Mi** | **1,370m / 1,408Mi** | 노드 하나에 몰려도 requests 704Mi |
+| Loki | 100m / 256Mi | 500m / 768Mi | 단일 바이너리, 로그 7일 |
+| json-exporter | 10m / 16Mi | 100m / 64Mi | Ollama `/api/ps` 하나만 |
+| **w4 합**(위 다섯, 모두 w4) | **330m / 1,104Mi** | **2,200m / 2,752Mi** | w4 8,192Mi에 들어간다 |
+| node-exporter(DaemonSet, 노드마다) | 20m / 32Mi | 100m / 64Mi | 수집기 기본값에서 15~25Mi. 5대 |
+| Alloy(DaemonSet, 노드마다) | 20m / 64Mi | 200m / 256Mi | 로그 수집. 5대 |
+
+위 값은 2026-11-12 매니페스트 · 클러스터와 같다. 처음(2026-10-18) 표는 Prometheus · Grafana · node-exporter ×4 · kube-state-metrics만 있었고 Grafana가 50m/128Mi였다.
 
 CPU는 노드 실사용 2~3%(2코어)라 여유가 크다. limit 500m은 Prometheus 압축이 다른 Pod를 밀어내지 않게 하는 상한이다.
 
 4096 그대로면: requests는 어느 노드든 들어간다. 다만 Prometheus가 w3에 뜨면 w3 limits가 3,412 + 768 + 64 = 4,244Mi로 노드 용량(3,912)을 넘는다.
 그래서 8192로 올린 뒤 적용한다. 배치 제약은 넣지 않았다 — 8192에서는 필요 없고, 넣으면 그때 다시 걷어내야 한다.
 
-**PVC 5Gi (보존 7일)**
+**PVC — 처음 설계 5Gi · 보존 7일, 지금 10Gi · 15일 · 9GB**
+
+지금 값(2026-11-10 사용자, `prometheus/statefulset.yaml`): PVC 10Gi, `--storage.tsdb.retention.time=15d`, `--storage.tsdb.retention.size=9GB`. 아래는 처음(2026-10-18) 설계 계산이다(7일 · 5Gi 기준). 15일 보존에 맞춰 10Gi로 올렸다(`statefulset.yaml` 주석).
 
 - 시계열 1.5만 / 30초 = 초당 500 샘플 × 604,800초 = 약 3억 샘플 × ~1.5바이트 ≈ 0.45GB(블록)
 - WAL·헤드 약 3시간치 ≈ 0.1GB, 압축 중 임시로 가장 큰 블록만큼 더
