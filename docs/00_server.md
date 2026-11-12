@@ -1,4 +1,4 @@
-# 인프라/서버 구축 포트폴리오 문서
+# 인프라/서버 구축(하드웨어)
 
 물리 GPU 서버 한 대(kopo17-System-Product-Name, RTX 5070 Ti 16GB)에 Ubuntu · NVIDIA 드라이버 · CUDA · 원격 접속(SSH · VNC · Jupyter) · Docker(Ollama · Open WebUI)를 올리고 헤드리스로 운영한다.
 처음에는 두 계정(kopo17 · kopo02)이 베이스 모델과 GPU를 같이 쓰는 LoRA 실습 서버로 설계했고, 지금은 그 위에 쿠버네티스 VM · 앱용 호스트 서비스도 돈다.
