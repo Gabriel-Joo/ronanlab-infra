@@ -7,7 +7,7 @@ Operator(Group Replication · Orchestrator 등)는 자원 제약으로 쓰지 �
 | --- | --- | --- |
 | Primary | StatefulSet `mysql` → Pod `mysql-0`(w1), Service `mysql` | `runshoes-mysql` → `runshoes-mysql-0`(w1), Service `runshoes-mysql` |
 | Replica | `mysql-replica` → `mysql-replica-0`(w2), Service `mysql-replica` | `runshoes-mysql-replica` → `runshoes-mysql-replica-0`(w2) |
-| 매니페스트 | `apps/petmint/mysql/` (수동 Sync) | `apps/runshoes/mysql/` (자동 Sync) |
+| 매니페스트 | `apps/petmint/mysql/` (자동 Sync, 2026-11-11~) | `apps/runshoes/mysql/` (자동 Sync) |
 | 앱이 보는 곳 | Service `mysql`(Primary만 고른다) | Service `runshoes-mysql` |
 
 - 복제: binlog 파일 · 위치(ROW). GTID는 꺼져 있다 — 켜려면 Primary를 다시 시작해야 해서 쓰지 않았다
@@ -61,7 +61,7 @@ kubectl -n <ns> exec <replica-pod> -- sh -c 'MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysq
 kubectl -n petmint  patch svc mysql          -p '{"spec":{"selector":{"app.kubernetes.io/name":"mysql-replica"}}}'
 kubectl -n runshoes patch svc runshoes-mysql -p '{"spec":{"selector":{"app.kubernetes.io/name":"runshoes-mysql-replica"}}}'
 #    git: apps/<앱>/mysql/service.yaml 의 selector 를 같게 고쳐 push — 안 하면 다음 Sync 가 옛 selector 로 되돌린다
-#    (runshoes 는 자동 Sync — Jenkins 태그 커밋 하나에 되돌아간다). petmint 는 push 뒤 Sync
+#    (둘 다 자동 Sync — Jenkins 태그 커밋 하나에 되돌아간다. petmint 는 2026-11-11 자동으로 바뀌었다)
 
 # 4. 앱 재시작 — 끊긴 연결을 버리고 새로 붙게(한 Pod 씩, 4단계 배치에서 2개)
 kubectl -n petmint  rollout restart deploy/petmint-app && kubectl -n petmint  rollout status deploy/petmint-app
