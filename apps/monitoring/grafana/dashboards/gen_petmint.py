@@ -179,16 +179,18 @@ add(ts("GPU 사용률", [prom('nvidia_smi_utilization_gpu_ratio * 100', "GPU {{u
 add(ts("GPU 메모리 사용량", [prom('nvidia_smi_memory_used_bytes', "사용"), prom('nvidia_smi_memory_total_bytes', "전체")], unit="bytes",
        desc="그래픽카드 메모리 사용량과 전체 용량. AI 모델 · 검색 모델이 여기 올라간다. 가득 차면 모델을 내리고 다시 올리느라 답이 느려진다."
             + SRC + "호스트 nvidia-gpu-exporter"), 8, 7, 8)
-# 시간 범위와 상관없이 지금 값 하나만 본다(instant). 지난 시간에 어떤 모델이 답했는지는 아래 「질문별로 쓴 AI 모델」이 보여 준다
-_now = prom('ollama_loaded_model_vram_bytes', "{{model}}")
-_now["instant"] = True
-_p = stat("지금 메모리에 올라간 AI 모델", [_now], unit="bytes",
-          desc="지금 이 순간 그래픽카드에 올라가 있는 답변 모델과 크기. 칸 하나가 모델 하나다. 위 시간 범위와 상관없이 지금 값만 보여 준다."
-               " petmint 말고 다른 클라이언트(학교 PC 터널 등)가 올린 모델도 함께 나온다. 5분 동안 질문이 없으면 내려가고,"
-               " 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다. 아무것도 없으면 「올라간 모델 없음」이다." + SRC
-               + "Ollama /api/ps(json-exporter, 30초마다)")
-_p["fieldConfig"]["defaults"]["noValue"] = "올라간 모델 없음"
-_p["options"]["textMode"] = "value_and_name"
+# 모델은 답한 뒤 5분쯤만 올라가 있다. 대시보드 기간(기본 30일)으로 그리면 한 점이 한 시간이라 막대가 뭉개지므로
+# 이 패널만 최근 24시간으로 고정한다(timeFrom). max_over_time은 점 사이에 있던 짧은 적재도 빠뜨리지 않게 한다
+_p = {"type": "state-timeline", "title": "메모리에 올라간 AI 모델 (최근 24시간)", "timeFrom": "24h",
+      "description": "AI 모델마다 한 줄. 색 막대가 그 모델이 그래픽카드에 올라가 있던 시간이다. 오른쪽 끝까지 색이 닿아 있으면"
+                     " 지금 올라가 있는 것이다. 위 기간과 상관없이 늘 최근 24시간을 보여 준다. petmint 말고 다른 클라이언트"
+                     "(학교 PC 터널 등)가 올린 모델도 함께 나온다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라"
+                     " 몇 초 더 걸린다. 막대에 마우스를 올리면 크기가 나온다." + SRC + "Ollama /api/ps(json-exporter, 30초마다)",
+      "targets": [prom('max_over_time(ollama_loaded_model_vram_bytes[$__rate_interval])', "{{model}}")],
+      "fieldConfig": {"defaults": {"unit": "bytes", "color": {"mode": "palette-classic"},
+                                   "custom": {"fillOpacity": 80, "lineWidth": 0}}, "overrides": []},
+      "options": {"showValue": "never", "mergeValues": True, "rowHeight": 0.8, "alignValue": "left",
+                  "legend": {"showLegend": False}, "tooltip": {"mode": "single"}}}
 add(_p, 8, 7, 16)
 y += 7
 add(ts("질문별로 쓴 AI 모델 (시간당)", [sql(

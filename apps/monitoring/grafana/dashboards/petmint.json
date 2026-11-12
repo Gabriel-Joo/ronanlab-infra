@@ -744,37 +744,45 @@
    }
   },
   {
-   "type": "stat",
-   "title": "지금 메모리에 올라간 AI 모델",
-   "description": "지금 이 순간 그래픽카드에 올라가 있는 답변 모델과 크기. 칸 하나가 모델 하나다. 위 시간 범위와 상관없이 지금 값만 보여 준다. petmint 말고 다른 클라이언트(학교 PC 터널 등)가 올린 모델도 함께 나온다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다. 아무것도 없으면 「올라간 모델 없음」이다.\n\n출처: Ollama /api/ps(json-exporter, 30초마다)",
+   "type": "state-timeline",
+   "title": "메모리에 올라간 AI 모델 (최근 24시간)",
+   "timeFrom": "24h",
+   "description": "AI 모델마다 한 줄. 색 막대가 그 모델이 그래픽카드에 올라가 있던 시간이다. 오른쪽 끝까지 색이 닿아 있으면 지금 올라가 있는 것이다. 위 기간과 상관없이 늘 최근 24시간을 보여 준다. petmint 말고 다른 클라이언트(학교 PC 터널 등)가 올린 모델도 함께 나온다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다. 막대에 마우스를 올리면 크기가 나온다.\n\n출처: Ollama /api/ps(json-exporter, 30초마다)",
    "targets": [
     {
      "datasource": {
       "type": "prometheus",
       "uid": "prometheus"
      },
-     "expr": "ollama_loaded_model_vram_bytes",
+     "expr": "max_over_time(ollama_loaded_model_vram_bytes[$__rate_interval])",
      "legendFormat": "{{model}}",
-     "refId": "A",
-     "instant": true
+     "refId": "A"
     }
    ],
    "fieldConfig": {
     "defaults": {
      "unit": "bytes",
-     "noValue": "올라간 모델 없음"
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "fillOpacity": 80,
+      "lineWidth": 0
+     }
     },
     "overrides": []
    },
    "options": {
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ]
+    "showValue": "never",
+    "mergeValues": true,
+    "rowHeight": 0.8,
+    "alignValue": "left",
+    "legend": {
+     "showLegend": false
     },
-    "colorMode": "value",
-    "graphMode": "none",
-    "textMode": "value_and_name"
+    "tooltip": {
+     "mode": "single"
+    }
    },
    "id": 20,
    "gridPos": {
