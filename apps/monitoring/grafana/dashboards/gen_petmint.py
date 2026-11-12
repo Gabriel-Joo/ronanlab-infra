@@ -175,10 +175,10 @@ y += 8
 row("AI 서버 (GPU)")
 add(ts("GPU 사용률", [prom('nvidia_smi_utilization_gpu_ratio * 100', "GPU {{uuid}}")], unit="percent",
        desc="AI 모델을 돌리는 그래픽카드가 일하는 비율. 답을 만드는 동안 올라가고 쉬면 0에 가깝다. 수집기를 띄우기 전에는 비어 있다."
-            + SRC + "호스트 nvidia-gpu-exporter(scripts/host-gpu-exporter.sh)"), 8, 7, 0)
+            + SRC + "호스트 nvidia-gpu-exporter(scripts/host-gpu-exporter.sh)"), 6, 7, 0)
 add(ts("GPU 메모리 사용량", [prom('nvidia_smi_memory_used_bytes', "사용"), prom('nvidia_smi_memory_total_bytes', "전체")], unit="bytes",
        desc="그래픽카드 메모리 사용량과 전체 용량. AI 모델 · 검색 모델이 여기 올라간다. 가득 차면 모델을 내리고 다시 올리느라 답이 느려진다."
-            + SRC + "호스트 nvidia-gpu-exporter"), 8, 7, 8)
+            + SRC + "호스트 nvidia-gpu-exporter"), 6, 7, 6)
 # 모델은 답한 뒤 5분쯤만 올라가 있다. 대시보드 기간(기본 30일)으로 그리면 한 점이 한 시간이라 막대가 뭉개지므로
 # 이 패널만 최근 24시간으로 고정한다(timeFrom). max_over_time은 점 사이에 있던 짧은 적재도 빠뜨리지 않게 한다
 _p = {"type": "state-timeline", "title": "메모리에 올라간 AI 모델 (최근 24시간)", "timeFrom": "24h",
@@ -191,7 +191,9 @@ _p = {"type": "state-timeline", "title": "메모리에 올라간 AI 모델 (최�
                                    "custom": {"fillOpacity": 80, "lineWidth": 0}}, "overrides": []},
       "options": {"showValue": "never", "mergeValues": True, "rowHeight": 0.8, "alignValue": "left",
                   "legend": {"showLegend": False}, "tooltip": {"mode": "single"}}}
-add(_p, 8, 7, 16)
+# 제목 옆에 「Last 24 hours」 표시가 붙어 제목이 잘리므로 감춘다(제목에 이미 기간이 있다). 모델 이름이 길어 이 칸을 넓힌다
+_p["hideTimeOverride"] = True
+add(_p, 12, 7, 12)
 y += 7
 add(ts("질문별로 쓴 AI 모델 (시간당)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1h'), model AS metric, COUNT(*) AS value\n"
