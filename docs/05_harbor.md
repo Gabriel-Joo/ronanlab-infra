@@ -121,7 +121,47 @@ redis:
 
 (위는 저장소 파일의 값이고 주석은 줄였다. `size`는 `existingClaim`이 있으면 쓰이지 않는다. 실제 registry PVC는 30Gi.)
 
-비밀 값: 저장소 파일에는 `harborAdminPassword`가 없다. 배포된 릴리스 값(`helm get values harbor`)에는 키 `harborAdminPassword`가 있다(값은 보지 않았다).
+### 처음 한 번 (다시 세울 때)
+
+값은 여기 적지 않는다. 저장소의 `platform/`을 m-k8s로 옮기는 법은 [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md) 「처음 한 번」(아래 명령은 그 자리 `~/platform-apply`에서 친다).
+
+**클러스터에만 있는 것(2026-11-12 조회, 이름만)**
+
+| 무엇 | 자리 | 비고 |
+| --- | --- | --- |
+| admin 비밀번호 | Helm 릴리스 `harbor` 사용자 값 `harborAdminPassword`(revision 1 · 2 · 3 모두). 차트가 Secret `harbor/harbor-core` 키 `HARBOR_ADMIN_PASSWORD`로 넣는다 | 2026-11-12: 릴리스 값과 Secret 키가 같고(해시 비교), 그 값으로 `admin` API 로그인이 200. 지금도 실제 admin 비밀번호다. 처음(2026-10-14)에는 `--set harborAdminPassword=…`로 넘겼다(3절 10-6단계) |
+| 프로젝트 · robot 계정 | Harbor DB: 프로젝트 `library` · `petmint` · `runshoes`, robot `petmint+pull` · `petmint+jenkins` · `runshoes+pull` · `runshoes+jenkins` | UI에서 만들었다. DB는 매일 백업(`apps/harbor-backup`). 다시 만드는 법은 `apps/petmint/README.md` · `apps/runshoes/README.md` 「처음 한 번」, Jenkins 쪽 Secret은 [06_jenkins.md](06_jenkins.md) |
+| 차트가 만드는 Secret | `harbor-core` · `harbor-database` · `harbor-jobservice` · `harbor-registry` · `harbor-registry-htpasswd` · `harbor-registryctl` · `harbor-trivy` | 차트가 만든다. 새로 설치하면 새 값이 생긴다 |
+
+```bash
+# m-k8s, ~/platform-apply 에서. 차트 저장소 · 버전은 2026-11-12 배포된 것과 같다
+helm repo add harbor https://helm.goharbor.io && helm repo update
+kubectl create namespace harbor
+kubectl apply -f platform/cert-manager/harbor-certificate.yaml   # TLS Secret harbor-tls(02의 cert-manager 가 먼저)
+kubectl apply -f platform/harbor/pvc-w3.yaml                     # PVC 다섯(w3). PV 는 만든 뒤 Retain 으로 바꾼다(아래)
+
+# 비밀번호는 셸 변수로 만들고 표준 입력으로 넘긴다(명령 인자 · 화면에 남기지 않는다). 사람이 비밀번호 관리 자리에 따로 둔다
+P=$(head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 24)
+printf %s "$P" | helm install harbor harbor/harbor --version 1.19.2 -n harbor \
+  -f platform/harbor/values.yaml --set-file harborAdminPassword=/dev/stdin; unset P
+
+# PV 를 Retain 으로(local-path 기본은 Delete)
+for c in harbor-registry-w3 harbor-database-w3 harbor-redis-w3 harbor-jobservice-w3 harbor-trivy-w3; do
+  kubectl patch pv "$(kubectl -n harbor get pvc $c -o jsonpath='{.spec.volumeName}')" -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+done
+```
+
+```bash
+# helm upgrade 때: 지금 비밀번호를 Secret 에서 셸 변수로 읽어 같은 값을 다시 넘긴다
+P=$(kubectl -n harbor get secret harbor-core -o jsonpath='{.data.HARBOR_ADMIN_PASSWORD}' | base64 -d)
+printf %s "$P" | helm upgrade harbor harbor/harbor --version 1.19.2 -n harbor \
+  -f platform/harbor/values.yaml --set-file harborAdminPassword=/dev/stdin; unset P
+```
+
+- `--set-file harborAdminPassword=/dev/stdin`이 값을 Secret에 넣는 것은 2026-11-12 `helm template`(가짜 값)으로 확인했다
+- 빠뜨리면 차트 기본값(`helm show values harbor/harbor`의 `harborAdminPassword`)이 Secret에 들어간다. `--reuse-values`는 쓰지 않는다(앞의 값을 덮는 사고, CLAUDE.md 8절)
+- 저장소 `values.yaml`로 렌더한 매니페스트는 2026-11-12 배포된 것과 같다(Secret · checksum · hook 빼고). 다른 값은 `persistence.persistentVolumeClaim.registry.size`(배포 20Gi, 저장소 30Gi) 하나이고 existingClaim이라 쓰이지 않는다
+- 2026-11-10 이사 때 Harbor PV를 전부 Retain으로 바꾼 뒤 올렸다([08_scale_out.md](08_scale_out.md) 「existingClaim을 주면 옛 PVC가 지워질 수 있다」). 그때 친 명령은 남아 있지 않아, 위 `kubectl patch`는 같은 결과를 내는 명령으로 적었다
 
 ## 2. 왜 이렇게 했나
 
@@ -442,7 +482,7 @@ helm revision 3(커밋 `2570d50`). `platform/harbor/pvc-w3.yaml`로 w3에 새 PV
 - **이미지 레이어(registry PVC)는 백업하지 않는다.** DB만 있으면 프로젝트 · 로봇 계정 · 정책은 돌아오지만 레이어가 없는 태그는 pull이 안 된다. 앱 이미지는 앱 저장소 커밋에서 Jenkins로 다시 빌드할 수 있다는 것을 전제로 한다
 - 백업이 운영 디스크와 같은 물리 서버에 있다. 2절 "실익 없음"과 같은 이야기다(다른 디스크 · 바깥으로 한 벌 더는 `docs/TODO.md`)
 - Harbor를 올리면 `apps/harbor-backup/cronjob.yaml`의 `goharbor/harbor-db` 태그도 같이 올려야 한다(pg_dump가 서버보다 낮으면 실패)
-- 저장소의 `values.yaml`에는 `harborAdminPassword`가 없고, 배포된 릴리스 값에는 있다. 다음 `helm upgrade` 때 이 값을 어떻게 넣는지는 정해지지 않음
+- `harborAdminPassword`는 저장소에 없고 릴리스 값에만 있다. `helm upgrade` 때 빠뜨리면 차트 기본값이 Secret에 들어간다. 넣는 법은 1절 「처음 한 번」(2026-11-12 정함)
 - local-path라 분산 스토리지가 없다(2절)
 
 ## 5. 확인 방법
