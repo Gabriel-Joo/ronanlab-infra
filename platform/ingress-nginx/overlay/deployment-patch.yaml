@@ -1,6 +1,6 @@
 # ingress-nginx 컨트롤러(2026-11-10 가용성 묶음 2)
 # - replicas 2 · 노드 분산(선호): 모든 앱의 입구라 하나가 죽어도 다른 하나가 받게. 롤링은 업스트림 그대로 maxUnavailable 1 — 한 개씩
-#   (전에는 1개라 재시작 때 끊겼다 — 2026-11-10 12초, docs/02_availability.md 4절)
+#   (전에는 1개라 재시작 때 끊겼다 — 2026-11-10 12초, docs/08_scale_out.md 4절)
 # - 메트릭(:10254): 업스트림 baremetal 매니페스트가 --enable-metrics=false 로 끈다 → true. Prometheus(apps/monitoring)가 긁어
 #   호스트별 요청 수 · 상태코드 · 지연을 본다(앱에 /metrics 가 없어서 HTTP 지표는 여기서 얻는다)
 # args 는 배열이라 전략적 병합으로는 한 줄만 못 바꾼다 — JSON 6902 패치(overlay/kustomization.yaml)로 마지막 인자를 바꾼다

@@ -63,7 +63,7 @@ echo "$J" | vagrant ssh w5-k8s -c 'read -r C; sudo $C'; unset J
 ##### 1-5. 워커 메모리 늘리기 (2026-11-10 w1~w3 4 → 8GB)
 
 vagrant-libvirt는 꺼진 도메인의 `<memory>`(최대)만 올리고 `<currentMemory>`는 그대로 둔다 — 그대로 켜면 게스트가 옛 크기만 본다(w2에서 겪음).
-virsh로 둘 다 맞춘 뒤 켠다. 절차 전체(drain · 순서)는 [02_availability.md](02_availability.md) 1-5절.
+virsh로 둘 다 맞춘 뒤 켠다. 절차 전체(drain · 순서)는 [08_scale_out.md](08_scale_out.md) 1-5절.
 
 ```bash
 D=k8s-cluster_w1-k8s
@@ -86,7 +86,7 @@ vagrant up w1-k8s           # Vagrantfile memory 도 같은 값으로
 
 #### 4. 남은 한계
 
-- **물리 호스트가 하나다.** VM 5대가 같은 서버 · 같은 디스크에 있다 — 서버 자체가 죽으면 전부 멈춘다([02_availability.md](02_availability.md) 4절)
+- **물리 호스트가 하나다.** VM 5대가 같은 서버 · 같은 디스크에 있다 — 서버 자체가 죽으면 전부 멈춘다([08_scale_out.md](08_scale_out.md) 4절)
 - **컨트롤 플레인이 한 대다.** m-k8s가 죽으면 이미 뜬 Pod는 돌지만 스케줄 · 복구 · kubectl이 멈춘다
 - `~/k8s-cluster`(실제로 vagrant가 읽는 곳)와 저장소 `cluster/`가 사본이다 — 한쪽을 고치면 다른 쪽도 고친다
 - 노드 InternalIP가 DHCP 대역(eth0)이다. 지금까지 주소가 바뀐 적은 없지만 libvirt DHCP 임대가 바뀌면 노드 주소가 바뀐다
