@@ -89,7 +89,9 @@ add(ts("접속 요청량 (초당, 결과별)",
             "400번대 = 로그인 안 됨 · 없는 주소 등 요청 쪽 문제, 500번대 = 서버 오류. 대화창 연결은 질문 수가 아니라 연결 한 번이 1건이다"
             ". 질문 수는 아래 「모드별 질문 수」에 있다." + SRC + "ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)"), 8, 6, 8)
 add(ts("서버 오류 비율",
-       [prom(f'sum(rate(nginx_ingress_controller_requests{{{H},status=~"5.."}}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{{{H}}}[5m])), 1e-9)', "서버 오류")],
+       # 500번대가 한 번도 없으면 그 줄 자체가 없어 나눗셈 전체가 비므로(No data) or vector(0)으로 0을 채운다.
+       # 요청이 아예 없을 때(분모가 없음)는 그대로 비어 있다
+       [prom(f'(sum(rate(nginx_ingress_controller_requests{{{H},status=~"5.."}}[5m])) or vector(0)) / clamp_min(sum(rate(nginx_ingress_controller_requests{{{H}}}[5m])), 1e-9)', "서버 오류")],
        unit="percentunit",
        desc="전체 요청 중 서버 오류(500번대)의 비율. 0%가 정상. 화면이 안 열리거나 고객 조회가 안 되는 경우가 여기 잡힌다."
             " 대화창에서 답을 만들다 실패한 것은 여기 안 잡히고 아래 「답변 실패 · 중단 비율」에 나온다." + SRC + "ingress-nginx 5xx / 전체"),
