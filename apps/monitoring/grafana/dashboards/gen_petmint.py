@@ -177,9 +177,10 @@ add(ts("GPU 사용률", [prom('nvidia_smi_utilization_gpu_ratio * 100', "GPU {{u
 add(ts("GPU 메모리 사용량", [prom('nvidia_smi_memory_used_bytes', "사용"), prom('nvidia_smi_memory_total_bytes', "전체")], unit="bytes",
        desc="그래픽카드 메모리 사용량과 전체 용량. AI 모델 · 검색 모델이 여기 올라간다. 가득 차면 모델을 내리고 다시 올리느라 답이 느려진다."
             + SRC + "호스트 nvidia-gpu-exporter"), 8, 7, 8)
-add(ts("메모리에 올라간 AI 모델", [prom('ollama_loaded_model_vram_bytes', "{{model}}")], unit="bytes",
-       desc="지금 그래픽카드에 올라가 있는 답변 모델과 크기. 선이 바뀌면 모델이 교체된 것이다. 5분 동안 질문이 없으면 내려가고,"
-            " 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다." + SRC + "Ollama /api/ps(json-exporter)"), 8, 7, 16)
+add(ts("메모리에 올라간 AI 모델", [prom('max_over_time(ollama_loaded_model_vram_bytes[$__rate_interval])', "{{model}}")], unit="bytes",
+       desc="그래픽카드에 올라간 답변 모델과 크기. 한 점은 그 구간에 한 번이라도 올라갔던 모델을 보여 주므로, 몇 분만 올라갔다 내려간"
+            " 모델도 빠지지 않는다. petmint 말고 다른 클라이언트(학교 PC 터널 등)가 올린 모델도 함께 나온다. 선이 바뀌면 모델이"
+            " 교체된 것이다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다." + SRC + "Ollama /api/ps(json-exporter)"), 8, 7, 16)
 y += 7
 add(ts("질문별로 쓴 AI 모델 (시간당)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1h'), model AS metric, COUNT(*) AS value\n"
