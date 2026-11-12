@@ -3,7 +3,8 @@
 #   database-data-harbor-database-0(w3) · data-harbor-redis-0(w1) · data-harbor-trivy-0(w2) — StatefulSet volumeClaimTemplates 가 만든 것, helm 이 관리하지 않는다
 # local-path 는 WaitForFirstConsumer 라 처음 붙는 Pod 의 노드에 생긴다 — Harbor 가 values.yaml 의 nodeSelector(w3)로 뜨므로 w3 에 생긴다.
 # 사람이 넣는다(platform/ 은 ArgoCD 밖): kubectl apply -f platform/harbor/pvc-w3.yaml
-# 지우지 않는다 — reclaimPolicy 가 Delete 라 PVC 를 지우면 데이터도 지워진다.
+# 지우지 않는다. local-path 기본은 reclaimPolicy Delete 지만 이 다섯 PV 는 Retain 으로 바꿔 두었다(2026-11-12 확인 — kubectl get pv).
+# PVC 를 지워도 데이터 디렉터리는 노드에 남지만, 다시 붙이려면 PV 를 손으로 다뤄야 한다.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
