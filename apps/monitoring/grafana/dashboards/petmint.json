@@ -746,14 +746,14 @@
   {
    "type": "timeseries",
    "title": "메모리에 올라간 AI 모델",
-   "description": "지금 그래픽카드에 올라가 있는 답변 모델과 크기. 선이 바뀌면 모델이 교체된 것이다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다.\n\n출처: Ollama /api/ps(json-exporter)",
+   "description": "그래픽카드에 올라간 답변 모델과 크기. 한 점은 그 구간에 한 번이라도 올라갔던 모델을 보여 주므로, 몇 분만 올라갔다 내려간 모델도 빠지지 않는다. petmint 말고 다른 클라이언트(학교 PC 터널 등)가 올린 모델도 함께 나온다. 선이 바뀌면 모델이 교체된 것이다. 5분 동안 질문이 없으면 내려가고, 그 뒤 첫 답은 다시 올리느라 몇 초 더 걸린다.\n\n출처: Ollama /api/ps(json-exporter)",
    "targets": [
     {
      "datasource": {
       "type": "prometheus",
       "uid": "prometheus"
      },
-     "expr": "ollama_loaded_model_vram_bytes",
+     "expr": "max_over_time(ollama_loaded_model_vram_bytes[$__rate_interval])",
      "legendFormat": "{{model}}",
      "refId": "A"
     }
