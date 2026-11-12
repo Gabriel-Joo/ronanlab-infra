@@ -1,0 +1,21 @@
+# Notion 게시 설정(저장소 몫)
+#
+# 이 파일은 FOREMAN Notion 게시기가 읽는다. origin/main에 push된 판만 읽고, 5분마다 다시 읽는다.
+# 깨진 파일이면 옛 설정을 그대로 쓰고 알림을 보낸다.
+#
+# 저장소 몫(이 파일): docs, quiet_min, skip, create, archive, title, order, header, headings
+#   FOREMAN이 받는 칸은 그 밖에 keep_notion, new_parent, new_title도 있다.
+# FOREMAN 몫(~/AI_programming/foreman/config/notion.toml [ronanlab-infra]): root, docs_page, portfolio_page, github, ref
+#   이 칸들을 여기 적으면 게시기가 쓰지 않고 경고를 낸다. Notion 토큰과 짝(doc_publish)도 FOREMAN에 있다.
+#
+# 2026-11-12 FOREMAN config/notion.toml [ronanlab-infra]에서 값을 바꾸지 않고 옮겼다.
+
+docs = "manual"
+quiet_min = 30
+create = false      # 시험 동안. 짝 없는 문서는 만들지 않고 실패로만
+archive = false
+headings = "md"
+order = "keep"      # 01~09가 쿠버네티스 설치 페이지 아래에 있다. 옮기지 않는다
+title = "keep"      # 제목 H1 선택지가 생기면 그때 바꾼다
+header = "footer"
+skip = ["docs/README.md", "docs/TODO.md", "docs/runbooks/", "docs/history/notion_sync_20261112.md"]
