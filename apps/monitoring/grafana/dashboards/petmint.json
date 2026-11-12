@@ -158,7 +158,7 @@
       "type": "prometheus",
       "uid": "prometheus"
      },
-     "expr": "sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\"}[5m])), 1e-9)",
+     "expr": "(sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\",status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(nginx_ingress_controller_requests{host=\"petmint.ronanlab.dev\"}[5m])), 1e-9)",
      "legendFormat": "서버 오류",
      "refId": "A"
     }
