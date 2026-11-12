@@ -1,7 +1,7 @@
 # 런북 — MySQL Replica · 수동 승격
 
 petmint · runshoes MySQL 각각 Primary(w1) 하나와 Replica(w2) 하나(2026-11-10 가용성 묶음 2). **자동 전환은 없다** — Primary가 죽으면 사람이 이 런북대로 Replica를 승격한다.
-Operator(Group Replication · Orchestrator 등)는 자원 제약으로 쓰지 않았다([../02_availability.md](../02_availability.md) 4절).
+Operator(Group Replication · Orchestrator 등)는 자원 제약으로 쓰지 않았다([../08_scale_out.md](../08_scale_out.md) 4절).
 
 | | petmint | runshoes |
 | --- | --- | --- |

@@ -47,7 +47,7 @@
 
 ## 5. 문서 자리
 
-- `docs/README.md` — 인프라 문서 원본(노션 「쿠버네티스 설치」와 다르면 이쪽이 맞다). `01_cluster.md` · `02_availability.md` · `TODO.md`(남은 일, 끝나면 줄을 지운다)
+- `docs/README.md` — 인프라 문서 원본(노션 「쿠버네티스 설치」와 다르면 이쪽이 맞다). `01_cluster.md` · `08_scale_out.md`(가용성) · `TODO.md`(남은 일, 끝나면 줄을 지운다)
 - `docs/runbooks/` — 절차(지금 `mysql-replica.md`). 앱 절차는 `apps/runshoes/runbooks/`
 - 앱별 운영 문서는 `apps/<앱>/README.md`, 모니터링은 `apps/monitoring/README.md`
 - 바꾼 것은 그 자리 문서에 날짜와 함께 적는다
