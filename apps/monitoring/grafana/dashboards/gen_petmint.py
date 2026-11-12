@@ -87,7 +87,7 @@ add(ts("접속 요청량 (초당, 결과별)",
        [prom(f'sum by (status) (rate(nginx_ingress_controller_requests{{{H}}}[5m]))', "{{status}}")], unit="reqps",
        desc="바깥(상담원 브라우저)에서 들어온 요청 수를 결과 번호별로. 200번대 = 정상, 300번대 = 다른 주소로 안내, "
             "400번대 = 로그인 안 됨 · 없는 주소 등 요청 쪽 문제, 500번대 = 서버 오류. 대화창 연결은 질문 수가 아니라 연결 한 번이 1건이다"
-            " — 질문 수는 아래 「모드별 질문 수」." + SRC + "ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)"), 8, 6, 8)
+            ". 질문 수는 아래 「모드별 질문 수」에 있다." + SRC + "ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)"), 8, 6, 8)
 add(ts("서버 오류 비율",
        [prom(f'sum(rate(nginx_ingress_controller_requests{{{H},status=~"5.."}}[5m])) / clamp_min(sum(rate(nginx_ingress_controller_requests{{{H}}}[5m])), 1e-9)', "서버 오류")],
        unit="percentunit",
@@ -116,20 +116,20 @@ add(ts("확인 불가 응답 비율 (일별)", [sql(
     "WHERE t.refused IS NOT NULL AND $__timeFilter(t.created_at)\nGROUP BY 1, 2 ORDER BY 1")],
     unit="percentunit",
     desc="답이 \"확인되지 않습니다\" · \"인사부서에 확인하세요\"처럼 끝난 비율(모드별). 세 가지가 섞여 있어 이 숫자만으로는 가를 수 없다:\n"
-         "① 정상 — 약관 · 규정에 원래 없는 질문(예: 보험료)\n"
-         "② 검색이 맞는 조항을 못 찾아 확인 불가로 답한 것 — 개선 대상\n"
-         "③ 조항은 찾았는데 모델이 지나치게 조심한 것 — 개선 대상\n"
+         "① 정상, 약관 · 규정에 원래 없는 질문(예: 보험료)\n"
+         "② 검색이 맞는 조항을 못 찾아 확인 불가로 답한 것, 개선 대상\n"
+         "③ 조항은 찾았는데 모델이 지나치게 조심한 것, 개선 대상\n"
          "검색 서비스가 멈춰 답을 못 한 경우는 여기 들어가지 않고 「답변 실패 · 중단 비율」에 나온다. 정상으로 끝난 답만 센다."
          " 2026-11-11부터 집계(그 전 질문은 빠진다). 판정은 문구 기준이라, 확인 불가 문구 없이 얼버무린 답은 세지 못한다."
-         + SRC + "turns.refused — 평가와 같은 판정(앱 data/refusal.py)"), 6, 8, 0)
+         + SRC + "turns.refused, 평가와 같은 판정(앱 data/refusal.py)"), 6, 8, 0)
 add(ts("답변 실패 · 중단 비율 (일별)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1d'),\n"
     "  AVG(status = 'error') AS `실패(오류)`,\n"
     "  AVG(status = 'cancelled') AS `중단`\n"
     "FROM turns WHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1")], unit="percentunit",
     desc="질문 중 답을 끝까지 주지 못한 비율. 상담원이 막힌 질문이다.\n"
-         "· 실패(오류) — 검색 서비스나 AI 모델에 닿지 않거나 서버 오류로 답을 만들지 못했다. 상담원은 \"잠시 뒤 다시 물어 주세요\"를 봤다. 0%가 정상\n"
-         "· 중단 — 답이 끝나기 전에 상담원이 새 질문을 보냈거나 창을 닫았다. 되묻기에 답하지 않고 넘어간 것도 들어간다."
+         "· 실패(오류), 검색 서비스나 AI 모델에 닿지 않거나 서버 오류로 답을 만들지 못했다. 상담원은 \"잠시 뒤 다시 물어 주세요\"를 봤다. 0%가 정상\n"
+         "· 중단, 답이 끝나기 전에 상담원이 새 질문을 보냈거나 창을 닫았다. 되묻기에 답하지 않고 넘어간 것도 들어간다."
          " 늘 조금은 있고, 갑자기 늘면 답이 너무 느린지 본다" + SRC + "turns.status(error · cancelled) / 전체 질문"), 6, 8, 6)
 add(bar("정해진 규칙으로 답한 횟수 (규칙별)",
     f"SELECT {RULE_CASE} AS `규칙`, COUNT(*) AS `횟수`\nFROM turns\n"
