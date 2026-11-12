@@ -1,0 +1,53 @@
+# ArgoCD 알림 → FOREMAN(2026-11-03). 클러스터에만 있던 것을 2026-11-12 그대로 옮겼다(kubectl diff 0).
+# 사람이 넣는다(platform/ 은 ArgoCD 밖): kubectl apply -f platform/argocd/notifications-cm.yaml
+# 토큰은 여기 없다. $foreman-webhook-token 은 Secret argocd/argocd-notifications-secret 의 키를 가리킨다
+# (값 = foreman .env.bridge 의 FOREMAN_WEBHOOK_TOKEN, Jenkins Secret jenkins/foreman-webhook-token 과 같은 값). 만드는 법은 docs/04_argocd.md 「처음 한 번」.
+# install.yaml 에도 같은 이름의 빈 ConfigMap 이 있어 다시 apply 하면 data 가 지워질 수 있다(확인하지 않음) — install.yaml 뒤에 이 파일을 다시 apply 한다.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/component: notifications-controller
+    app.kubernetes.io/name: argocd-notifications-controller
+    app.kubernetes.io/part-of: argocd
+data:
+  service.webhook.foreman: |
+    url: http://192.168.122.1:8001
+    headers:
+      - name: Authorization
+        value: Bearer $foreman-webhook-token
+      - name: Content-Type
+        value: application/json
+  subscriptions: |
+    - recipients: [foreman]
+      selector: app.kubernetes.io/instance=root
+      triggers: [foreman-out-of-sync, foreman-sync-running, foreman-sync-succeeded, foreman-sync-failed, foreman-health-degraded, foreman-deployed]
+  template.foreman: |
+    webhook:
+      foreman:
+        method: POST
+        path: /webhooks/argocd
+        body: |
+          {"app": {{toJson .app.metadata.name}}, "sync": {{toJson .app.status.sync.status}}, "health": {{toJson .app.status.health.status}}, "revision": {{toJson .app.status.sync.revision}}, "images": {{toJson .app.status.summary.images}}, "automated": {{if .app.spec.syncPolicy}}{{hasKey .app.spec.syncPolicy "automated"}}{{else}}false{{end}}{{if .app.status.operationState}}, "phase": {{toJson .app.status.operationState.phase}}, "message": {{toJson .app.status.operationState.message}}, "at": {{toJson .app.status.operationState.finishedAt}}{{if .app.status.operationState.syncResult}}, "op_revision": {{toJson .app.status.operationState.syncResult.revision}}{{end}}{{end}}}
+  trigger.foreman-deployed: |
+    - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+      oncePer: app.status.sync.revision
+      send: [foreman]
+  trigger.foreman-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [foreman]
+  trigger.foreman-out-of-sync: |
+    - when: app.status.sync.status == 'OutOfSync'
+      oncePer: app.status.sync.revision
+      send: [foreman]
+  trigger.foreman-sync-failed: |
+    - when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
+      send: [foreman]
+  trigger.foreman-sync-running: |
+    - when: app.status.operationState != nil and app.status.operationState.phase in ['Running']
+      send: [foreman]
+  trigger.foreman-sync-succeeded: |
+    - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded']
+      send: [foreman]
