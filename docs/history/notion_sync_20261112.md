@@ -104,6 +104,6 @@
 
 ```bash
 cd ~/ronanlab-infra/docs
-grep -c $'—' 0*.md kubernetes_install.md history/*.md     # em dash, 모두 0
+grep -cP '\x{2014}' 0*.md kubernetes_install.md history/*.md   # em dash, 모두 0
 for f in 0*.md kubernetes_install.md; do grep -c '^## [1-5]\. ' $f; done   # 모두 5
 ```
