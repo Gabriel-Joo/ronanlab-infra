@@ -1,7 +1,7 @@
 # Harbor DB 백업(2026-11-10, 가용성 묶음 1-3) — 하루 한 번 pg_dump → 호스트 NFS(/srv/nfs/backup/harbor ← 호스트 ~/backup/harbor).
 # petmint MySQL 백업(apps/petmint/backup/cronjob.yaml)과 같은 방식이다: CronJob → 호스트 NFS 쓰기 PV/PVC, .part → 검증 → 이름 바꿈 + sha256, 보존 30일 · 최신 7개.
 # - 대상: harbor-database(PostgreSQL, Helm 차트 harbor 의 내부 DB)의 registry 데이터베이스 하나. 프로젝트 · robot 계정 · 태그 · 정책이 여기 있다.
-#   이미지 레이어(harbor-registry PVC 20Gi)는 여기 없다 — 아래 "남은 것"
+#   이미지 레이어(harbor-registry-w3 PVC 30Gi, 2026-11-10 w3로 옮김)는 여기 없다 — 아래 "남은 것"
 # - 형식: pg_dump -Fc(custom, 압축 포함). 복구는 pg_restore — 테이블 단위 · 순서를 고를 수 있다. 절차는 apps/harbor-backup/README.md
 # - pg_dump 는 한 트랜잭션 스냅샷으로 뜬다(잠금 없음 — Harbor 가 계속 쓴다)
 # - 클라이언트는 서버와 같은 이미지(goharbor/harbor-db:v2.15.2 — PostgreSQL 18.3). Harbor 를 올리면 이 태그도 같이 올린다(pg_dump 는 서버보다 낮으면 실패)
