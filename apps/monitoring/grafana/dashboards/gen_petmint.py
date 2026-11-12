@@ -192,7 +192,7 @@ add({"type": "logs", "title": "서버 기록 (최근 7일)", "datasource": L,
      "description": "챗봇 서버가 남긴 동작 기록. 오류가 났을 때 무슨 일이 있었는지 찾는 데 쓴다. 대화 내용(질문 · 답)은 들어 있지 않다."
                     + SRC + "Loki, petmint 앱 컨테이너 로그 7일 보존"}, 12, 7, 12)
 
-dash = {"uid": "petmint-overview", "title": "petmint — 운영", "tags": ["petmint"], "timezone": "browser",
+dash = {"uid": "petmint-overview", "title": "petmint 운영", "tags": ["petmint"], "timezone": "browser",
         "schemaVersion": 39, "version": 1, "editable": False, "refresh": "1m",
         "time": {"from": "now-30d", "to": "now"}, "panels": panels, "templating": {"list": []}, "annotations": {"list": []}}
 json.dump(dash, open(sys.argv[1], "w"), ensure_ascii=False, indent=1)
