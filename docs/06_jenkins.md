@@ -84,7 +84,7 @@ UI에서 만든 Job · 자격 증명은 Pod를 다시 만들면 사라지므로 
 kubectl create namespace jenkins
 
 read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic jenkins-admin \
-  --from-literal=jenkins-admin-user=<admin 사용자 이름> --from-file=jenkins-admin-password=/dev/stdin; unset P
+  --from-literal=jenkins-admin-user=admin --from-file=jenkins-admin-password=/dev/stdin; unset P
 read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic harbor-robot-jenkins \
   --from-literal=username='robot$petmint+jenkins' --from-file=password=/dev/stdin; unset P
 read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic harbor-robot-runshoes-jenkins \
@@ -111,7 +111,7 @@ helm install jenkins jenkins/jenkins --version 5.9.68 -n jenkins -f platform/jen
 
 - 저장소 values로 렌더한 매니페스트는 2026-11-12 배포된 것과 같다(Secret · checksum · test 빼고). 배포된 사용자 values도 저장소 파일과 같다
 - jenkins 네임스페이스에는 helm `--create-namespace`가 붙이는 `name` 레이블이 없어 `kubectl create namespace`로 만든 것으로 본다
-- `jenkins-admin`의 사용자 이름은 기록이 없다. Harbor robot의 권한은 push · pull, 만료는 두지 않았다(2절 「로봇 계정」)
+- `jenkins-admin`의 사용자 이름은 `admin`이다(2026-11-12 Secret 키 `jenkins-admin-user`가 admin과 같은지만 확인). Harbor robot의 권한은 push · pull, 만료는 두지 않았다(2절 「로봇 계정」)
 
 ## 2. 왜 이렇게 했나
 

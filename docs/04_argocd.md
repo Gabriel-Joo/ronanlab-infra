@@ -57,7 +57,7 @@ ArgoCD v2.13.2를 `install.yaml`로 깔고 Ingress와 기존 Cloudflare 터널�
 | 알림 설정 | ConfigMap `argocd/argocd-notifications-cm` 키 9개(서비스 · 템플릿 · 트리거 6 · 구독) | `platform/argocd/notifications-cm.yaml`(2026-11-12 옮김, kubectl diff 0) |
 | 알림 토큰 | Secret `argocd/argocd-notifications-secret` 키 `foreman-webhook-token`. 값은 foreman `.env.bridge`의 `FOREMAN_WEBHOOK_TOKEN`(Jenkins `jenkins/foreman-webhook-token`과 같은 값) | 없음(아래 명령) |
 | GitHub 웹훅 시크릿 | Secret `argocd/argocd-secret` 키 `webhook.github.secret`. Jenkins의 `github-webhook-secret`과는 다른 값 | 없음(아래 명령) |
-| admin 비밀번호 | Secret `argocd/argocd-secret` 키 `admin.password`(bcrypt). 2026-10-18 03:12 UTC에 바뀌었다(`admin.passwordMtime`). 바꾼 방법은 기록이 없다 | 없음 |
+| admin 비밀번호 | Secret `argocd/argocd-secret` 키 `admin.password`(bcrypt). 2026-10-18 03:12 UTC에 사람이 ArgoCD 웹 화면에서 직접 바꿨다(`admin.passwordMtime`) | 없음(아래 2) |
 | 저장소 읽기 키 | Secret `argocd/repo-ronanlab-infra` | `scripts/make-deploy-keys.sh` |
 | 저장소 밖(사람이 대시보드에서) | GitHub `ronanlab-infra` 웹훅 · Deploy key, Cloudflare Access Bypass 앱(`/api/webhook`), DNS CNAME | 이 절의 순서 |
 
@@ -71,7 +71,12 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.2/manifests/install.yaml
 bash platform/argocd/pin-infra.sh                      # w3(infra)에 고정. install.yaml 을 다시 apply 하면 다시 돌린다
 
-# 2. admin 비밀번호: 설치가 만든 argocd-initial-admin-secret 으로 처음 로그인 → UI(User Info → Update Password)에서 바꾼다 → 그 Secret 을 지운다
+# 2. admin 비밀번호(2026-10-18 에도 이렇게 웹 화면에서 바꿨다)
+#    설치하면 처음 비밀번호가 Secret argocd/argocd-initial-admin-secret 키 password 에 생긴다(사용자 admin).
+#    사람이 자기 터미널에서만 꺼내 로그인에 쓴다. 대화 · 기록 · 로그에 남기지 않는다:
+#      kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
+#    https://argocd.ronanlab.dev 에 admin 으로 로그인 → User Info → Update Password 에서 새 비밀번호로 바꾼다
+#    (새 비밀번호는 argocd-secret 의 admin.password 에 bcrypt 로 들어간다). 바꾼 뒤 처음 비밀번호 Secret 을 지운다
 kubectl -n argocd delete secret argocd-initial-admin-secret
 
 # 3. 바깥 주소: 인증서(02의 cert-manager가 먼저) → Ingress
@@ -91,8 +96,9 @@ S=$(head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
 printf '{"stringData":{"webhook.github.secret":"%s"}}' "$S" \
   | (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n argocd patch secret argocd-secret --type merge --patch-file /dev/stdin')
 (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n argocd rollout restart deploy/argocd-server')   # 시크릿을 바꾸면 다시 띄워야 읽는다(3절 트러블슈팅)
-#    GitHub ronanlab-infra → Settings → Webhooks: Payload URL https://argocd.ronanlab.dev/api/webhook, Secret = $S, push 이벤트
-#    (Content type은 기록이 없다). Cloudflare Access 에 /api/webhook 만 Bypass 하는 앱을 둔다. 끝나면 unset S
+#    GitHub ronanlab-infra → Settings → Webhooks: Payload URL https://argocd.ronanlab.dev/api/webhook,
+#    Content type application/json(2026-11-12 사람이 GitHub 설정 화면에서 확인), Secret = $S, push 이벤트.
+#    Cloudflare Access 에 /api/webhook 만 Bypass 하는 앱을 둔다. 끝나면 unset S
 
 # 7. 알림(호스트에서). 토큰은 foreman 파일에서 셸 변수로 읽는다
 T=$(sed -n 's/^FOREMAN_WEBHOOK_TOKEN=//p' ~/AI_programming/foreman/.env.bridge)
