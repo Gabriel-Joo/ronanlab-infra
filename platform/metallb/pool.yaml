@@ -1,4 +1,4 @@
-# VIP 풀: libvirt default 망(virbr0) 192.168.122.240–250. DHCP 범위(.100–.199)와 노드 고정 IP(.10–.13) 밖
+# VIP 풀: libvirt default 망(virbr0) 192.168.122.240–250. DHCP 범위(.100–.199)와 노드 고정 IP(.10–.14, w4 는 2026-11-10 추가) 밖
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
