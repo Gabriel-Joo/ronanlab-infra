@@ -62,6 +62,57 @@ UI에서 만든 Job · 자격 증명은 Pod를 다시 만들면 사라지므로 
 | 캐시 | `buildkitd` emptyDir(빌드마다 비어 있다) |
 | 옵션 | `disableConcurrentBuilds()`, timeout 30분, 빌드 기록 30개 |
 
+### 처음 한 번 (다시 세울 때)
+
+값은 여기 적지 않는다. 저장소의 `platform/`을 m-k8s로 옮기는 법은 [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md) 「처음 한 번」(아래는 m-k8s `~/platform-apply`에서). Secret은 helm보다 **먼저** 만든다. values가 `existingSecret` · `additionalExistingSecrets`로 이름을 부르기 때문이다.
+
+**클러스터에만 있는 것(2026-11-12 조회, 이름 · 키만)**
+
+| Secret(`jenkins` ns) | 키 | 값은 어디서 | 확인(값 대신 같음 여부) |
+| --- | --- | --- | --- |
+| `jenkins-admin` | `jenkins-admin-user`, `jenkins-admin-password` | 사람이 정한다 | |
+| `harbor-robot-jenkins` | `username`, `password` | Harbor robot `petmint+jenkins`(push). 비밀번호는 robot을 만들 때 한 번만 보인다 | username = `robot$petmint+jenkins` |
+| `harbor-robot-runshoes-jenkins` | `username`, `password` | Harbor robot `runshoes+jenkins`(push) | username = `robot$runshoes+jenkins` |
+| `github-webhook-secret` | `secret` | 사람이 만든다. GitHub `petmint-rag-chatbot` · `runshoes` 웹훅에 같은 값 | ArgoCD `webhook.github.secret`과 다른 값 |
+| `foreman-webhook-token` | `token` | foreman `.env.bridge`의 `FOREMAN_WEBHOOK_TOKEN` | 그 값과 같다. ArgoCD `argocd-notifications-secret`과도 같다 |
+| `ronanlab-infra-deploy-key` | `ssh-privatekey` | `scripts/make-deploy-keys.sh`가 만든다(쓰기 키) | |
+
+저장소 밖(사람이 대시보드에서): Harbor robot 두 개, GitHub 웹훅 두 개(`https://jenkins.ronanlab.dev/github-webhook/`), GitHub `ronanlab-infra` 쓰기 Deploy key, Cloudflare Access Bypass 앱(`/github-webhook`).
+
+```bash
+# m-k8s. 비밀값은 read -rs 로 셸 변수에 받고 표준 입력으로 넘긴다(명령 인자 · 화면에 남기지 않는다)
+kubectl create namespace jenkins
+
+read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic jenkins-admin \
+  --from-literal=jenkins-admin-user=<admin 사용자 이름> --from-file=jenkins-admin-password=/dev/stdin; unset P
+read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic harbor-robot-jenkins \
+  --from-literal=username='robot$petmint+jenkins' --from-file=password=/dev/stdin; unset P
+read -rs P && printf %s "$P" | kubectl -n jenkins create secret generic harbor-robot-runshoes-jenkins \
+  --from-literal=username='robot$runshoes+jenkins' --from-file=password=/dev/stdin; unset P
+S=$(head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
+printf %s "$S" | kubectl -n jenkins create secret generic github-webhook-secret --from-file=secret=/dev/stdin
+#   GitHub petmint-rag-chatbot · runshoes → Settings → Webhooks: https://jenkins.ronanlab.dev/github-webhook/, Secret = $S, push. 끝나면 unset S
+```
+
+```bash
+# 호스트: FOREMAN 토큰(ArgoCD 알림과 같은 값)
+sed -n 's/^FOREMAN_WEBHOOK_TOKEN=//p' ~/AI_programming/foreman/.env.bridge | tr -d '\n' \
+  | (cd ~/k8s-cluster && vagrant ssh m-k8s -c 'kubectl -n jenkins create secret generic foreman-webhook-token --from-file=token=/dev/stdin')
+# 호스트: 저장소 deploy key 둘(ArgoCD 읽기 · Jenkins 쓰기). 공개 키를 GitHub ronanlab-infra → Deploy keys 에(쓰기 키만 Allow write access)
+#   ssh -i <m-k8s 키> vagrant@192.168.122.10 'bash -s' < scripts/make-deploy-keys.sh
+```
+
+```bash
+# m-k8s ~/platform-apply: 인증서 → helm(차트 · 버전은 2026-11-12 배포된 것과 같다)
+kubectl apply -f platform/cert-manager/jenkins-certificate.yaml
+helm repo add jenkins https://charts.jenkins.io && helm repo update
+helm install jenkins jenkins/jenkins --version 5.9.68 -n jenkins -f platform/jenkins/values.yaml
+```
+
+- 저장소 values로 렌더한 매니페스트는 2026-11-12 배포된 것과 같다(Secret · checksum · test 빼고). 배포된 사용자 values도 저장소 파일과 같다
+- jenkins 네임스페이스에는 helm `--create-namespace`가 붙이는 `name` 레이블이 없어 `kubectl create namespace`로 만든 것으로 본다
+- `jenkins-admin`의 사용자 이름은 기록이 없다. Harbor robot의 권한은 push · pull, 만료는 두지 않았다(2절 「로봇 계정」)
+
 ## 2. 왜 이렇게 했나
 
 ### Jenkins를 직접 세우는 이유
