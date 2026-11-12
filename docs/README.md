@@ -10,7 +10,7 @@ Notion 게시는 이 표의 순서를 따른다. 「노션 제목」은 각 문�
 
 | 파일 | 노션 제목 | 내용 |
 | --- | --- | --- |
-| `00_server.md` | [인프라/서버 구축 포트폴리오 문서](00_server.md) | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
+| `00_server.md` | [인프라/서버 구축(하드웨어)](00_server.md) | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
 | `kubernetes_install.md` | [쿠버네티스 설치](kubernetes_install.md) | 01~09의 머리: 목표, 전체 구조, 설계 원칙, 13단계 순서와 진행 상황 |
 | `01_cluster.md` | [01. 클러스터 구축](01_cluster.md) | KVM/libvirt · Vagrant VM 5대, containerd · kubeadm 1.35.9, Calico, 노드 추가 · 메모리 절차 |
 | `02_metrics_storage_ingress.md` | [02. 메트릭·스토리지·Ingress](02_metrics_storage_ingress.md) | metrics-server, local-path, ingress-nginx, MetalLB, cert-manager, CoreDNS rewrite |
