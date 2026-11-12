@@ -79,11 +79,16 @@
 - 공유기 설정(192.168.0.17 · 포트포워딩 5001 → 22)은 볼 수 없어 노션 그대로다(00)
 - CUDA 13.0의 설치 방법을 모른다. `/usr/local/cuda-13.0`은 있으나 dpkg · apt에 흔적이 없다(00)
 - Ollama `/opt/models`가 RW로 붙은 것이 의도인지, 호스트 컨테이너 `mysql`(127.0.0.1:3306)의 용도, kopo02의 VNC · 포트 규칙이 지금도 쓰이는지 기록이 없다(00)
-- MetalLB · cert-manager를 넣은 helm 저장소 · 명령이 저장소에도 백업에도 없다(02)
-- `kubectl diff -k`를 칠 자리: m-k8s에는 이 저장소가 없다(02)
-- `harborAdminPassword`가 저장소 values에는 없고 배포된 릴리스 값에만 있다. 다음 `helm upgrade` 때 넣는 법이 정해지지 않았다(05)
-- 알림 설정(argocd-notifications-cm) · 웹훅 시크릿이 클러스터에만 있다(04)
-- `platform/harbor/values.yaml` registry `size: 20Gi`: 실제 PVC는 existingClaim `harbor-registry-w3` 30Gi다. 설정 값이라 손대지 않았다(existingClaim이 있으면 차트가 이 값을 쓰지 않는 것으로 보이나 확인하지 않음)
+- ArgoCD admin 비밀번호를 2026-10-18에 바꾼 방법, Jenkins admin 사용자 이름, metrics-server를 v0.9.0 매니페스트로 깔면 지금 것과 같은지, `install.yaml`을 다시 apply하면 알림 ConfigMap이 지워지는지는 확인하지 못했다(04 · 06 · 02)
+
+### 4-2. 같은 날 뒤이어 푼 것
+
+- `platform/harbor/values.yaml` registry `size`: 30Gi로 맞췄다. existingClaim이면 쓰이지 않는 것을 `helm template`으로 확인(`5d35283`)
+- MetalLB · cert-manager helm 명령: 배포된 릴리스에서 차트 · 버전 · values를 뽑아 02 「처음 한 번」에 다시 적었다. 저장소 values로 렌더한 것이 배포된 것과 같다(metallb · cert-manager · harbor · jenkins 넷)
+- `kubectl diff -k`를 칠 자리: 호스트에서 `platform/`을 m-k8s `~/platform-apply`로 넘기는 법을 02에 적었다
+- `harborAdminPassword`: 표준 입력(`--set-file …=/dev/stdin`)으로 넘기는 법을 05에 적었다. 지금 값은 릴리스 값 = Secret `harbor-core` 키이고 admin 로그인 200
+- ArgoCD 알림 설정: `platform/argocd/notifications-cm.yaml`로 옮겼고(kubectl diff 0), 토큰 · 웹훅 시크릿 만드는 법은 04 「처음 한 번」
+- 저장소에 없는 Secret · 설정 전체 목록: [kubernetes_install.md](../kubernetes_install.md) 「1-4」
 
 ### 4-1. 같은 날 뒤이어 고친 것(사용자 지시)
 
