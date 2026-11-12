@@ -115,8 +115,10 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 push | | |
-| 3 확인 · 덤프 | | |
-| 4 Sync | | |
-| 5 자동 Sync 켬 | | |
+| 1 자동 Sync 끔 | 11-12 10:4x | 사용자. `{"syncOptions":["CreateNamespace=false"]}` — `automated` 없음(Claude 확인, push 직전). 운영 `4f57bc0e1537` Synced/Healthy |
+| 2 push | 11-12 10:4x | 앱 `1530ad6..e6a8642`(`bff482c` 5-1 합침 + 문서 2건 합침 `e6a8642`, 원격이 `1530ad6` 그대로인 것 먼저 확인) · infra `52e80e0..1746a2a`(이 런북) → Jenkins infra `0755377`(10:51:08) 이미지 `e6a8642a3ed9`. ArgoCD OutOfSync(보기만) · 운영 옛 이미지 그대로 |
+| 3 확인 · 덤프 | 11-12 10:52:11 | 사용자. (1) 도는 Job 없음(Claude 읽기 — 모두 Complete) (2) `runshoes-before-v17-20261112T105211Z.sql` 2,361,685 B · `Dump completed on 2026-11-12 10:52:12` · err 비밀번호 경고뿐 · sha256 `05a4f94b209301bc…`(`sha256.txt`). 복원본: reviews 1,800 · 지문 `5b90995f…`(운영 API 와 같음, `group_concat_max_len` 판) · shoes 310 · users 204 · terms `…12:weight,12:outsole` · flyway 1~16 |
+| 4 Sync | 11-12 10:58 | 사용자. 새 Pod `runshoes-7b9bc869dc-xj74p`(w1) `Current version 16` → `"17 - terms outsole id"`(`v17 guard ok`) → `"18 - chatbot misses"` → `Successfully applied 2 migrations … v18`(**51ms**), 7.6초에 기동, ERROR · WARN 없음. 둘째 Pod(w2) `up to date`. Synced/Healthy/Succeeded(rev `0755377`), 웹 · 챗봇 · CronJob 이미지 `e6a8642a3ed9`(suspend false 그대로). 공개 API: terms 13 · 겹침 0 · `13:outsole` · recommend `budget=150000` 200(price 와 함께 400) · admin chatbot-misses 로그인 없이 401 · 내부 POST 밖에서(XFF 127.0.0.1) 404 · shoes 310 · reviews 1,800 · 첫 화면 200. 챗봇 웹소켓 "노바블라스트 5 무게 알려줘" → "아식스의 노바블라스트 5는 무게가 255g(270mm 기준)이에요. … 보러 가실래요?" · 버튼 `/?shoe=5`(API 255g M9 와 같음), 10.0초(첫 질문) |
+| 5 자동 Sync 켬 | 11-12 11:03 전 | 사용자. `{"automated":{"prune":false,"selfHeal":false},…}` · Synced/Healthy(Claude 확인 11:03) |
+
+- 남은 확인: 관리 화면 "챗봇 문의" 탭(사용자), 다음 03:30 KST(11-12 18:30 UTC) 요약 CronJob 회차가 새 이미지로 Complete 인지.
