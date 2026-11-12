@@ -1,4 +1,4 @@
-# Prometheus 한 대. 보존 7일, TSDB는 local-path PVC(5Gi) — 크기 근거는 README.md "크기".
+# Prometheus 한 대. 보존 15일(또는 9GB), TSDB는 local-path PVC(10Gi) — 2026-11-10 처음 설계 7일 · 5Gi에서 올렸다. 크기 근거는 README.md "크기".
 # local-path PV는 처음 붙은 노드에 묶인다(hostPath). Pod는 그 노드로만 다시 뜬다 — 노드를 비우면 Prometheus도 멈춘다
 apiVersion: apps/v1
 kind: StatefulSet
