@@ -282,7 +282,7 @@ registry: 파일 3408 / 새 3408 / 62초
 
 `du` 바이트는 jobservice·registry에서 조금 달랐다. 디렉터리 항목 크기까지 세기 때문이다. 그래서 **파일 이름·크기·권한·소유자 목록의 md5**를 원본과 비교했고, 셋 다 같았다.
 
-결과: Harbor 멈춘 시간 약 4분(노드 간 tar 73초, registry 3,408파일 16.9GB), DB 49개 테이블 행 수 이사 전과 같음, w4에서 `imagePullPolicy: Always`로 pull, 시험 이미지 push → 조회 → 삭제(404). 옛 PVC 다섯은 그대로 남겨 두었다(며칠 본 뒤 사람이 지운다). w3 루트 62G → 92G. 커밋 `d5bf708`.
+결과: Harbor 멈춘 시간 약 4분(노드 간 tar 73초, registry 3,408파일 16.9GB), DB 49개 테이블 행 수 이사 전과 같음, w4에서 `imagePullPolicy: Always`로 pull, 시험 이미지 push → 조회 → 삭제(404). 옛 PVC 다섯은 그대로 남겨 두었다(며칠 본 뒤 사람이 지운다). w3 루트 62G → 92G. 커밋 `2570d50`.
 
 #### 트러블슈팅: existingClaim을 주면 옛 PVC가 지워질 수 있다
 
@@ -302,7 +302,7 @@ PersistentVolumeClaim/harbor-registry
 
 ArgoCD는 이미 컨트롤 플레인 밖(w2·w4)에 있었다. m-k8s에는 control-plane taint가 있다. PVC가 없어(redis는 emptyDir) nodeSelector만 바꾸면 됐다. install.yaml로 깔았기 때문에 그 매니페스트는 저장소에 없다. 패치를 스크립트(`platform/argocd/pin-infra.sh`)로 남겼다. install.yaml을 다시 apply하면 이 스크립트도 다시 돌린다.
 
-확인: 7개 모두 w3, Application 5개 Synced/Healthy, 커밋 뒤 웹훅으로 12초 만에 새 커밋을 봤다. 커밋 `61dbc5c`.
+확인: 7개 모두 w3, Application 5개 Synced/Healthy, 커밋 뒤 웹훅으로 12초 만에 새 커밋을 봤다. 커밋 `862182f`.
 
 #### 12-6단계: MySQL Replica (w2)
 
@@ -334,7 +334,7 @@ bash scripts/mysql-replica-seed.sh runshoes runshoes-mysql-0 runshoes-mysql-0.ru
 쓰기 전달: 만들기 · 지우기 둘 다 Replica 에 넘어감
 ```
 
-두 Replica 모두 w2, 테이블 행 수 · 계정 Primary와 같음, 쓰기 전달 확인. 커밋 `72d0716` · `25d94d0`.
+두 Replica 모두 w2, 테이블 행 수 · 계정 Primary와 같음, 쓰기 전달 확인. 커밋 `1643ddc` · `84e884b`.
 
 #### 트러블슈팅: binlog 위치가 비어 있다
 
@@ -387,7 +387,7 @@ SET PERSIST super_read_only=OFF; SET PERSIST read_only=OFF;
 | 롤링 동안 | Pod 셋(2+1) | Pod 하나 → 둘 |
 | 필요한 노드 | 스케줄 가능한 워커 3대 | app 노드 2대 |
 
-롤링 동안 잠깐 처리 용량이 반이 되지만 서비스는 이어진다. 배치를 옮기는 롤링과 시험 재시작 동안 1초 탐침 실패 0. 앱 w1 · w2(롤링 실패 0), Jenkins w3(재기동 66초), 앱 재시작 runshoes 82초 · petmint 23초. 커밋 `684774a`.
+롤링 동안 잠깐 처리 용량이 반이 되지만 서비스는 이어진다. 배치를 옮기는 롤링과 시험 재시작 동안 1초 탐침 실패 0. 앱 w1 · w2(롤링 실패 0), Jenkins w3(재기동 66초), 앱 재시작 runshoes 82초 · petmint 23초. 커밋 `7bff1b6`.
 
 **ingress-nginx는 replicas 2로 늘렸다**(모니터링에 쓸 메트릭을 켜려면 재시작이 필요했다. [09_monitoring.md](09_monitoring.md)). 먼저 2개로 늘린 뒤 인자를 바꿔 한 개씩 롤링했고, 1초 탐침에서 21:13:29 한 번(1초) 다섯 주소 모두 응답이 없었다. 12초보다 짧지만 0은 아니다.
 
@@ -410,11 +410,11 @@ w4   prometheus-0 · loki-0 · grafana · kube-state-metrics · json-exporter
 
 | 단계 | 커밋 | 확인 |
 | --- | --- | --- |
-| 1 Harbor → w3 | `d5bf708` | 이사 직전 DB 백업, Jenkins 빌드 없음 확인 → Harbor 정지 → 노드 간 tar 73초(registry 3,408파일 16.9GB) → 파일 이름 · 크기 · 권한 · 소유자 목록 md5 원본과 같음 → helm upgrade. Harbor 멈춘 시간 약 4분. DB 49개 테이블 행 수 이사 전과 같음, w4에서 `imagePullPolicy: Always` pull, 시험 push → 조회 → 삭제(404). 옛 PVC 다섯 그대로, w3 루트 62G → 92G |
-| 2 ArgoCD → w3 | `61dbc5c` | PVC 없음. 7개 모두 w3, Application 5개 Synced/Healthy, 커밋 뒤 웹훅으로 12초 만에 새 커밋을 봄 |
-| 3 MySQL Replica | `72d0716` · `25d94d0` | 두 Replica w2, 테이블 행 수 · 계정 Primary와 같음, 쓰기 전달 확인. 승격 시험(runshoes): SQL 0.2초 · Service 전환 0.1초 · 다시 만들기 10초 |
-| 4 배치 고정 | `684774a` | 앱 w1 · w2(롤링 실패 0), Jenkins w3(재기동 66초). 앱 재시작 runshoes 82초 · petmint 23초 |
-| 5 모니터링 | `b15b7ff`(ingress) · `eb13e8f` | 전부 w4, 수집 대상 up(그때 milvus · nvidia-gpu 제외, 3-3절), Loki 12개 네임스페이스 · 챗봇 질문 줄 0건, Grafana 데이터소스 셋 OK, 읽기 계정이 질문 · 코멘트 컬럼에서 ERROR 1143 |
+| 1 Harbor → w3 | `2570d50` | 이사 직전 DB 백업, Jenkins 빌드 없음 확인 → Harbor 정지 → 노드 간 tar 73초(registry 3,408파일 16.9GB) → 파일 이름 · 크기 · 권한 · 소유자 목록 md5 원본과 같음 → helm upgrade. Harbor 멈춘 시간 약 4분. DB 49개 테이블 행 수 이사 전과 같음, w4에서 `imagePullPolicy: Always` pull, 시험 push → 조회 → 삭제(404). 옛 PVC 다섯 그대로, w3 루트 62G → 92G |
+| 2 ArgoCD → w3 | `862182f` | PVC 없음. 7개 모두 w3, Application 5개 Synced/Healthy, 커밋 뒤 웹훅으로 12초 만에 새 커밋을 봄 |
+| 3 MySQL Replica | `1643ddc` · `84e884b` | 두 Replica w2, 테이블 행 수 · 계정 Primary와 같음, 쓰기 전달 확인. 승격 시험(runshoes): SQL 0.2초 · Service 전환 0.1초 · 다시 만들기 10초 |
+| 4 배치 고정 | `7bff1b6` | 앱 w1 · w2(롤링 실패 0), Jenkins w3(재기동 66초). 앱 재시작 runshoes 82초 · petmint 23초 |
+| 5 모니터링 | `db091cb`(ingress) · `bb8b759` | 전부 w4, 수집 대상 up(그때 milvus · nvidia-gpu 제외, 3-3절), Loki 12개 네임스페이스 · 챗봇 질문 줄 0건, Grafana 데이터소스 셋 OK, 읽기 계정이 질문 · 코멘트 컬럼에서 ERROR 1143 |
 
 Harbor · ArgoCD · Jenkins를 옮기는 동안 앱 응답은 끊기지 않았다(앱 Pod는 이미지를 노드에 갖고 있다). 배치 고정 롤링 · 앱 재시작 동안 1초 탐침 실패 0,
 ingress-nginx를 2개로 늘린 뒤 메트릭을 켜는 롤링에서 1초 한 번 다섯 호스트 모두 응답 없음.
