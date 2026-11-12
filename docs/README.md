@@ -1,21 +1,40 @@
 # ronanlab-infra docs
 
-이 디렉터리가 인프라 문서의 원본이다(2026-11-10부터). 노션 「쿠버네티스 설치」 · 「인프라/서버 구축 포트폴리오 문서」는 사람이 처음 쓴 기록이고,
-여기로 옮기면서 **지금 코드 · 클러스터와 맞는 것**만 남긴다 — 노션과 다르면 이 문서와 저장소의 코드가 맞다.
+이 디렉터리가 인프라 문서의 원본이다(2026-11-10부터). 노션 「프로젝트 / 인프라」 아래 문서는 사람이 처음 쓴 기록이고,
+2026-11-12 여기로 옮기면서 지금 코드 · 클러스터와 맞췄다. 노션과 다르면 이 문서와 저장소의 코드가 맞다.
+
+## 차례
+
+Notion 게시는 이 표의 순서를 따른다. 「노션 제목」은 각 문서 맨 위 제목 줄과 같다.
+
+| 순서 | 문서 | 노션 제목 | 내용 |
+| --- | --- | --- | --- |
+| 1 | [00_server.md](00_server.md) | 인프라/서버 구축 포트폴리오 문서 | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
+| 2 | [kubernetes_install.md](kubernetes_install.md) | 쿠버네티스 설치 | 01~09의 머리: 목표, 전체 구조, 설계 원칙, 13단계 순서와 진행 상황 |
+| 3 | [01_cluster.md](01_cluster.md) | 01. 클러스터 구축 | KVM/libvirt · Vagrant VM 5대, containerd · kubeadm 1.35.9, Calico, 노드 추가 · 메모리 절차 |
+| 4 | [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md) | 02. 메트릭·스토리지·Ingress | metrics-server, local-path, ingress-nginx, MetalLB, cert-manager, CoreDNS rewrite |
+| 5 | [03_cloudflare_tunnel.md](03_cloudflare_tunnel.md) | 03. Cloudflare Tunnel 연결 | 도메인, ronanlab-tunnel(공개 주소 일곱) · ollama-tunnel, Access |
+| 6 | [04_argocd.md](04_argocd.md) | 04. ArgoCD | 설치, App of Apps, 자동 · 수동 Sync, 웹훅 · 알림 |
+| 7 | [05_harbor.md](05_harbor.md) | 05. Harbor | Helm 설치, values, 스토리지(w3), DB 백업 |
+| 8 | [06_jenkins.md](06_jenkins.md) | 06. Jenkins | Helm 설치, BuildKit rootless, 로봇 계정, 플러그인 고정, 파이프라인 |
+| 9 | [07_project_deploy.md](07_project_deploy.md) | 07. 프로젝트 배포 | petmint · runshoes: Secret, Kustomize, Jenkins → Harbor → ArgoCD, MySQL, Ingress |
+| 10 | [08_scale_out.md](08_scale_out.md) | 08. 구조 확장·이관 | 가용성: 노드 역할 배치, 앱 분산, Harbor · ArgoCD 이사, MySQL Replica, 노드 정비 절차 |
+| 11 | [09_monitoring.md](09_monitoring.md) | 09. 모니터링 | Prometheus · Grafana · Loki를 왜 이렇게 세웠나, 설치 기록(지금 구성은 `apps/monitoring/README.md`) |
+| 12 | [history/cloudflare_tunnel_vcluster.md](history/cloudflare_tunnel_vcluster.md) | Cloudflare Tunnel 세팅 (vcluster 시절) | 학교 vcluster 시절 RUNSHOES 터널 · CI 기록과 시행착오 |
+
+모든 문서는 같은 꼴이다: 제목 줄, 머리 세 줄(요약 · 날짜 · 범위 · 코드), 절 다섯(1. 지금 구성 / 2. 왜 이렇게 했나 / 3. 진행 기록 / 4. 남은 한계 / 5. 확인 방법). 말투는 한다체.
+
+## 그 밖의 문서
 
 | 문서 | 내용 |
 | --- | --- |
-| [01_cluster.md](01_cluster.md) | 클러스터 — 호스트 · VM · 네트워크 · 버전 · 노드 추가 절차(`cluster/`의 Vagrantfile · setup-node.sh) |
-| [08_scale_out.md](08_scale_out.md) | 가용성 — 노드 배치 목표 · 장애 시나리오 · 앱 분산(anti-affinity · PDB) · 노드 정비 절차 · 백업 · 알려진 한계 |
 | [runbooks/mysql-replica.md](runbooks/mysql-replica.md) | MySQL Replica 구성 · 다시 만들기 · 수동 승격 · 되돌리기, 시험 기록 |
-| [TODO.md](TODO.md) | 남은 일 — 한 줄에 하나, 상세는 각 문서 4절 |
+| [TODO.md](TODO.md) | 남은 일. 한 줄에 하나, 상세는 각 문서 4절 |
+| [history/notion_sync_20261112.md](history/notion_sync_20261112.md) | 노션에서 옮기며 코드와 달라 고친 것, 판단하지 못해 남긴 것 |
 
-모니터링은 `apps/monitoring/README.md`(구성 · 데이터 출처 · 접속).
-
-아직 옮기지 않은 노션 하위 페이지(02 메트릭·스토리지·Ingress ~ 08 프로젝트 배포)는 [TODO.md](TODO.md)에 있다.
-앱별 운영 문서는 그 앱 디렉터리에 있다 — `apps/<앱>/README.md`, `apps/runshoes/runbooks/`.
+앱별 운영 문서는 그 앱 디렉터리에 있다: `apps/<앱>/README.md`, `apps/runshoes/runbooks/`. 모니터링 구성 · 접속은 `apps/monitoring/README.md`.
 
 ## 같이 보는 문서(앱 저장소)
 
-- 펫퍼민트 `petmint-rag-chatbot/docs/02_pipeline/14_deployment.md`(배포) · `12_data_storage.md` 1-5절(MySQL 백업 · 복구)
+- 펫퍼민트 `petmint-rag-chatbot/docs/02_pipeline/14_deployment.md`(배포), `12_data_storage.md` 1-5절(MySQL 백업 · 복구), `13_access_and_tunnel.md`(Access · 터널)
 - 런슈즈 `runshoes/docs/06_deployment.md`(배포)
