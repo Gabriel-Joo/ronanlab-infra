@@ -78,16 +78,16 @@ row("서비스 상태 · 접속량")
 add(stat("응답 가능한 서버 수 (정상 2)",
          [prom('sum(kube_pod_status_ready{namespace="petmint",condition="true",pod=~"petmint-app-.*"})')],
          desc="챗봇 서버 2대 중 지금 요청을 받을 수 있는 수. 2가 정상, 1이면 한 대가 재시작 중이거나 고장, 0이면 서비스가 멈춘 것."
-              " 배포 중에는 잠깐 1이 될 수 있다." + SRC + "kube-state-metrics, petmint-app Pod Ready"), 4, 6, 0)
+              " 배포 중에는 잠깐 1이 될 수 있다." + SRC + "kube-state-metrics, petmint-app Pod Ready"), 5, 6, 0)
 add(stat("서버 재시작 횟수 (최근 24시간)",
          [prom('sum(increase(kube_pod_container_status_restarts_total{namespace="petmint"}[24h]))')],
          desc="챗봇 서버 · DB · 백업 작업이 오류로 꺼졌다가 스스로 다시 켜진 횟수. 0이 정상. 배포로 서버를 새것으로 바꾸는 것은 세지 않는다."
-              + SRC + "kube-state-metrics, petmint 네임스페이스 컨테이너 재시작 합"), 4, 6, 4)
+              + SRC + "kube-state-metrics, petmint 네임스페이스 컨테이너 재시작 합"), 5, 6, 5)
 add(ts("접속 요청량 (초당, 결과별)",
        [prom(f'sum by (status) (rate(nginx_ingress_controller_requests{{{H}}}[5m]))', "{{status}}")], unit="reqps",
        desc="바깥(상담원 브라우저)에서 들어온 요청 수를 결과 번호별로. 200번대 = 정상, 300번대 = 다른 주소로 안내, "
             "400번대 = 로그인 안 됨 · 없는 주소 등 요청 쪽 문제, 500번대 = 서버 오류. 대화창 연결은 질문 수가 아니라 연결 한 번이 1건이다"
-            ". 질문 수는 아래 「모드별 질문 수」에 있다." + SRC + "ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)"), 8, 6, 8)
+            ". 질문 수는 아래 「모드별 질문 수」에 있다." + SRC + "ingress-nginx(앱에 자체 지표가 없어 입구에서 센다)"), 7, 6, 10)
 add(ts("서버 오류 비율",
        # 500번대가 한 번도 없으면 그 줄 자체가 없어 나눗셈 전체가 비므로(No data) or vector(0)으로 0을 채운다.
        # 요청이 아예 없을 때(분모가 없음)는 그대로 비어 있다
@@ -95,7 +95,7 @@ add(ts("서버 오류 비율",
        unit="percentunit",
        desc="전체 요청 중 서버 오류(500번대)의 비율. 0%가 정상. 화면이 안 열리거나 고객 조회가 안 되는 경우가 여기 잡힌다."
             " 대화창에서 답을 만들다 실패한 것은 여기 안 잡히고 아래 「답변 실패 · 중단 비율」에 나온다." + SRC + "ingress-nginx 5xx / 전체"),
-    8, 6, 16)
+    7, 6, 17)
 y += 6
 
 row("질문량")
@@ -165,11 +165,11 @@ add(ts("답변 걸린 시간 (보통 / 느린 편, 일별)", [sql(PCT.format(n="
        unit="s",
        desc="질문을 보낸 뒤 첫 글자가 나올 때까지, 답이 끝날 때까지 걸린 시간. " + SLOW +
             " 정해진 규칙 답(1초 미만)과 AI 모델 답(수 초)이 섞여 있다. 모드를 바꾼 직후 첫 답은 모델을 바꿔 올리느라 더 걸린다."
-            + SRC + "turns.latency_ms · first_token_ms"), 12, 8, 6)
+            + SRC + "turns.latency_ms · first_token_ms"), 9, 8, 6)
 add(ts("조항 검색 걸린 시간 (보통 / 느린 편, 일별)", [sql(PCT.format(n="검색", c="search_ms"), ref="A")], unit="s",
        desc="답을 만들기 전에 약관 · 인사규정에서 관련 조항을 찾는 데 걸린 시간. " + SLOW +
             " 일반 대화와 직원 본인 질문(연차 · 퇴직금 등)은 검색하지 않아 빠진다. 업무특화는 규칙으로 답한 질문도 먼저 검색하므로 들어간다."
-            " 2026-11-11부터." + SRC + "turns.search_ms(search-service 호출 시간 합)"), 6, 8, 18)
+            " 2026-11-11부터." + SRC + "turns.search_ms(search-service 호출 시간 합)"), 9, 8, 15)
 y += 8
 
 row("AI 서버 (GPU)")
