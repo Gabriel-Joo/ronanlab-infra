@@ -67,6 +67,45 @@ vcluster 시절 터널 기록은 [history/cloudflare_tunnel_vcluster.md](history
 - `~/AI_programming/petmint-rag-chatbot/docs/02_pipeline/13_access_and_tunnel.md`: 터널 구성 · Access 정책
 - `~/AI_programming/petmint-rag-chatbot/docs/02_pipeline/14_deployment.md`: 무엇을 컨테이너로 만드는가 · 배포 흐름
 
+### 1-4. 처음 한 번: 저장소에 없는 것과 만드는 자리
+
+저장소만으로는 다시 세울 수 없는 것들이다. 비밀값은 저장소에 두지 않고(CLAUDE.md 4절), 만드는 법만 각 문서의 「처음 한 번」에 적는다. 2026-11-12 클러스터 · 호스트를 조회해 이름 · 키만 모았다(Secret 41개 중 차트 · 컨트롤러 · cert-manager가 스스로 만드는 것은 뺐다).
+
+**클러스터 Secret(사람이 만든다)**
+
+| ns | Secret(키) | 만드는 자리 |
+| --- | --- | --- |
+| argocd | `argocd-secret`(`webhook.github.secret`, `admin.password`) · `argocd-notifications-secret`(`foreman-webhook-token`) | [04_argocd.md](04_argocd.md) 「처음 한 번」 |
+| argocd | `repo-ronanlab-infra` | `scripts/make-deploy-keys.sh`([04_argocd.md](04_argocd.md)) |
+| cert-manager | `cloudflare-api-token`(`api-token`) | [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md) 「처음 한 번」 |
+| harbor | 릴리스 값 `harborAdminPassword` → `harbor-core`(`HARBOR_ADMIN_PASSWORD`) | [05_harbor.md](05_harbor.md) 「처음 한 번」 |
+| jenkins | `jenkins-admin` · `harbor-robot-jenkins` · `harbor-robot-runshoes-jenkins` · `github-webhook-secret` · `foreman-webhook-token` · `ronanlab-infra-deploy-key` | [06_jenkins.md](06_jenkins.md) 「처음 한 번」 |
+| cloudflared | `cloudflared-credentials`(`credentials.json`) | `apps/cloudflared/README.md` 「처음 한 번」 |
+| monitoring | `grafana-admin` · `grafana-mysql` | `apps/monitoring/README.md` 「처음 한 번」 |
+| petmint | `harbor-pull` · `mysql-root` · `petmint-db` · `insurance-seed-db` | `apps/petmint/scripts/create-secrets.sh`(`apps/petmint/README.md` 「처음 만드는 순서」) |
+| runshoes | `harbor-pull` · `runshoes-mysql` · `runshoes-auth` | `apps/runshoes/scripts/create-secrets.sh`(`apps/runshoes/README.md` 「처음 만드는 순서」) |
+| petmint · runshoes | `mysql-repl`(`password`) | [runbooks/mysql-replica.md](runbooks/mysql-replica.md) 1절(복제 계정) |
+
+**클러스터 설정(저장소에 없던 것)**
+
+| 무엇 | 지금 |
+| --- | --- |
+| ArgoCD 알림 ConfigMap `argocd-notifications-cm` | 2026-11-12 `platform/argocd/notifications-cm.yaml`로 옮겼다(kubectl diff 0) |
+| ArgoCD · metrics-server · local-path · Calico 설치 매니페스트 | 저장소에 없고 업스트림 URL(버전 고정)로 넣는다: [04_argocd.md](04_argocd.md), [02_metrics_storage_ingress.md](02_metrics_storage_ingress.md), [01_cluster.md](01_cluster.md) |
+| metrics-server `--kubelet-insecure-tls` · local-path 기본 StorageClass · ArgoCD nodeSelector | 설치 뒤 patch: 02 · `platform/argocd/pin-infra.sh` |
+| Harbor PV Retain | 설치 뒤 patch: [05_harbor.md](05_harbor.md) 「처음 한 번」 |
+| 그 밖의 ConfigMap | 저장소 밖 ConfigMap은 모두 설치 매니페스트(ArgoCD · kubeadm · Calico · local-path · ingress-nginx)가 만든 기본값이다. CoreDNS는 `platform/coredns/configmap.yaml` |
+
+**클러스터 밖(사람이 한다)**
+
+| 어디 | 무엇 | 자리 |
+| --- | --- | --- |
+| Harbor UI(DB) | 프로젝트 `library` · `petmint` · `runshoes`, robot `petmint+pull` · `petmint+jenkins` · `runshoes+pull` · `runshoes+jenkins` | [05_harbor.md](05_harbor.md), 앱 README. DB는 `apps/harbor-backup`이 매일 백업 |
+| GitHub | 웹훅 셋(`ronanlab-infra` → ArgoCD, `petmint-rag-chatbot` · `runshoes` → Jenkins), `ronanlab-infra` Deploy key 둘 | [04_argocd.md](04_argocd.md), [06_jenkins.md](06_jenkins.md) |
+| Cloudflare | DNS CNAME, 터널(자격증명 파일 `~/.cloudflared/`), Access 앱 · 정책 · Service Token(`ollama-school-pc`), Bypass 앱 둘(`/api/webhook` · `/github-webhook`), cert-manager용 API 토큰 | [03_cloudflare_tunnel.md](03_cloudflare_tunnel.md), 02 · 04 · 06 |
+| 호스트 | NFS export(`/etc/exports.d/` 셋: `petmint` · `petmint-backup` · `harbor-backup`), GPU exporter, systemd `cloudflared-ollama`, libvirt DHCP 범위 | `scripts/host-nfs-harbor-backup-setup.sh`, 펫퍼민트 저장소 `deploy/scripts/host-nfs-setup.sh` · `host-nfs-backup-setup.sh`, `scripts/host-gpu-exporter.sh`, [03_cloudflare_tunnel.md](03_cloudflare_tunnel.md), 02 |
+| MySQL 안 | 계정 `repl`(복제), `grafana_ro`(컬럼 단위 SELECT) | [runbooks/mysql-replica.md](runbooks/mysql-replica.md), `apps/monitoring/README.md` |
+
 ## 2. 왜 이렇게 했나
 
 ### 2-1. 목표
