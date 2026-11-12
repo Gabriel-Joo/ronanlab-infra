@@ -12,7 +12,7 @@ cronjob.yaml       CronJob harbor-db-backup(매일 03:45 KST, pg_dump -Fc) + 호
 - Harbor 자체는 `platform/harbor`(Helm, ArgoCD 밖)다. 백업 CronJob만 git으로 관리한다
 - 파일: 호스트 `~/backup/harbor/harbor-registry-YYYYMMDD-HHMMSS.dump` + `.sha256`. 보존 30일, 최신 7개는 늘 남긴다
 - 덤프는 `.part`로 쓰고 `pg_restore -l` 목차에 테이블 데이터가 있어야 이름을 바꾼다 — 실패하면 Job이 실패한다
-- **이미지 레이어(`harbor-registry` PVC 20Gi)는 백업하지 않는다.** DB만 있으면 프로젝트 · robot 계정 · 정책은 돌아오지만 레이어가 없는 태그는 pull이 안 된다 —
+- **이미지 레이어(`harbor-registry-w3` PVC 30Gi, 2026-11-10 w3로 옮김)는 백업하지 않는다.** DB만 있으면 프로젝트 · robot 계정 · 정책은 돌아오지만 레이어가 없는 태그는 pull이 안 된다 —
   앱 이미지는 앱 리포 커밋에서 Jenkins로 다시 빌드할 수 있다는 것을 전제로 한다
 - Harbor를 올리면 `cronjob.yaml`의 이미지 태그(`goharbor/harbor-db`)도 같이 올린다 — pg_dump가 서버보다 낮으면 실패한다
 
