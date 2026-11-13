@@ -97,4 +97,5 @@
   - 토큰 파일: `~/AI_programming/foreman/.env.project_tokens` 있음(2026-11-11 확인 — 권한 600, 소유 kopo17, `FOREMAN_TOKEN_RONANLAB_INFRA=` 줄 1개)
   - 싣는 법: `-H "Authorization: Bearer $T"`
 - 다른 프로젝트에 부탁할 일: `curl -s -H "Authorization: Bearer $T" -H 'Content-Type: application/json' -d '{"text": "…"}' http://127.0.0.1:8000/api/managers/<프로젝트>/ask`. 관리자가 없으면 사람에게 텔레그램으로 간다
+- 작업 세션의 보고 · 물음은 관리자에게만 간다. 관리자는 사람에게 올릴 것을 `POST /api/sessions/{자기 세션 id}/escalate` `{"kind": "report"|"question", "text": "…"}`로 올린다(프로젝트 토큰). 응답 글로 쓰기만 하면 사람 화면에도 알림에도 뜨지 않는다. 물음은 바로 알림, 보고는 21:00 묶음(2026-11-13 사용자, 인프라는 묶음이 켜져 있다)
 - 교장이 넘긴 계획(입력 칸에 「[교장 계획 #N …]」)은 고칠 것이 없으면 적힌 명령(`/api/foreman/start` `{"dispatch_id": N, "use_saved": true}`)으로 띄운다. 틀렸으면 띄우지 말고 사람에게 묻는다
