@@ -133,6 +133,10 @@ spec:
           env:
             - name: OLLAMA_URL                 # chatbot_server.py 가 읽는다
               value: "http://192.168.122.1:11434"
+            # model-service(호스트, KURE-v1 임베딩 · 리랭커). 챗봇 5-2 검색 색인이 이 env로만 받는다(코드 기본값 없음).
+            # 없으면 서버는 뜨지만 색인을 만들지 않아 경험·후기 질문에 「잠시 뒤」로 답한다. 2026-11-13 런슈즈 관리자 부탁
+            - name: MODEL_SERVICE_URL
+              value: "http://192.168.122.1:8200"
             - name: PYTHONUNBUFFERED           # print 로그가 kubectl logs 에 바로 보이게
               value: "1"
           readinessProbe:
