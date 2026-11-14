@@ -1,5 +1,5 @@
 # 대시보드 프로비저닝(2026-11-10) — dashboards/*.json 을 configMapGenerator(kustomization.yaml)가 ConfigMap grafana-dashboards 로 만든다.
-# JSON 을 고칠 때는 dashboards/gen_petmint.py 를 고쳐 다시 만든다(python3 gen_petmint.py petmint.json). UI 에서 고친 것은 남지 않는다
+# JSON 을 고칠 때는 dashboards/gen_petmint.py · gen_runshoes.py(2026-11-14)를 고쳐 다시 만든다(python3 gen_petmint.py petmint.json). UI 에서 고친 것은 남지 않는다
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -32,5 +32,6 @@ configMapGenerator:
   - name: grafana-dashboards
     files:
       - grafana/dashboards/petmint.json
+      - grafana/dashboards/runshoes.json   # 2026-11-14, gen_runshoes.py 로 만든다
     options:
       disableNameSuffixHash: true     # deployment.yaml 이 이 이름으로 붙인다

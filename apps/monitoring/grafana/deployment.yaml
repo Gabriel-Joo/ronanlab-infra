@@ -32,6 +32,10 @@ spec:
             # petmint 턴 로그 읽기 계정 비밀번호 — 데이터소스(datasource.yaml)가 $MYSQL_RO_PASSWORD 로 읽는다. 사람이 만든다(README)
             - name: MYSQL_RO_PASSWORD
               valueFrom: { secretKeyRef: { name: grafana-mysql, key: password } }
+            # runshoes 읽기 계정 grafana_ro 비밀번호(2026-11-14) — 데이터소스 runshoes-mysql 이 $MYSQL_RUNSHOES_RO_PASSWORD 로 읽는다.
+            # 펫퍼민트와 다른 DB 계정이라 Secret 을 따로 둔다(grafana-runshoes-mysql, 사람이 만든다 — README 「처음 한 번」)
+            - name: MYSQL_RUNSHOES_RO_PASSWORD
+              valueFrom: { secretKeyRef: { name: grafana-runshoes-mysql, key: password } }
             - name: GF_AUTH_ANONYMOUS_ENABLED
               value: "false"
             # 밖으로 나가는 호출을 끈다(업데이트 확인·사용 통계·플러그인 목록)

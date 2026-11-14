@@ -39,6 +39,9 @@ kubectl -n monitoring create secret generic grafana-mysql --from-literal=passwor
 # petmint Primary 에 읽기 계정 — 비밀번호는 표준 입력으로, 권한은 위 컬럼만(GRANT SELECT (컬럼, …) ON petmint.<테이블>)
 # Application: bootstrap/root-app.yaml 의 exclude 줄을 지웠다(2026-11-10) → 루트가 app.yaml 로 만든다. Sync 는 처음 수동, 2026-11-11부터 자동
 # GPU: 호스트에서 bash scripts/host-gpu-exporter.sh (docker 그룹, sudo 불필요)
+# runshoes 읽기 계정(2026-11-14 사람이 침): 런슈즈 Primary 에 grafana_ro@%(MAX_USER_CONNECTIONS 5) + 앱 리포 docs/07_database.md 1-6절 GRANT,
+# 같은 비밀번호로 Secret(파일은 head -c 32 로 만들어 끝 줄바꿈 없음). Grafana env 가 이 Secret 을 꼭 받는다 — 없으면 Grafana Pod 가 뜨지 않는다
+kubectl -n monitoring create secret generic grafana-runshoes-mysql --from-file=password=<비밀번호 파일>
 ```
 
 ## 확인 · 접속

@@ -40,3 +40,19 @@ data:
           timezone: "+00:00"     # DB 는 UTC 로 적는다
         secureJsonData:
           password: $MYSQL_RO_PASSWORD
+      # runshoes(2026-11-14) — Replica(w2)를 읽는다. 계정 grafana_ro(런슈즈 쪽, 최대 연결 5)는 컬럼 단위 SELECT 와 뷰 grafana_compare_views 만 있다.
+      # 챗봇 질문 · 답 원문 칸은 권한이 없다(앱 리포 docs/07_database.md 1-6절, 2026-11-14 사람이 question 칸 ERROR 1143 확인)
+      - name: runshoes
+        uid: runshoes-mysql
+        type: mysql
+        url: runshoes-mysql-replica.runshoes.svc:3306
+        user: grafana_ro
+        editable: false
+        jsonData:
+          database: runshoes
+          maxOpenConns: 3
+          maxIdleConns: 1
+          connMaxLifetime: 14400
+          timezone: "+00:00"     # DB 는 UTC 로 적는다
+        secureJsonData:
+          password: $MYSQL_RUNSHOES_RO_PASSWORD
