@@ -7,7 +7,7 @@ labels:
       app.kubernetes.io/part-of: monitoring
     includeSelectors: false
 
-# Namespace · Secret(grafana-admin, grafana-mysql)은 여기 없다 — 사람이 만든다(README.md "처음 한 번")
+# Namespace · Secret(grafana-admin, grafana-mysql, grafana-runshoes-mysql)은 여기 없다 — 사람이 만든다(README.md "처음 한 번")
 # 모두 w4(node.ronanlab.dev/role=platform)에. node-exporter 와 alloy 만 DaemonSet 이라 모든 노드에(2026-11-10)
 resources:
   - prometheus/rbac.yaml
