@@ -173,4 +173,4 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 | 6 자동 Sync 켬 | 11-14 10:24:10 | 사용자(`kubectl patch`). `{"automated":{},"syncOptions":["CreateNamespace=false"]}` · Synced/Healthy(인프라 관리자 확인 10:25) |
 | 7 첫 03:30 배치 | | 11-15 03:30 KST 회차 뒤 런슈즈 관리자가 알린다 |
 
-- 메모(인프라 관리자, ArgoCD 이력 읽음): 5단계 Sync 는 ArgoCD 기록상 시작 주체가 `{"automated":true}` 다(태그 커밋 71초 뒤). 사람이 친 수동 Sync 로 남지 않아 1단계 끄기가 push 때 걸려 있었는지는 확인하지 못했다. 덤프 · 복원이 push 전에 끝나 있어 결과에는 해가 없다. 다음 스키마 배포에서는 1단계 뒤 `spec.syncPolicy` 를 다시 읽어 `automated` 가 없는 것을 Claude 가 확인하고 push 한다.
+- 메모(인프라 관리자, ArgoCD 이력 읽음): 처음에 「5단계 Sync 가 자동 Sync 로 남아 1단계 끄기를 확인하지 못했다」고 적었는데 **틀렸다(11-14 V21 배포 뒤 고침)**. 그때 읽은 `status.operationState.operation.initiatedBy` 는 `kubectl patch` 로 넣은 수동 Sync 에도 `{"automated":true}` 로 나온다(V21 수동 Sync 도 같았다). 믿을 곳은 `status.history[].initiatedBy` 다 — 이 Sync(history 112)는 `{}`(수동), 자동 Sync 였던 2bfbf40(history 113)은 `{"automated":true}`. 그러니 이 배포의 Sync 는 사람이 친 수동 Sync 였다. 끄기가 push 때 걸려 있었는지는 여전히 출력으로 남지 않아, V21 부터는 사람이 끈 출력을 붙이고 push 한다.
