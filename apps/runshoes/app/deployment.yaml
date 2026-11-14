@@ -1,6 +1,6 @@
 # 앱(Spring Boot — React 빌드물 + /api, :3000)과 챗봇 사이드카(파이썬 웹소켓, :8766) 한 Pod.
 # 상태는 MySQL(runshoes-mysql)에 있고 앱은 무상태다 — 롤링은 한 Pod 씩(maxSurge 0, maxUnavailable 1): 옛 Pod 하나를 내리고 그 자리에 새 Pod, 그동안 남은 하나가 받는다(아래 strategy 주석).
-# Ready 는 DB 까지 본다(/actuator/health/readiness — readinessState + db). 스키마 · 시드는 앱이 기동 때 Flyway 로 넣는다.
+# Ready 는 DB 까지 본다(/readyz — readiness 그룹 readinessState + db, 2026-11-14 전에는 /actuator/health/readiness). 스키마 · 시드는 앱이 기동 때 Flyway 로 넣는다.
 # 챗봇은 앱과 같은 커밋 · 태그로 빌드한다(kustomization images). 롤링 때 열려 있던 WebSocket 은 한 번 끊기고 프런트가 다시 붙는다.
 #
 # Ollama(리뷰 요약 · 챗봇)는 GPU 호스트에 있다 — Pod 가 VM 사설망으로 바로 간다(petmint 와 같은 주소).
@@ -108,15 +108,18 @@ spec:
           securityContext:
             runAsNonRoot: true
           # 첫 기동은 Flyway 가 스키마 · 시드를 넣는다 — startupProbe 가 기다리는 동안 liveness 가 죽이지 않는다(최대 2분)
+          # 경로(2026-11-14, 런슈즈 관리자 부탁 A-2 2단계): /readyz · /livez 는 앱 포트 3000 에 더한 상태 경로다
+          # (management.endpoint.health.probes.add-additional-paths, 이미지 35537160ce73 부터). 전에는 /actuator/health · /actuator/health/readiness · /actuator/health/liveness.
+          # 다음 단계에서 actuator 를 관리 포트로 옮겨도 이 둘은 3000 에 남는다. 그 전 이미지로 되돌리면 404 로 Ready 가 안 된다 — 이미지를 되돌릴 때는 이 경로도 함께 되돌린다
           startupProbe:
-            httpGet: { path: /actuator/health, port: http }
+            httpGet: { path: /readyz, port: http }
             periodSeconds: 2
             failureThreshold: 60
           readinessProbe:
-            httpGet: { path: /actuator/health/readiness, port: http }
+            httpGet: { path: /readyz, port: http }
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /actuator/health/liveness, port: http }
+            httpGet: { path: /livez, port: http }
             periodSeconds: 20
           lifecycle:
             preStop:
