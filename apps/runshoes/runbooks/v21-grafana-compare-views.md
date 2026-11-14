@@ -169,5 +169,5 @@ prometheus.io/path: /actuator/prometheus
 | 3 push | 11-14 11:13:20 | 앱 `main` `f9ee36e` → Jenkins 인프라 태그 커밋 `78b23bb`(11:17:58), 이미지 `f9ee36e01331`. ArgoCD OutOfSync 11:17:45(사용자 확인) |
 | 4 · 5 확인 · 덤프 · 복원 | 11-14 11:18:53 | 사용자. `runshoes-before-v21-20261114T111853Z.sql` 2,381,231 B · `sha256.txt` 11:19:07. 복원 확인 「맞다」(사용자) |
 | 6 Sync | 11-14 11:21:01 | 사용자(수동 — history 114 `initiatedBy` `{}`). rev `78b23bb` Succeeded, Healthy 11:22:31. 새 Pod `runshoes-77dd67cbf9-7w9jx` · `-mfs59`. 런슈즈 관리자 읽기: 11:22:10부터 두 Pod 새 이미지, 공개 `/actuator` · `/actuator/health` · `/actuator/prometheus` 모두 200 `text/html` · `# HELP` 0, `/livez` · `/readyz` 200 UP, shoes 310 · reviews 1,800, 챗봇 정상. Pod 안 9000 지표 줄 199 · 285. 사용자 DB: 원본 · 복제본 둘 다 `21 1` · VIEW · `runshoes@%` DEFINER · 40 |
-| 7 자동 Sync 켬 | **안 켜짐** | 11-14 인프라 관리자 읽기(Sync 뒤): `spec.syncPolicy` 가 `{"syncOptions":["CreateNamespace=false"]}` 그대로 — `automated` 없음. 사람에게 알림 |
+| 7 자동 Sync 켬 | 11-14 11:22:31 ~ 11:26:58 사이 | 사용자. 인프라 관리자가 11:22:31 뒤에 읽었을 때는 아직 꺼져 있었고, 11:26:58 에 Pod 주석 커밋 `9b57224` 를 자동 Sync 가 받았다(history 115 `{"automated":true}`). 정확한 시각은 남지 않았다(그 뒤 인프라 관리자의 수동 Sync patch 가 같은 managedFields 칸을 11:27:12 로 덮었다). 지금 `{"automated":{},"syncOptions":["CreateNamespace=false"]}` |
 | grafana_ro SQL | | |
