@@ -35,7 +35,7 @@ Prometheus · Grafana · node-exporter · kube-state-metrics + Loki · Alloy · 
 kubectl create namespace monitoring
 R(){ head -c 48 /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32; }
 kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password="$(R)"
-kubectl -n monitoring create secret generic grafana-mysql --from-literal=password="$(R)"
+kubectl -n monitoring create secret generic grafana-petmint-mysql --from-literal=password="$(R)"   # 2026-11-10에는 grafana-mysql 로 만들었고 2026-11-14 이 이름으로 옮겼다(값 그대로)
 # petmint Primary 에 읽기 계정 — 비밀번호는 표준 입력으로, 권한은 위 컬럼만(GRANT SELECT (컬럼, …) ON petmint.<테이블>)
 # Application: bootstrap/root-app.yaml 의 exclude 줄을 지웠다(2026-11-10) → 루트가 app.yaml 로 만든다. Sync 는 처음 수동, 2026-11-11부터 자동
 # GPU: 호스트에서 bash scripts/host-gpu-exporter.sh (docker 그룹, sudo 불필요)

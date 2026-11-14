@@ -81,7 +81,7 @@ vcluster 시절 터널 기록은 [history/cloudflare_tunnel_vcluster.md](history
 | harbor | 릴리스 값 `harborAdminPassword` → `harbor-core`(`HARBOR_ADMIN_PASSWORD`) | [05_harbor.md](05_harbor.md) 「처음 한 번」 |
 | jenkins | `jenkins-admin` · `harbor-robot-jenkins` · `harbor-robot-runshoes-jenkins` · `github-webhook-secret` · `foreman-webhook-token` · `ronanlab-infra-deploy-key` | [06_jenkins.md](06_jenkins.md) 「처음 한 번」 |
 | cloudflared | `cloudflared-credentials`(`credentials.json`) | `apps/cloudflared/README.md` 「처음 한 번」 |
-| monitoring | `grafana-admin` · `grafana-mysql`(펫퍼민트 읽기 계정) · `grafana-runshoes-mysql`(런슈즈 읽기 계정, 2026-11-14) | `apps/monitoring/README.md` 「처음 한 번」 |
+| monitoring | `grafana-admin` · `grafana-petmint-mysql`(펫퍼민트 읽기 계정, 2026-11-14 전 이름 `grafana-mysql`) · `grafana-runshoes-mysql`(런슈즈 읽기 계정, 2026-11-14) | `apps/monitoring/README.md` 「처음 한 번」 |
 | petmint | `harbor-pull` · `mysql-root` · `petmint-db` · `insurance-seed-db` | `apps/petmint/scripts/create-secrets.sh`(`apps/petmint/README.md` 「처음 만드는 순서」) |
 | runshoes | `harbor-pull` · `runshoes-mysql` · `runshoes-auth` | `apps/runshoes/scripts/create-secrets.sh`(`apps/runshoes/README.md` 「처음 만드는 순서」) |
 | petmint · runshoes | `mysql-repl`(`password`) | [runbooks/mysql-replica.md](runbooks/mysql-replica.md) 1절(복제 계정) |
