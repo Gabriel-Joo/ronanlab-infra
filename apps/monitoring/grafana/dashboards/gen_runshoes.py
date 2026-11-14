@@ -2,6 +2,7 @@
 # 2026-11-14 런슈즈 작업 세션이 쓰고 런슈즈 관리자 부탁으로 인프라가 넣었다. 데이터소스 셋: Prometheus(prometheus) · Loki(loki) ·
 # 런슈즈 MySQL 복제본(runshoes-mysql, ../datasource.yaml — 읽기 계정 grafana_ro 는 앱 리포 docs/07_database.md 1-6절).
 # 고칠 때는 이 파일을 고쳐 다시 만든다(python3 gen_runshoes.py runshoes.json). 아래 글쓰기 규칙을 지킨다.
+# 2026-11-14 패널 폭 — 런슈즈 관리자(제목이 잘리지 않게 폭과 줄 나눔만 바꿈, 제목 · 쿼리 · 설명은 그대로)
 #
 # 역할 가르기(사용자 2026-11-14): Grafana 는 추세를 본다(세는 곳), 관리자 화면은 개별 건을 본다(손대는 곳).
 # 숫자와 그래프는 관리자 화면에 다시 그리지 않는다.
@@ -116,11 +117,11 @@ add(stat("응답 가능한 앱 서버 수 (정상 2)",
          [prom(f'sum(kube_pod_status_ready{{{NS},condition="true",{APP_POD}}})')],
          desc="웹 화면 · API · 챗봇을 함께 돌리는 앱 서버 2대 중 지금 요청을 받을 수 있는 수. 2가 정상, 1이면 한 대가 재시작 중이거나"
               " 고장, 0이면 사이트가 멈춘 것. 배포 중에는 한 대씩 바꾸므로 잠깐 1이 된다(그동안 남은 한 대가 받는다)."
-              " DB가 멈춰도 0이 된다 — 앱 서버는 DB까지 붙어야 준비된 것으로 친다." + SRC + "kube-state-metrics, 앱 Pod Ready"), 5, 6, 0)
+              " DB가 멈춰도 0이 된다 — 앱 서버는 DB까지 붙어야 준비된 것으로 친다." + SRC + "kube-state-metrics, 앱 Pod Ready"), 7, 6, 0)
 add(stat("서버 재시작 횟수 (최근 24시간)",
          [prom(f'sum(increase(kube_pod_container_status_restarts_total{{{NS}}}[24h]))')],
          desc="앱 · 챗봇 · DB · 요약 배치가 오류나 메모리 초과로 꺼졌다가 스스로 다시 켜진 횟수. 0이 정상."
-              " 배포로 서버를 새것으로 바꾸는 것은 세지 않는다." + SRC + "kube-state-metrics, runshoes 네임스페이스 컨테이너 재시작 합"), 5, 6, 5)
+              " 배포로 서버를 새것으로 바꾸는 것은 세지 않는다." + SRC + "kube-state-metrics, runshoes 네임스페이스 컨테이너 재시작 합"), 7, 6, 7)
 add(ts("접속 요청량 (초당, 결과별)",
        [prom(f'sum(rate(nginx_ingress_controller_requests{{{H},status=~"[123].."}}[5m]))', "정상(100 · 200 · 300번대)"),
         prom(f'sum(rate(nginx_ingress_controller_requests{{{H},status="404"}}[5m]))', "없는 주소(404)"),
@@ -129,7 +130,8 @@ add(ts("접속 요청량 (초당, 결과별)",
        unit="reqps", stack=True,
        desc="바깥(브라우저)에서 들어온 요청 수를 결과별로. 400번대에는 로그인하지 않고 쓰기를 누른 것(401)이 섞인다."
             " 챗봇 대화창은 질문 수가 아니라 연결 한 번이 1건이다(연결이 끝날 때 101로 센다) — 질문 수는 아래 「챗봇」 묶음."
-            + SRC + "ingress-nginx(입구에서 센다 — 사이트 안 지표는 「API」 묶음)"), 7, 6, 10)
+            + SRC + "ingress-nginx(입구에서 센다 — 사이트 안 지표는 「API」 묶음)"), 10, 6, 14)
+y += 6   # 제목이 잘리지 않게 줄을 나눔(2026-11-14 사용자)
 add(ts("서버 오류 비율",
        # 500번대가 없으면 그 줄이 없어 나눗셈이 비므로 or vector(0)
        [prom(f'(sum(rate(nginx_ingress_controller_requests{{{H},status=~"5.."}}[5m])) or vector(0))'
@@ -137,15 +139,15 @@ add(ts("서버 오류 비율",
        unit="percentunit", minv=0,
        desc="전체 요청 중 서버 오류(500번대)의 비율. 0%가 정상. 배포 중 잠깐, 또는 DB가 멈췄을 때 올라간다."
             " 챗봇이 답을 못 만든 것은 여기 안 잡히고 「챗봇」 묶음의 「오류로 끝남」 갈래에 나온다." + SRC + "ingress-nginx 5xx / 전체"),
-    7, 6, 17)
-y += 6
+    12, 7, 0)
 add(ts("CPU 사용량 (컨테이너별)",
        [prom(f'sum by (pod, container) (rate(container_cpu_usage_seconds_total{{{NS},container=~"runshoes|chatbot|mysql"}}[5m]))',
              "{{container}} · {{pod}}")],
        unit="none",
        desc="CPU 몇 개만큼 쓰고 있나(1 = 코어 하나를 꽉 채움). runshoes = 웹 화면 · API(Spring), chatbot = 챗봇,"
             " mysql = DB(runshoes-mysql-0이 원본, replica가 대시보드가 읽는 복제본). 챗봇은 답 글을 GPU 서버의 AI 모델이 만들어"
-            " 여기서는 적게 나온다. 요약 배치(하루 한 번)는 빠져 있다." + SRC + "kubelet cAdvisor"), 12, 7, 0)
+            " 여기서는 적게 나온다. 요약 배치(하루 한 번)는 빠져 있다." + SRC + "kubelet cAdvisor"), 12, 7, 12)
+y += 7   # 제목이 잘리지 않게 줄을 나눔(2026-11-14 사용자)
 add(ts("메모리 사용량 (상한 대비)",
        [prom(f'max by (pod, container) (container_memory_working_set_bytes{{{NS},container=~"runshoes|chatbot|mysql"}})'
              f' / on (pod, container) max by (pod, container) (kube_pod_container_resource_limits{{{NS},resource="memory"}})',
@@ -153,13 +155,13 @@ add(ts("메모리 사용량 (상한 대비)",
        unit="percentunit", minv=0,
        desc="컨테이너마다 쓰는 메모리를 상한으로 나눈 값. 100%에 닿으면 그 컨테이너는 강제로 꺼지고 다시 켜진다(재시작 횟수에 잡힌다)."
             " 상한: 앱 1GiB · 챗봇 256MiB · DB 1GiB. 앱(Java)은 처음부터 일정량을 잡고 쓰므로 50~60%대가 보통이다."
-            + SRC + "kubelet cAdvisor(쓰는 메모리) / kube-state-metrics(상한)"), 6, 7, 12)
+            + SRC + "kubelet cAdvisor(쓰는 메모리) / kube-state-metrics(상한)"), 12, 7, 0)
 add(ts("챗봇 메모리 (상한 256MiB)",
        [prom(f'max by (pod) (container_memory_working_set_bytes{{{NS},container="chatbot"}})', "{{pod}}"),
         prom(f'max(kube_pod_container_resource_limits{{{NS},container="chatbot",resource="memory"}})', "상한")],
        unit="bytes", minv=0,
        desc="챗봇이 쓰는 메모리. 2026-11-14까지 잰 가장 큰 값은 83MiB였다. 배포 사이에 계속 오르기만 하면 어딘가 쌓이고 있는 것이다"
-            "(카탈로그 · 검색 색인을 메모리에 들고 있다). 배포하면 처음부터 다시 잰다." + SRC + "kubelet cAdvisor"), 6, 7, 18)
+            "(카탈로그 · 검색 색인을 메모리에 들고 있다). 배포하면 처음부터 다시 잰다." + SRC + "kubelet cAdvisor"), 12, 7, 12)
 y += 7
 
 # ───────────────────────── 2. API(Spring) ─────────────────────────
@@ -169,19 +171,19 @@ add(ts("주소별 요청 수 (초당)",
        unit="reqps", stack=True,
        desc="API 주소별 요청 수(두 서버 합). /api/{name}은 신발 · 리뷰 · 용어 목록처럼 같은 꼴의 주소를 묶은 것이고,"
             " /**는 화면 파일(index.html 등)이다. 챗봇이 서버 안에서 부르는 것(카탈로그 · 비교 · 추천 · 리뷰)도 여기 들어간다."
-            " 서버 상태 확인(/livez · /readyz)은 뺐다." + SRC + "Spring Boot 지표(관리 포트 9000, 2026-11-14 배포부터)"), 12, 8, 0)
+            " 서버 상태 확인(/livez · /readyz)은 뺐다." + SRC + "Spring Boot 지표(관리 포트 9000, 2026-11-14 배포부터)"), 8, 8, 0)
 HQ = "histogram_quantile({q}, sum by (le) (rate(http_server_requests_seconds_bucket{{" + SPRING + "," + NOPROBE + "}}[5m])))"
 add(ts("응답 시간 (보통 / 느린 편, 어림값)",
        [prom(HQ.format(q=0.5), "보통(절반이 이보다 빠름)"), prom(HQ.format(q=0.95), "느린 편(20번 중 19번이 이보다 빠름)")],
        unit="s", minv=0,
        desc="서버가 요청을 받아 답을 보내기까지. 시간 구간을 50ms · 100ms · 300ms · 1초 넷으로만 센다 — 그래서 이 값은 구간 사이를"
             " 직선으로 이은 어림값이다(예: 실제 120ms든 280ms든 100~300ms 사이 어딘가로 나온다). 1초가 넘는 요청은 1초 이상이라는 것만 안다 — 오른쪽 패널."
-            " 구간을 더 잘게 나누면 시계열이 크게 늘어 넷만 두었다." + SRC + "http_server_requests 버킷(Spring, 9000)"), 6, 8, 12)
+            " 구간을 더 잘게 나누면 시계열이 크게 늘어 넷만 두었다." + SRC + "http_server_requests 버킷(Spring, 9000)"), 8, 8, 8)
 add(ts("1초 넘게 걸린 요청 비율",
        [prom(f'1 - sum(rate(http_server_requests_seconds_bucket{{{SPRING},{NOPROBE},le="1.0"}}[5m]))'
              f' / clamp_min(sum(rate(http_server_requests_seconds_count{{{SPRING},{NOPROBE}}}[5m])), 1e-9)', "1초 넘음")],
        unit="percentunit", minv=0,
-       desc="API 요청 중 1초보다 오래 걸린 비율. 어림값이 아니라 센 값이다. 0%에 가까워야 한다." + SRC + "http_server_requests 버킷 le=1.0"), 6, 8, 18)
+       desc="API 요청 중 1초보다 오래 걸린 비율. 어림값이 아니라 센 값이다. 0%에 가까워야 한다." + SRC + "http_server_requests 버킷 le=1.0"), 8, 8, 16)
 y += 8
 add(ts("API 오류 비율 (요청 쪽 / 서버 쪽)",
        [prom(f'(sum(rate(http_server_requests_seconds_count{{{SPRING},{NOPROBE},status=~"4.."}}[5m])) or vector(0))'
@@ -212,31 +214,32 @@ add(ts("갈래별 질문 수 (시간당)", [sql(
     f"SELECT $__timeGroupAlias(created_at, '1h'), {BRANCH_CASE} AS metric, COUNT(*) AS value\n"
     "FROM chatbot_turns\nWHERE $__timeFilter(created_at)\nGROUP BY 1, 2 ORDER BY 1")], bars=True, stack=True,
     desc="챗봇이 받은 질문을 무엇을 묻는 질문으로 보았나(갈래)별로 센다. 되물음에 「네」로 답한 것도 질문 하나다."
-         " 체험 계정을 여럿이 함께 쓰므로 질문한 사람 수는 알 수 없다. " + TURNS_FROM + "." + SRC + "chatbot_turns.branch"), 12, 8, 0)
+         " 체험 계정을 여럿이 함께 쓰므로 질문한 사람 수는 알 수 없다. " + TURNS_FROM + "." + SRC + "chatbot_turns.branch"), 8, 8, 0)
 add(ts("대화 연결 수와 질문한 계정 수 (일별)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1d'), COUNT(DISTINCT conn_id) AS `대화 연결`, COUNT(DISTINCT user_id) AS `질문한 계정`\n"
     "FROM chatbot_turns\nWHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1")], bars=True,
     desc="대화 연결 = 챗봇 창을 열어 대화한 횟수(창을 닫거나 새로 고치면 새 연결). 질문한 계정 = 그날 질문한 로그인 계정 수."
          " 체험 계정 31개를 여러 사람이 함께 쓰므로 계정 수는 사람 수가 아니다. " + TURNS_FROM + "."
-         + SRC + "chatbot_turns.conn_id · user_id"), 6, 8, 12)
+         + SRC + "chatbot_turns.conn_id · user_id"), 8, 8, 8)
 add(pie("갈래를 정한 방식: 규칙 / AI 판단",
     "SELECT CASE WHEN by_rule = 1 THEN '규칙(낱말로 바로)' WHEN by_rule = 0 THEN 'AI 판단(라우터)' ELSE '판단 안 함(되물음에 답)' END AS `방식`,\n"
     "  COUNT(*) AS `질문`\nFROM chatbot_turns WHERE $__timeFilter(created_at)\nGROUP BY 1",
     desc="질문이 무엇을 묻는지(갈래)를 정해진 규칙이 바로 정했나, AI 모델(라우터)이 읽고 정했나. 규칙은 1초 안에 끝나고,"
          " AI 판단은 1초쯤 더 걸린다(아래 「단계별 시간」의 라우터). 되물음에 「네」로 답한 것은 판단하지 않는다. " + TURNS_FROM + "."
-         + SRC + "chatbot_turns.by_rule"), 6, 8, 18)
+         + SRC + "chatbot_turns.by_rule"), 8, 8, 16)
 y += 8
 add(ts("AI 판단이 틀린 형식으로 온 횟수 (일별)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1d'), SUM(llm_ok = 0) AS `형식 틀림`\n"
     "FROM chatbot_turns\nWHERE llm_ok IS NOT NULL AND $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1")], bars=True,
     desc="AI 모델(라우터)에게 갈래를 물었는데 약속한 꼴(JSON)로 답하지 않은 횟수. 0이 정상. 이때 챗봇은 규칙만으로 갈래를 정한다 —"
-         " 늘면 AI 모델이 바뀌었거나 GPU 서버가 바빠 답이 잘린 것일 수 있다. " + TURNS_FROM + "." + SRC + "chatbot_turns.llm_ok"), 6, 7, 0)
+         " 늘면 AI 모델이 바뀌었거나 GPU 서버가 바빠 답이 잘린 것일 수 있다. " + TURNS_FROM + "." + SRC + "chatbot_turns.llm_ok"), 12, 7, 0)
 add(ts("코드가 대신 쓴 답 비율 · 통증 질문 비율 (일별)", [sql(
     "SELECT $__timeGroupAlias(created_at, '1d'), AVG(fallback_used) AS `코드가 대신 쓴 답`, AVG(health = 1) AS `통증 · 몸 이야기 질문`\n"
     "FROM chatbot_turns\nWHERE $__timeFilter(created_at)\nGROUP BY 1 ORDER BY 1")], unit="percentunit", minv=0,
     desc="코드가 대신 쓴 답 = AI 모델이 쓴 답이 검사(숫자가 맞나, 없는 말을 지어냈나 등)에 걸려 프로그램이 정해진 꼴로 다시 쓴 답의 비율."
          " 높아지면 AI 답의 품질이 떨어진 것이다. 통증 · 몸 이야기 질문 = 아프다 · 다쳤다는 질문의 비율(이때 전문의 안내를 붙인다)."
-         " 판단하지 않은 턴(되물음에 답)은 통증 쪽 분모에 0으로 들어간다. " + TURNS_FROM + "." + SRC + "chatbot_turns.fallback_used · health"), 6, 7, 6)
+         " 판단하지 않은 턴(되물음에 답)은 통증 쪽 분모에 0으로 들어간다. " + TURNS_FROM + "." + SRC + "chatbot_turns.fallback_used · health"), 12, 7, 12)
+y += 7   # 제목이 잘리지 않게 넷을 두 줄로(2026-11-14 사용자)
 PCT = ("SELECT TIMESTAMP(d) AS time,\n"
        "  MAX(CASE WHEN pr <= 0.5 THEN v END) / 1000 AS `보통`,\n"
        "  MAX(CASE WHEN pr <= 0.95 THEN v END) / 1000 AS `느린 편`\n"
@@ -248,14 +251,14 @@ add(ts("챗봇 답 걸린 시간 (보통 / 느린 편, 일별)", [sql(PCT)], uni
        desc="질문을 받아 답을 다 만들기까지(화면으로 보내는 시간은 빠진다). 「보통」은 그날 질문의 절반이 이보다 빨랐던 값,"
             " 「느린 편」은 20번 중 19번이 이보다 빨랐던 값. 오류로 끝난 질문은 뺐다. 인사 · 용어처럼 AI가 짧게 답하는 질문(1초 안팎)과"
             " 경험·후기처럼 리뷰를 읽는 질문(수 초)이 섞여 있다. GPU 서버에서 모델이 내려가 있었으면 첫 답이 몇 초 더 걸린다. "
-            + TURNS_FROM + "." + SRC + "chatbot_turns.latency_ms"), 6, 7, 12)
+            + TURNS_FROM + "." + SRC + "chatbot_turns.latency_ms"), 12, 7, 0)
 add(ts("신발을 하나도 못 보여준 답 비율 (갈래별, 일별)", [sql(
     f"SELECT $__timeGroupAlias(created_at, '1d'), {BRANCH_CASE} AS metric, AVG(shoe_count = 0) AS value\n"
     "FROM chatbot_turns\nWHERE branch IN ('spec', 'compare', 'recommend', 'experience', 'no_shoe') AND $__timeFilter(created_at)\n"
     "GROUP BY 1, 2 ORDER BY 1")], unit="percentunit", minv=0,
     desc="신발을 보여 줘야 하는 갈래(스펙 · 비교 · 추천 · 경험·후기)에서 답에 신발 버튼을 하나도 붙이지 못한 비율."
          " 「등록 안 된 신발」은 늘 100%다 — 카탈로그에 없는 신발을 물은 것이라, 이 갈래의 질문 수가 늘면 카탈로그에 없는 신발을 많이 묻는다는 뜻이다."
-         " 용어 · 인사 · 범위 밖은 원래 신발이 없어 뺐다. " + TURNS_FROM + "." + SRC + "chatbot_turns.shoe_count · branch"), 6, 7, 18)
+         " 용어 · 인사 · 범위 밖은 원래 신발이 없어 뺐다. " + TURNS_FROM + "." + SRC + "chatbot_turns.shoe_count · branch"), 12, 7, 12)
 y += 7
 STAGES = [("router_ms", "질문 판단(라우터)"), ("search_ms", "리뷰 검색"), ("gen_ms", "답 쓰기(AI)"),
           ("catalog_ms", "API: 카탈로그"), ("compare_ms", "API: 비교"), ("recommend_ms", "API: 추천"),
