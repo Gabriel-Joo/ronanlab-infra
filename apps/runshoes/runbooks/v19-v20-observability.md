@@ -166,9 +166,11 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 push | | |
-| 3 · 4 확인 · 덤프 · 복원 | | |
-| 5 Sync | | |
-| 6 자동 Sync 켬 | | |
-| 7 첫 03:30 배치 | | |
+| 1 자동 Sync 끔 | 11-14 저녁 | 사용자. 정확한 시각은 ArgoCD 에 남지 않았다(아래 메모) |
+| 3 · 4 확인 · 덤프 · 복원 | 11-14 10:15:22 | 사용자. **push 전에 떴다**(런북은 push 뒤). `runshoes-before-v19-20261114T101522Z.sql` 2,376,234 B · `sha256.txt` 10:17:42. 복원본: reviews 1,800 지문이 운영 API 와 같음 · shoes 310 · users 204 · chatbot_misses 1 · flyway 1~18 |
+| 2 push | 11-14 10:19:52 | 앱 `main` `3553716` → Jenkins 인프라 태그 커밋 `2466479`, 이미지 `35537160ce73` |
+| 5 Sync | 11-14 10:21:03 ~ 10:21:04 | rev `2466479` Succeeded, Healthy 10:22 무렵. 새 Pod `runshoes-69cc5784f6-rwmmg`(w2) · `-jq7x5`(w1). 웹 · 챗봇 · CronJob 이미지 `35537160ce73`. DB: flyway 19 · 20 success 1, `chatbot_turns` 1 이상(사용자 확인). 런슈즈 관리자 읽기: 10:21:57부터 두 Pod 모두 새 이미지, `/livez` · `/readyz` · `/actuator/health` 200 UP, 내부 `catalog-version` · `chatbot-turns` 밖에서 404(`X-Forwarded-For: 127.0.0.1` 위조도 404), shoes 310 · reviews 1,800, 챗봇 스펙 질문 정상 |
+| 6 자동 Sync 켬 | 11-14 10:24:10 | 사용자(`kubectl patch`). `{"automated":{},"syncOptions":["CreateNamespace=false"]}` · Synced/Healthy(인프라 관리자 확인 10:25) |
+| 7 첫 03:30 배치 | | 11-15 03:30 KST 회차 뒤 런슈즈 관리자가 알린다 |
+
+- 메모(인프라 관리자, ArgoCD 이력 읽음): 5단계 Sync 는 ArgoCD 기록상 시작 주체가 `{"automated":true}` 다(태그 커밋 71초 뒤). 사람이 친 수동 Sync 로 남지 않아 1단계 끄기가 push 때 걸려 있었는지는 확인하지 못했다. 덤프 · 복원이 push 전에 끝나 있어 결과에는 해가 없다. 다음 스키마 배포에서는 1단계 뒤 `spec.syncPolicy` 를 다시 읽어 `automated` 가 없는 것을 Claude 가 확인하고 push 한다.
