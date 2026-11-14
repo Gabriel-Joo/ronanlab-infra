@@ -33,6 +33,13 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: runshoes
+      # Spring 지표(2026-11-14, 런슈즈 관리자 부탁): Prometheus job kubernetes-pods(apps/monitoring/prometheus/configmap.yaml)가 이 주석을 보고
+      # Pod IP:9000 을 긁는다. 9000 은 관리 포트(이미지 f9ee36e01331 부터)라 Service · Ingress 에 없어 바깥에서 닿지 않는다.
+      # 주석은 Pod 에 포트 하나 — 챗봇 사이드카는 긁히지 않는다
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: /actuator/prometheus
     spec:
       # Harbor runshoes 프로젝트가 private — scripts/create-secrets.sh 가 만드는 pull Secret
       imagePullSecrets:
