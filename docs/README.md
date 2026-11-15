@@ -1,31 +1,28 @@
 # ronanlab-infra docs
 
-이 디렉터리가 인프라 문서의 원본이다(2026-11-10부터). 노션 「프로젝트 / 인프라」 아래 문서는 사람이 처음 쓴 기록이고,
-2026-11-12 여기로 옮기면서 지금 코드 · 클러스터와 맞췄다. 노션과 다르면 이 문서와 저장소의 코드가 맞다.
+인프라 문서는 두 벌이다. `docs/00_overview.md` ~ `14_operations.md`는 운영하는 사람이 보는 개발자 문서이고, 저장소 맨 위 `notion/`은 비개발자도 읽는 노션 기술문서 원고다. 두 벌은 같은 번호와 같은 편 나눔을 쓴다. 코드와 지금 상태가 원칙이고 문서가 그것을 따른다. 쓰는 법과 점검은 [style_guide.md](style_guide.md), `python3 scripts/docs-check.py`(2026-11-16 새로 씀).
+
+노션에는 `notion/` 원고만 올라간다(`.foreman/notion.toml`의 `src`). 게시기가 머리 주석, 근거 표시, 저장소 링크를 떼고 맨 아래 갱신 줄에 읽은 커밋을 적는다.
 
 ## 차례
 
-Notion 게시는 이 표의 순서를 따른다. 「노션 제목」은 각 문서 맨 위 제목 줄과 같다. 줄 순서가 곧 차례다.
-첫 칸은 백틱 파일 이름만 둔다(게시기가 읽는다, FOREMAN bridge/docsync.py table_rows).
-
-| 파일 | 노션 제목 | 내용 |
-| --- | --- | --- |
-| `00_server.md` | [인프라/서버 구축(하드웨어)](00_server.md) | 물리 GPU 서버: 네트워크, OS · 드라이버 · CUDA, 원격 접속, Docker(Ollama · Open WebUI), GPU 운영 규칙 |
-| `kubernetes_install.md` | [쿠버네티스 설치](kubernetes_install.md) | 01~09의 머리: 목표, 전체 구조, 설계 원칙, 13단계 순서와 진행 상황 |
-| `01_cluster.md` | [01. 클러스터 구축](01_cluster.md) | KVM/libvirt · Vagrant VM 5대, containerd · kubeadm 1.35.9, Calico, 노드 추가 · 메모리 절차 |
-| `02_metrics_storage_ingress.md` | [02. 메트릭·스토리지·Ingress](02_metrics_storage_ingress.md) | metrics-server, local-path, ingress-nginx, MetalLB, cert-manager, CoreDNS rewrite |
-| `03_cloudflare_tunnel.md` | [03. Cloudflare Tunnel 연결](03_cloudflare_tunnel.md) | 도메인, ronanlab-tunnel(공개 주소 일곱) · ollama-tunnel, Access |
-| `04_argocd.md` | [04. ArgoCD](04_argocd.md) | 설치, App of Apps, 자동 · 수동 Sync, 웹훅 · 알림 |
-| `05_harbor.md` | [05. Harbor](05_harbor.md) | Helm 설치, values, 스토리지(w3), DB 백업 |
-| `06_jenkins.md` | [06. Jenkins](06_jenkins.md) | Helm 설치, BuildKit rootless, 로봇 계정, 플러그인 고정, 파이프라인 |
-| `07_project_deploy.md` | [07. 프로젝트 배포](07_project_deploy.md) | petmint · runshoes: Secret, Kustomize, Jenkins → Harbor → ArgoCD, MySQL, Ingress |
-| `08_scale_out.md` | [08. 구조 확장·이관](08_scale_out.md) | 가용성: 노드 역할 배치, 앱 분산, Harbor · ArgoCD 이사, MySQL Replica, 노드 정비 절차 |
-| `09_monitoring.md` | [09. 모니터링](09_monitoring.md) | Prometheus · Grafana · Loki를 왜 이렇게 세웠나, 설치 기록(지금 구성은 `apps/monitoring/README.md`) |
-| `history/cloudflare_tunnel_vcluster.md` | [Cloudflare Tunnel 세팅 (vcluster 시절)](history/cloudflare_tunnel_vcluster.md) | 학교 vcluster 시절 RUNSHOES 터널 · CI 기록과 시행착오 |
-
-history/ 아래 문서는 게시기가 표 순서로 읽지 못해 맨 뒤에 붙는다.
-
-모든 문서는 같은 꼴이다: 제목 줄, 머리 세 줄(요약 · 날짜 · 범위 · 코드), 절 다섯(1. 지금 구성 / 2. 왜 이렇게 했나 / 3. 진행 기록 / 4. 남은 한계 / 5. 확인 방법). 말투는 한다체.
+| 번호 | 개발자 문서 | 노션 원고 | 다루는 것 |
+| --- | --- | --- | --- |
+| 00 | [00_overview.md](00_overview.md) | `notion/00_overview.md` | 전체 그림 |
+| 01 | [01_server.md](01_server.md) | `notion/01_server/` | 물리 서버, 사무실 망, OS와 드라이버, 원격 접속(근거는 노션 하드웨어 기록) |
+| 02 | [02_nodes.md](02_nodes.md) | `notion/02_nodes/` | VM 다섯 대, 랜카드 둘, 노드 설치, 역할 라벨과 워커 증설 |
+| 03 | [03_kubernetes.md](03_kubernetes.md) | `notion/03_kubernetes.md` | kubeadm, Calico, CoreDNS, 저장소 밖 설치물의 판 |
+| 04 | [04_ingress.md](04_ingress.md) | `notion/04_ingress.md` | MetalLB, ingress-nginx |
+| 05 | [05_public.md](05_public.md) | `notion/05_public/` | Cloudflare 터널, 공개 경로와 내부 경로, 인증서와 TLS |
+| 06 | [06_gitops.md](06_gitops.md) | `notion/06_gitops.md` | ArgoCD, App of Apps, Sync |
+| 07 | [07_registry.md](07_registry.md) | `notion/07_registry.md` | Harbor와 그 백업 |
+| 08 | [08_build.md](08_build.md) | `notion/08_build.md` | Jenkins, 이미지 태그 고정 |
+| 09 | [09_deploy.md](09_deploy.md) | `notion/09_deploy/` | 앱 매니페스트, 처음 배포와 시크릿, 버전이 바뀌는 길(런슈즈 런북 15편) |
+| 10 | [10_database.md](10_database.md) | `notion/10_database.md` | MySQL 복제와 백업 |
+| 11 | [11_gpu.md](11_gpu.md) | `notion/11_gpu.md` | 호스트 GPU와 클러스터가 부르는 호스트 서비스 |
+| 12 | [12_monitoring.md](12_monitoring.md) | `notion/12_monitoring/` | 지표, 로그, 대시보드 |
+| 13 | [13_storage.md](13_storage.md) | `notion/13_storage.md` | local-path, 호스트 NFS |
+| 14 | [14_operations.md](14_operations.md) | `notion/14_operations.md` | 운영 규칙과 문서 게시 |
 
 ## 지키는 것
 
@@ -35,17 +32,24 @@ history/ 아래 문서는 게시기가 표 순서로 읽지 못해 맨 뒤에 �
 - **공개되는 글에 서버 IP와 포트를 적지 않는다. 도메인 ronanlab.dev는 적어도 된다.** 도메인은 Cloudflare 공개 주소로 이미 밖에 드러나 있다. IP와 포트는 서버가 어디 있고 무엇이 열려 있는지를 알려 주므로 공개하지 않는다.
 - **사설 대역 주소(MetalLB VIP 등)와 자기 자신 주소(localhost)는 저장소 문서에 숫자로 둬도 된다. 노션 공개 판에는 숫자를 넣지 않고 역할로 적는다.** 「클러스터 내부 주소」, 「호스트에서 도는 추론 서버」처럼 쓴다. 이 주소들은 밖에서 닿지 않아 바로 위 줄의 서버 IP와 포트에 들지 않는다(2026-11-16 사용자).
 
+노션 원고는 이보다 더 좁게 쓴다. 도메인, 홈 경로, 토큰 꼴 문자열도 넣지 않는다(style_guide 4절, 점검 스크립트가 막는다).
+
 ## 그 밖의 문서
 
 | 문서 | 내용 |
 | --- | --- |
-| [runbooks/mysql-replica.md](runbooks/mysql-replica.md) | MySQL Replica 구성 · 다시 만들기 · 수동 승격 · 되돌리기, 시험 기록 |
-| [TODO.md](TODO.md) | 남은 일. 한 줄에 하나, 상세는 각 문서 4절 |
-| [history/notion_sync_20261112.md](history/notion_sync_20261112.md) | 노션에서 옮기며 코드와 달라 고친 것, 판단하지 못해 남긴 것 |
+| [runbooks/mysql-replica.md](runbooks/mysql-replica.md) | MySQL Replica 구성, 다시 만들기, 수동 승격, 되돌리기, 시험 기록 |
+| [TODO.md](TODO.md) | 남은 일. 한 줄에 하나 |
+| [history/build_log/](history/build_log/) | 옛 문서 00~09와 kubernetes_install.md. 구축하면서 그때그때 남긴 기록이고, 옛 커밋 해시가 여기 있다 |
+| [history/cluster_state_20261116.md](history/cluster_state_20261116.md) | 새 문서를 쓰기 전에 본 클러스터와 호스트 상태 |
+| [history/human_answers_20261116.md](history/human_answers_20261116.md) | 사람이 답한 설계 까닭(랜카드 둘 등) |
+| [history/notion_hardware_20261116.md](history/notion_hardware_20261116.md) | 노션 하드웨어 기록에서 고른 사실, 노션과 지금이 다른 곳 |
+| [history/notion_sync_20261112.md](history/notion_sync_20261112.md) | 노션에서 옮기며 코드와 달라 고친 것 |
+| [history/cloudflare_tunnel_vcluster.md](history/cloudflare_tunnel_vcluster.md) | 학교 vcluster 시절 터널과 CI 기록 |
 
-앱별 운영 문서는 그 앱 디렉터리에 있다: `apps/<앱>/README.md`, `apps/runshoes/runbooks/`. 모니터링 구성 · 접속은 `apps/monitoring/README.md`.
+앱별 운영 문서는 그 앱 디렉터리에 있다: `apps/<앱>/README.md`, `apps/runshoes/runbooks/`. 모니터링 구성과 접속은 `apps/monitoring/README.md`.
 
 ## 같이 보는 문서(앱 저장소)
 
-- 펫퍼민트 `petmint-rag-chatbot/docs/02_pipeline/14_deployment.md`(배포), `12_data_storage.md` 1-5절(MySQL 백업 · 복구), `13_access_and_tunnel.md`(Access · 터널)
+- 펫퍼민트 `petmint-rag-chatbot/docs/02_pipeline/14_deployment.md`(배포), `12_data_storage.md` 1-5절(MySQL 백업과 복구), `13_access_and_tunnel.md`(Access와 터널)
 - 런슈즈 `runshoes/docs/06_deployment.md`(배포)

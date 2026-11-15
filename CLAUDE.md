@@ -14,7 +14,7 @@
 - **`cluster/`와 호스트 `~/k8s-cluster/`** — 2026-11-11 직접 본 것:
   - `~/k8s-cluster/`(git 아님): `Vagrantfile` · `setup-node.sh` · `.vagrant/`(VM 다섯 대의 상태 · SSH 키 — `machines/m-k8s` · `w1-k8s` ~ `w4-k8s`) · `backup/`(작업 날짜별 폴더 33개, 195M — 덤프 · 되돌리기 · 매니페스트 스냅숏, 호스트용 kubectl 래퍼 `backup/2026-10-15-before-metallb/mk`). 실제로 `vagrant`가 도는 자리
   - `cluster/`(git): `Vagrantfile` · `setup-node.sh` · `label-nodes.sh`(노드 역할 라벨 — 저장소에만 있다). 기록 · 검토용
-  - 겹치는 둘(`Vagrantfile` · `setup-node.sh`)은 **링크가 아니라 따로 복사한 파일**이고(서로 다른 inode) 지금 내용이 같다(`cmp`). `Vagrantfile`은 `setup-node.sh`를 부르지 않는다 — 노드 설치는 `cat setup-node.sh | vagrant ssh <노드> -- 'bash -s'`로 사람이 넣는다(`docs/01_cluster.md`)
+  - 겹치는 둘(`Vagrantfile` · `setup-node.sh`)은 **링크가 아니라 따로 복사한 파일**이고(서로 다른 inode) 지금 내용이 같다(`cmp`). `Vagrantfile`은 `setup-node.sh`를 부르지 않는다 — 노드 설치는 `cat setup-node.sh | vagrant ssh <노드> -- 'bash -s'`로 사람이 넣는다(`docs/02_nodes.md`)
   - **어디로 가나**: VM 만들기 · 끄기 · `vagrant ssh`는 `~/k8s-cluster`에서(`.vagrant/` 상태가 거기에만 있다 — `cluster/`에서 `vagrant up`을 치면 기존 VM을 모르고 새로 만들려 한다). 설정을 바꾸면 **양쪽을 같이 고치고** `cluster/`를 커밋한다. 백업 · 덤프는 `~/k8s-cluster/backup/<날짜>-<일>/`(git에 올리지 않는다)
 - `main`에는 다른 쓰는 이가 있다: Jenkins(`Jenkins runshoes-app` · `Jenkins petmint-app`)가 이미지 태그를 커밋하고, 다른 세션도 문서를 커밋한다
 
@@ -50,7 +50,7 @@
 
 ## 5. 문서 자리
 
-- `docs/README.md` — 인프라 문서 원본(노션 「쿠버네티스 설치」와 다르면 이쪽이 맞다). `00_server.md` ~ `09_monitoring.md`(차례는 README 표, 2026-11-12 노션에서 옮김) · `TODO.md`(남은 일, 끝나면 줄을 지운다)
+- `docs/README.md` — 문서 차례. 개발자 문서 `docs/00_overview.md` ~ `14_operations.md`, 노션 원고 `notion/`(같은 번호, 쓰는 법은 `docs/style_guide.md`, 점검은 `scripts/docs-check.py`, 2026-11-16 새로 씀) · `TODO.md`(남은 일, 끝나면 줄을 지운다). 옛 문서는 `docs/history/build_log/`
 - `docs/runbooks/` — 절차(지금 `mysql-replica.md`). 앱 절차는 `apps/runshoes/runbooks/`
 - 앱별 운영 문서는 `apps/<앱>/README.md`, 모니터링은 `apps/monitoring/README.md`
 - 바꾼 것은 그 자리 문서에 날짜와 함께 적는다

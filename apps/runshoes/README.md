@@ -15,7 +15,7 @@ app/cronjob.yaml         리뷰 요약 배치 runshoes-summary(V14) — 웹과 �
 app/service.yaml         포트 http(80→3000) · chatbot(8766)
 app/ingress.yaml         / → http, /ws/chat → chatbot
 scripts/                 create-secrets.sh (runshoes-mysql · harbor-pull · runshoes-auth)
-runbooks/                운영 절차 — auth-v3.md(로그인 V3 적용 · MySQL 백업 · 복구)
+runbooks/                스키마를 바꾸는 배포의 절차와 기록 15편 — 원형은 auth-v3.md(로그인 V3 적용 · MySQL 백업 · 복구)
 ```
 
 ## 배포 — ArgoCD가 관리한다

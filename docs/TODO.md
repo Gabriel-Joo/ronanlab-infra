@@ -1,10 +1,10 @@
 # TODO — 남은 일
 
-한 줄에 하나. 상세는 각 문서 4절(남은 한계). 끝나면 줄을 지운다.
+한 줄에 하나. 「08」은 옛 문서 [history/build_log/08_scale_out.md](history/build_log/08_scale_out.md)다. 끝나면 줄을 지운다.
 
 ## 가용성 — 묶음 2 뒤(2026-11-10)
 
-- 옛 Harbor PVC 다섯 지우기 — 새 쪽(w3)이 며칠 정상으로 돈 뒤, 사람이 판단(`harbor-registry` w2 16GB 등) → [08_scale_out.md](08_scale_out.md) 1-2절
+- 옛 Harbor PVC 다섯 지우기 — 새 쪽(w3)이 며칠 정상으로 돈 뒤, 사람이 판단(`harbor-registry` w2 16GB 등) → 08 1-2절
 - MySQL 승격을 앱 트래픽까지 옮겨 한 번 해 보기(점검 시간에) — 앱 재시작 · 앱 확인 시간을 다시 잰다 → [runbooks/mysql-replica.md](runbooks/mysql-replica.md)
 - Jenkins 빌드 Pod 에 nodeSelector(infra) — 앱 저장소 Jenkinsfile 일 → 08 4절
 - 알림(Alertmanager) → 08 4절
