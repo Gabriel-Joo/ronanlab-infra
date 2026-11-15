@@ -148,9 +148,11 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 끈 것 확인(사람 출력) | | |
-| 3 push | | |
-| 4 · 5 확인 · 숫자 · 덤프 · 복원 | | |
-| 6 Sync | | |
-| 7 자동 Sync 켬 | | |
+| 3 push | 11-15 00:41 전 | **순서가 바뀜 — 자동 Sync 가 켜진 채 앱 `main` push 가 먼저 나갔다**(런슈즈 관리자 알림). Jenkins 인프라 태그 커밋 `bd9d5b0` 00:41:06, 이미지 `f0d605bc6d76` |
+| 1 자동 Sync 끔 | 11-15 00:41:06 전 | 사용자. push 뒤, 태그 커밋 전에 껐다. ArgoCD history 에 116(11-14) 다음이 117(아래 수동 Sync)뿐이라 태그 커밋을 자동 Sync 가 받지 않았다 |
+| 2 끈 것 확인(사람 출력) | 11-15 push 뒤 | 사람 출력을 런슈즈 관리자가 봄 |
+| 4 · 5 확인 · 숫자 · 덤프 · 복원 | 11-15 00:45:02 | 사용자. `runshoes-before-v22-v23-20261115T004502Z.sql` 2,385,299 B · `sha256.txt` 00:46(`9f2c0be2…4133`). 복원 확인 reviews 1,800 지문 같음 · flyway `…21:1` · 새 열 없음 |
+| 6 Sync | 11-15 00:48:10 | 사용자(수동 — history 117 `initiatedBy` `{}`). rev `bd9d5b0`. 새 Pod `runshoes-5c67dff9db-7wb9j` 가 22 · 23 적용(`Successfully applied 2`), `-jcjkz` up to date. 웹 · 챗봇 · CronJob `f0d605bc6d76`. 원본 · 복제본 `22 1` · `23 1` · 새 열 넷 · `0 0`. Sync 전후 공개 reviews 1,800 · shoes 310 지문 같음 |
+| 7 자동 Sync 켬 | 11-15 00:55 전(KST 09:55) | 사용자(사람 출력 확인). 인프라 관리자 읽기: `{"automated":{},"syncOptions":["CreateNamespace=false"]}`, Synced/Healthy, 두 Pod 2/2 재시작 0 |
+
+- 순서 메모: 1 · 2 를 push 전에 하는 까닭은 태그 커밋이 자동 Sync 로 바로 운영에 들어가 덤프 전에 마이그레이션이 도는 것을 막으려는 것이다. 이번에는 Jenkins 빌드가 끝나기 전에 꺼서 그 일이 생기지 않았다. 빌드가 빨랐다면 덤프 없이 22 · 23 이 적용됐을 것이다 — 다음 배포도 push 전에 끈 출력을 확인한다.
