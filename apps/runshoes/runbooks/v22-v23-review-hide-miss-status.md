@@ -45,8 +45,7 @@ ALTER TABLE chatbot_misses ADD COLUMN status VARCHAR(10) NULL, ADD COLUMN decide
 | 4 | Sync 전 확인 — 도는 요약 Job 없음 · 직전 숫자 적기 · 덤프 | 사람(2절 (1)(2)(3)) | 03:30 KST 근처를 피한다 |
 | 5 | 복원 확인 | 사람(2절 (4)) | reviews 수 · 지문이 공개 API 와 같음, flyway 1~21, 새 열 없음 |
 | 6 | Sync = V22 · V23 적용 + 새 이미지(웹 · 챗봇 · CronJob 같은 태그) | 사람 | 3절 |
-| 7 | 대시보드 권한(GRANT 한 줄) | 사람 | 3절 끝. **6 의 확인이 끝난 뒤**(열이 있어야 GRANT 가 된다). 대시보드 쪽 결정은 5절 |
-| 8 | 자동 Sync 다시 켜기 | 사람 | `automated` 다시 있음 |
+| 7 | 자동 Sync 다시 켜기 | 사람 | `automated` 다시 있음 |
 
 ```bash
 # 1. 끄기
@@ -55,7 +54,7 @@ ALTER TABLE chatbot_misses ADD COLUMN status VARCHAR(10) NULL, ADD COLUMN decide
 /home/kopo17/k8s-cluster/backup/2026-10-15-before-metallb/mk 'kubectl -n argocd get app runshoes -o jsonpath="{.spec.syncPolicy}"'
 # 6. Sync — <커밋> 은 3번의 Jenkins 태그 커밋
 /home/kopo17/k8s-cluster/backup/2026-10-15-before-metallb/mk 'kubectl -n argocd patch app runshoes --type merge -p "{\"operation\":{\"sync\":{\"revision\":\"<커밋>\"}}}"'
-# 8. 다시 켜기 — 끄기 전 값으로
+# 7. 다시 켜기 — 끄기 전 값으로
 /home/kopo17/k8s-cluster/backup/2026-10-15-before-metallb/mk 'kubectl -n argocd patch app runshoes --type merge -p "{\"spec\":{\"syncPolicy\":{\"automated\":{}}}}"'
 ```
 
@@ -124,16 +123,6 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 # → 두 곳 모두: 22 1 · 23 1 · hidden_at datetime(3) YES · status varchar(10) YES · decided_at datetime(3) YES · decided_by bigint YES · 0 0
 ```
 
-**사람(대시보드 권한 — 1절 7번, 원본에서만)** — 위 확인에서 원본 · 복제본 모두 `hidden_at` 이 보인 뒤에 친다. 복제본으로 따라간다.
-
-```bash
-/home/kopo17/k8s-cluster/backup/2026-10-15-before-metallb/mk 'kubectl -n runshoes exec runshoes-mysql-0 -c mysql -- sh -c "mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" -e \"GRANT SELECT (hidden_at) ON runshoes.reviews TO \\\"grafana_ro\\\"@\\\"%\\\"\""'
-/home/kopo17/k8s-cluster/backup/2026-10-15-before-metallb/mk 'for p in runshoes-mysql-0 runshoes-mysql-replica-0; do echo "== $p"; kubectl -n runshoes exec $p -c mysql -- sh -c "mysql -N -uroot -p\"\$MYSQL_ROOT_PASSWORD\" -e \"SHOW GRANTS FOR grafana_ro@\\\"%\\\"\" | grep runshoes.\\\`reviews\\\`"; done'
-# → 두 곳 모두 reviews 줄에 `hidden_at` 이 들어 있다(칸 일곱)
-```
-
-- 앱 리포 `docs/07_database.md` 1-6절의 `grafana_ro` SQL 에도 이 칸을 더해야 다음에 계정을 다시 만들 때 빠지지 않는다(런슈즈 관리자 일).
-
 ## 4. 실패했을 때
 
 - **V22 또는 V23 실패**(`ALTER TABLE`) → 새 Pod 가 Ready 가 안 되고 롤링이 멈춘다(남은 옛 Pod 하나가 받는다). 자동 Sync 꺼진 채로 원인 확인.
@@ -151,9 +140,9 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 ## 5. 대시보드 메모 (2026-11-15 인프라 관리자 읽기)
 
-- 런슈즈 관리자 부탁: Grafana 리뷰 수에서 숨긴 리뷰를 빼려고 생성기(`apps/monitoring/grafana/dashboards/gen_runshoes.py`)의 `reviews` 쿼리에 `hidden_at IS NULL` 을 더한다 — **권한(1절 7번) 확인 뒤에 반영한다.** 권한 전에 새 쿼리가 나가면 칸 권한 오류(`ERROR 1143`)로 패널이 깨진다. `monitoring` 앱은 자동 Sync 라 push 가 곧 반영이다.
-- 그런데 **지금 대시보드에는 `reviews` 표를 읽는 패널이 없다.** 런슈즈 DB 패널이 읽는 곳은 `activity_logs` · `chatbot_turns` · `grafana_compare_views` · `summary_batch_runs` 뿐이다(`runshoes.json` 의 `FROM` 을 셈). 리뷰 패널 「리뷰 쓰기 (일별 …)」는 `activity_logs` 의 `review.create` 이벤트(화면에서 새로 쓴 횟수)를 센다 — 지금 남아 있는 리뷰 수가 아니다.
-- 그래서 생성기를 고칠지, 고친다면 무엇을(「리뷰 쓰기」에서 나중에 숨긴 것을 뺄지, 남아 있는 리뷰 수 패널을 새로 만들지) 런슈즈 관리자 결정을 기다린다. 결정이 나기 전에는 7번 GRANT 를 쳐도 해가 없다(쓰지 않는 칸 하나를 더 읽게 될 뿐).
+- **대시보드는 그대로 둔다**(사용자 결정 2026-11-15). 생성기(`apps/monitoring/grafana/dashboards/gen_runshoes.py`)도 `grafana_ro` 권한도 바꾸지 않는다 — `hidden_at` 은 GRANT 하지 않는다.
+- 까닭: 지금 대시보드에는 `reviews` 표를 읽는 패널이 없다. 런슈즈 DB 패널이 읽는 곳은 `activity_logs` · `chatbot_turns` · `grafana_compare_views` · `summary_batch_runs` 뿐이다(`runshoes.json` 의 `FROM` 을 셈). 리뷰 패널 「리뷰 쓰기 (일별 …)」는 `activity_logs` 의 `review.create` 이벤트(화면에서 새로 쓴 횟수)를 센다 — 지금 남아 있는 리뷰 수가 아니라서 숨기기와 엇갈리지 않는다.
+- 나중에 `reviews` 를 읽는 패널을 만들어 숨긴 것을 빼려면 GRANT 를 먼저 하고 생성기를 그 뒤에 반영한다. 권한 전에 `hidden_at` 을 읽는 쿼리가 나가면 칸 권한 오류(`ERROR 1143`)로 패널이 깨진다(`monitoring` 앱은 자동 Sync 라 push 가 곧 반영이다).
 
 ## 6. 실행 기록 (UTC)
 
@@ -164,5 +153,4 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 | 3 push | | |
 | 4 · 5 확인 · 숫자 · 덤프 · 복원 | | |
 | 6 Sync | | |
-| 7 대시보드 권한 | | |
-| 8 자동 Sync 켬 | | |
+| 7 자동 Sync 켬 | | |
