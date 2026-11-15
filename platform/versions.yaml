@@ -1,0 +1,53 @@
+# 저장소 밖에서 설치한 것의 버전 기록
+#
+# 이 파일은 설치기가 읽지 않는다. 클러스터에만 남아 있던 값을 적어 둔 기록이다.
+# 다시 만들 때 같은 판을 깔기 위해 둔다(2026-11-16 사용자 결정).
+# 값은 2026-11-16 m-k8s에서 helm list -A, 실행 중인 파드 이미지, kubeadm-config로 확인했다.
+# 판을 올리면 이 파일도 같은 커밋에서 고친다.
+
+kubernetes:
+  kubeadm: v1.35.9            # kubelet, kubectl, 컨트롤 플레인 이미지 모두 같은 판
+  containerd: 2.2.1
+  pod_subnet: 10.244.0.0/16
+  service_subnet: 10.96.0.0/12
+
+# kubectl apply로 매니페스트 URL을 바로 넣은 것(저장소에 매니페스트가 없다)
+manifests:
+  calico:
+    version: v3.28.0
+    source: https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/calico.yaml
+  metrics_server:
+    version: v0.9.0
+    source: https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+    after: kubectl patch로 --kubelet-insecure-tls를 더했다
+  local_path_provisioner:
+    version: v0.0.30
+    source: https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml
+    after: 기본 StorageClass로 patch했다
+  argocd:
+    version: v2.13.2
+    source: https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.2/manifests/install.yaml
+    after: platform/argocd/pin-infra.sh를 다시 돌린다
+
+# helm으로 넣은 것. values는 platform/<이름>/values.yaml
+helm:
+  cert-manager:
+    repo: https://charts.jetstack.io
+    chart: jetstack/cert-manager
+    version: v1.21.2
+    namespace: cert-manager
+  metallb:
+    repo: https://metallb.github.io/metallb
+    chart: metallb/metallb
+    version: 0.16.1
+    namespace: metallb-system
+  harbor:
+    repo: https://helm.goharbor.io
+    chart: harbor/harbor
+    version: 1.19.2          # 앱 판 2.15.2
+    namespace: harbor
+  jenkins:
+    repo: https://charts.jenkins.io
+    chart: jenkins/jenkins
+    version: 5.9.68          # 앱 판 2.580.1
+    namespace: jenkins
