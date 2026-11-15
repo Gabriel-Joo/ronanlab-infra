@@ -1545,14 +1545,14 @@
   {
    "type": "barchart",
    "title": "많이 비교한 조합 (상위 10)",
-   "description": "비교하기에서 함께 본 신발 조합(2~5켤레). 로그인한 계정만 센다(로그인하지 않은 비교는 기록이 없다). 같은 계정이 같은 조합을 30분 안에 다시 본 것은 한 번으로 센다. 영구 삭제한 신발은 조합 이름에서 빠진다. 활동 기록은 지우지 않고 쌓이기만 한다(정리 작업이 Pod 두 대에서 겹치지 않게 2026-11-10부터 꺼 두었다). 로그인 기능이 들어간 2026-10-21부터 있다.\n\n출처: activity_logs(compare.view)의 신발 번호만 꺼낸 뷰 grafana_compare_views(V21) · shoes 이름",
+   "description": "비교하기에 함께 담긴 신발을 두 켤레씩 짝지어 셉니다.\n세 켤레 이상을 담으면 그 안의 모든 짝을 각각 셉니다.\n로그인한 계정만 셉니다(로그인하지 않은 비교는 기록이 없습니다). 같은 계정이 같은 조합을 30분 안에 다시 본 것은 한 번으로 셉니다. 영구 삭제한 신발이 든 짝은 빠집니다.\n\n출처: activity_logs의 compare.view, 2026년 11월부터",
    "targets": [
     {
      "datasource": {
       "type": "mysql",
       "uid": "runshoes-mysql"
      },
-     "rawSql": "SELECT names AS `신발 조합`, COUNT(*) AS `비교`\nFROM (\n  SELECT v.id, GROUP_CONCAT(CONCAT(s.brand, ' ', s.model, IF(s.gender = 'women', ' (여성)', '')) ORDER BY s.id SEPARATOR ' · ') AS names\n  FROM grafana_compare_views v\n  JOIN JSON_TABLE(CAST(v.shoe_ids AS JSON), '$[*]' COLUMNS (shoe_id BIGINT PATH '$')) j\n  JOIN shoes s ON s.id = j.shoe_id\n  WHERE $__timeFilter(v.occurred_at)\n  GROUP BY v.id) x\nGROUP BY names ORDER BY 2 DESC LIMIT 10",
+     "rawSql": "SELECT CONCAT(CONCAT(s1.brand, ' ', s1.model, IF(s1.gender = 'women', ' (여성)', '')), ' · ', CONCAT(s2.brand, ' ', s2.model, IF(s2.gender = 'women', ' (여성)', ''))) AS `신발 쌍`, COUNT(*) AS `비교`\nFROM (\n  SELECT DISTINCT v.id, a.shoe_id AS lo, b.shoe_id AS hi\n  FROM grafana_compare_views v\n  JOIN JSON_TABLE(CAST(v.shoe_ids AS JSON), '$[*]' COLUMNS (shoe_id BIGINT PATH '$')) a\n  JOIN JSON_TABLE(CAST(v.shoe_ids AS JSON), '$[*]' COLUMNS (shoe_id BIGINT PATH '$')) b ON a.shoe_id < b.shoe_id\n  WHERE $__timeFilter(v.occurred_at)) p\nJOIN shoes s1 ON s1.id = p.lo\nJOIN shoes s2 ON s2.id = p.hi\nGROUP BY p.lo, p.hi ORDER BY 2 DESC LIMIT 10",
      "format": "table",
      "rawQuery": true,
      "editorMode": "code",

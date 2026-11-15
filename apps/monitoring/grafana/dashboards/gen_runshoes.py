@@ -347,19 +347,24 @@ add(bar("많이 본 신발 (상위 10)",
          " 같은 계정이 같은 신발을 30분 안에 다시 연 것은 한 번으로 센다. 영구 삭제한 신발은 빠진다." + ACT_NOTE
          + SRC + "activity_logs(shoe.view) · shoes 이름"), 12 if COMPARE_VIEW else 24, 8, 0)
 if COMPARE_VIEW:
-    # shoe_ids 는 글("[2, 16]", 번호 오름차순)이라 JSON 으로 바꿔 펼친 뒤 이름을 붙인다. 비교 한 번 = 뷰 한 줄
+    # shoe_ids 는 글("[2, 16]")이라 JSON 으로 바꿔 두 번 펼치고, 번호가 작은 쪽 < 큰 쪽인 짝만 남긴다.
+    # 2026-11-15 두 켤레 쌍 기준으로 바꿈(런슈즈 관리자 부탁, 사용자 결정) — 전에는 담긴 신발 통째를 한 조합으로 세어 조합이 잘게 쪼개졌다.
+    # a < b 가 순서 무시(A-B = B-A)와 자기 짝 빼기를 같이 한다. DISTINCT 는 한 기록에 같은 번호가 두 번 든 경우 대비
+    S1, S2 = SHOE_NAME.replace("s.", "s1."), SHOE_NAME.replace("s.", "s2.")
+    JT = "JSON_TABLE(CAST(v.shoe_ids AS JSON), '$[*]' COLUMNS (shoe_id BIGINT PATH '$'))"
     add(bar("많이 비교한 조합 (상위 10)",
-        "SELECT names AS `신발 조합`, COUNT(*) AS `비교`\nFROM (\n"
-        f"  SELECT v.id, GROUP_CONCAT({SHOE_NAME} ORDER BY s.id SEPARATOR ' · ') AS names\n"
+        f"SELECT CONCAT({S1}, ' · ', {S2}) AS `신발 쌍`, COUNT(*) AS `비교`\nFROM (\n"
+        "  SELECT DISTINCT v.id, a.shoe_id AS lo, b.shoe_id AS hi\n"
         "  FROM grafana_compare_views v\n"
-        "  JOIN JSON_TABLE(CAST(v.shoe_ids AS JSON), '$[*]' COLUMNS (shoe_id BIGINT PATH '$')) j\n"
-        "  JOIN shoes s ON s.id = j.shoe_id\n"
-        "  WHERE $__timeFilter(v.occurred_at)\n  GROUP BY v.id) x\n"
-        "GROUP BY names ORDER BY 2 DESC LIMIT 10", horizontal=True,
-        desc="비교하기에서 함께 본 신발 조합(2~5켤레). 로그인한 계정만 센다(로그인하지 않은 비교는 기록이 없다)."
-             " 같은 계정이 같은 조합을 30분 안에 다시 본 것은 한 번으로 센다. 영구 삭제한 신발은 조합 이름에서 빠진다."
-             + ACT_NOTE
-             + SRC + "activity_logs(compare.view)의 신발 번호만 꺼낸 뷰 grafana_compare_views(V21) · shoes 이름"), 12, 8, 12)
+        f"  JOIN {JT} a\n"
+        f"  JOIN {JT} b ON a.shoe_id < b.shoe_id\n"
+        "  WHERE $__timeFilter(v.occurred_at)) p\n"
+        "JOIN shoes s1 ON s1.id = p.lo\nJOIN shoes s2 ON s2.id = p.hi\n"
+        "GROUP BY p.lo, p.hi ORDER BY 2 DESC LIMIT 10", horizontal=True,
+        desc="비교하기에 함께 담긴 신발을 두 켤레씩 짝지어 셉니다.\n세 켤레 이상을 담으면 그 안의 모든 짝을 각각 셉니다."
+             "\n로그인한 계정만 셉니다(로그인하지 않은 비교는 기록이 없습니다)."
+             " 같은 계정이 같은 조합을 30분 안에 다시 본 것은 한 번으로 셉니다. 영구 삭제한 신발이 든 짝은 빠집니다."
+             + SRC + "activity_logs의 compare.view, 2026년 11월부터"), 12, 8, 12)
 y += 8
 
 # ───────────────────────── 6. 배치 ─────────────────────────
