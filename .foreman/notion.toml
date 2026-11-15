@@ -3,19 +3,21 @@
 # 이 파일은 FOREMAN Notion 게시기가 읽는다. origin/main에 push된 판만 읽고, 5분마다 다시 읽는다.
 # 깨진 파일이면 옛 설정을 그대로 쓰고 알림을 보낸다.
 #
-# 저장소 몫(이 파일): docs, quiet_min, skip, create, archive, title, order, header, headings
+# 저장소 몫(이 파일): docs, src, quiet_min, skip, create, archive, title, order, header, headings
 #   FOREMAN이 받는 칸은 그 밖에 keep_notion, new_parent, new_title도 있다.
 # FOREMAN 몫(~/AI_programming/foreman/config/notion.toml [ronanlab-infra]): root, docs_page, portfolio_page, github, ref
 #   이 칸들을 여기 적으면 게시기가 쓰지 않고 경고를 낸다. Notion 토큰과 짝(doc_publish)도 FOREMAN에 있다.
 #
 # 2026-11-12 FOREMAN config/notion.toml [ronanlab-infra]에서 값을 바꾸지 않고 옮겼다.
+# 2026-11-16 원고 폴더를 notion/으로 바꿨다(사용자 결정). notion/의 폴더 나무가 [기술문서] 아래 새 페이지 나무가 된다.
+#   옛 「쿠버네티스 설치」 01~09 페이지는 지우지 않고 게시 대상에서만 뺐다(archive = false라 게시기가 휴지통으로 보내지 않는다).
+#   docs/는 개발자 문서라 노션에 올리지 않는다.
 
 docs = "manual"
+src = "notion/"     # 원고 폴더. 게시기가 머리 주석, 근거 표시, 저장소 링크를 떼고 올린다
 quiet_min = 30
-create = false      # 시험 동안. 짝 없는 문서는 만들지 않고 실패로만
-archive = false
+create = true       # 새 트리라 짝 없는 원고는 새 페이지로 만든다
+archive = false     # 원본이 사라져도 페이지를 휴지통으로 보내지 않는다. 사람이 보고 정한다
 headings = "md"
-order = "keep"      # 01~09가 쿠버네티스 설치 페이지 아래에 있다. 옮기지 않는다
-title = "keep"      # 제목 H1 선택지가 생기면 그때 바꾼다
-header = "footer"
-skip = ["docs/README.md", "docs/TODO.md", "docs/runbooks/", "docs/history/notion_sync_20261112.md"]
+title = "h1"        # 페이지 제목 = 원고의 첫 # 줄
+header = "footer"   # 맨 아래 갱신 줄에 읽은 커밋을 적는다
