@@ -145,9 +145,9 @@ docker exec -i runshoes-mysql-dev sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -
 
 | 단계 | 시각 | 내용 |
 |---|---|---|
-| 1 자동 Sync 끔 | | |
-| 2 끈 것 확인(사람 출력) | | |
-| 3 push | | |
-| 4 · 5 확인 · 숫자 · 덤프 · 복원 | | |
-| 6 Sync | | |
-| 7 자동 Sync 켬 | | |
+| 1 자동 Sync 끔 | 11-15 03:42 무렵 | 사용자. 정확한 시각은 ArgoCD 에 남지 않는다(V21 런북 7절) |
+| 2 끈 것 확인(사람 출력) | 11-15 push 전 | 사람 출력을 런슈즈 관리자가 보고 push. 이번에는 순서대로 |
+| 4 · 5 확인 · 숫자 · 덤프 · 복원 | 11-15 03:43:16 | 사용자. **태그 커밋보다 먼저 떴다**(런북은 태그 커밋 뒤). 그 사이 바뀐 스키마가 없어 덤프는 그대로 쓸 수 있다. `runshoes-before-v24-20261115T034316Z.sql` 2,397,908 B · `sha256.txt`(`77671e8e…8332`). 복원 확인: 보이는 리뷰 1,800 지문 같음 · 숨김 0 · flyway `…23:1` · `decided_note` 없음 |
+| 3 push | 11-15 03:48 전 | 앱 `main` `85b9677` → Jenkins 인프라 태그 커밋 `2684851`(커밋 시각 03:47:51), 이미지 `85b9677ca8d6` |
+| 6 Sync | 11-15 03:48:18 | 사용자(수동 — history 118 `initiatedBy` `{}`). rev `2684851`. 태그 커밋과 이 Sync 사이에 자동 Sync 기록이 없다. 새 Pod `runshoes-6c5595d6c8-zxwlw` 가 24 적용(`Successfully applied 1`), `-bvqzs` up to date. 웹 · 챗봇 · CronJob `85b9677ca8d6`. 원본 · 복제본 `24 1` · `decided_note varchar(200) YES` · `0`. Sync 전후 공개 reviews 1,800 · shoes 310 지문 같음, 새 `/api/admin/shoes` 로그인 없이 401 |
+| 7 자동 Sync 켬 | 11-15 03:55 전(KST 12:55) | 사용자(사람 출력 확인). 인프라 관리자 읽기: `{"automated":{},"syncOptions":["CreateNamespace=false"]}`, Synced/Healthy, 두 Pod 2/2 재시작 0 |
