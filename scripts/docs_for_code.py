@@ -373,7 +373,9 @@ def changed_lines(repo: str, a: str, b: str, files: list[str]) -> dict[str, list
             m = re.match(r"^@@ -(\d+)(?:,(\d+))? ", ln)
             if m:
                 s, n = int(m[1]), int(m[2] if m[2] is not None else 1)
-                out.setdefault(cur, []).append((s, s + max(n, 1) - 1))
+                # 줄을 넣기만 한 덩어리(-s,0)는 옛 줄을 바꾸지 않는다. s와 s+1 사이로 적어(s+1, s), 근거 범위 안쪽에
+                # 끼어들 때만 겹치게 한다(2026-11-17 고장: CLAUDE.md 34줄 뒤에 넣은 줄이 34줄을 건 근거를 헛걸었다)
+                out.setdefault(cur, []).append((s + 1, s) if n == 0 else (s, s + n - 1))
     return out
 
 
