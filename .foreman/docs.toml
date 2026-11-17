@@ -18,3 +18,4 @@ claim = '\d|“|”'
 claim_min = 0
 banned = ["notion", "portfolio"]
 cover_by = ["notion"]
+dashdot_base = "b587fe9"        # 새 줄 em dash와 가운뎃점 검사의 기준 커밋. 넣은 때의 인프라 main(2026-11-17)
