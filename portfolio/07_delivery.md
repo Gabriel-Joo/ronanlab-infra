@@ -34,11 +34,9 @@ Git을 기준으로 삼으면 바뀐 내용이 모두 커밋으로 남고, 되�
 
 태그를 고정한 것도 같은 생각입니다. `latest`를 쓰면 파드를 하나씩 새것으로 바꾸는 동안 어느 파드가 무엇을 도는지 알 수 없습니다. [code:apps/petmint/kustomization.yaml:32] 커밋 해시를 태그로 쓰면 태그만 보고 어느 커밋이 도는지 알 수 있습니다. [code:apps/runshoes/kustomization.yaml:26]
 
-빌드 서비스로 Jenkins를 직접 세운 까닭도 기록에 있습니다. 클러스터 밖의 빌드 서비스를 쓰면 설정 파일 하나로 끝나지만, 빌드가 어디서 어떻게 도는지를 다룰 일이 없습니다. 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣는 과정 전체를 손으로 다루려고 Jenkins를 골랐습니다. 채용 공고에서 Jenkins가 여전히 많이 보인다는 것도 까닭이었습니다. [docs:history/build_log/06_jenkins.md:118-122] 빌드 파드는 특권 없이 이미지를 굽는 BuildKit rootless로 짰습니다. 특권 컨테이너로 구우면 그 파드가 뚫렸을 때 노드 전체가 뚫리기 때문입니다. [docs:history/build_log/06_jenkins.md:124-137]
+Jenkins는 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣는 과정 전체를 손으로 다루려고 직접 세웠습니다. 채용 공고에서 Jenkins가 여전히 많이 보인다는 것도 까닭이었습니다. [docs:history/build_log/06_jenkins.md:118-122] 빌드 파드는 특권 없이 이미지를 굽게 짰습니다. 특권 컨테이너는 뚫리면 노드 전체가 뚫리기 때문입니다. [docs:history/build_log/06_jenkins.md:124-137] Harbor는 앱 코드가 든 이미지를 공개 저장소에 올릴 수 없고, 학교 Harbor는 학교 안 망에서만 열려 서버에서 닿지 않아 직접 세웠습니다. 프로젝트별 권한과 취약점 검사가 기본으로 들어 있는 것이 Harbor를 고른 까닭입니다. [docs:history/build_log/05_harbor.md:170-174]
 
-이미지 저장소를 직접 세운 것은 공개 저장소에는 앱 코드가 든 이미지를 올릴 수 없고, 무료 계정은 내려받는 횟수에 제한이 있으며, 학교의 Harbor는 학교 안 망에서만 열려 있어 서버에서 닿지 않았기 때문입니다. Harbor를 고른 것은 프로젝트별 권한, 로봇 계정(프로그램이 쓰도록 권한을 좁힌 계정), 취약점 검사가 기본으로 들어 있어서입니다. [docs:history/build_log/05_harbor.md:170-174]
-
-앱 저장소와 이 매니페스트 저장소를 나눈 것도 배포 고리 때문입니다. 한 저장소에 두면 Jenkins가 태그를 바꿔 올린 push가 다시 빌드를 불러 끝없이 돕니다. [docs:history/build_log/06_jenkins.md:195] 저장소를 나눠도 Jenkins가 이 저장소를 자기 체크아웃 단계로 받으면 저장소 감시가 이 저장소까지 넓어져 같은 고리가 생길 수 있었습니다. 그래서 이 저장소는 Jenkins가 감시하지 않는 일반 복제 명령으로 받습니다. [docs:history/build_log/07_project_deploy.md:222-228] 태그 줄을 바꾼 뒤에는 그 줄이 정말 새 태그가 되었는지 다시 셉니다. 줄을 바꾸는 명령은 아무것도 못 바꿔도 성공으로 끝나서, 빌드는 성공인데 배포만 조용히 빠질 수 있기 때문입니다. [docs:history/build_log/07_project_deploy.md:212-220]
+앱 저장소와 이 매니페스트 저장소를 나눈 것은 배포 고리 때문입니다. 한 저장소에 두면 Jenkins가 태그를 바꿔 올린 push가 다시 빌드를 불러 끝없이 돕니다. [docs:history/build_log/06_jenkins.md:195] 같은 까닭으로 Jenkins는 이 저장소를 감시하지 않는 일반 복제 명령으로 받습니다. [docs:history/build_log/07_project_deploy.md:222-228] 태그 줄을 바꾼 뒤에는 정말 새 태그가 되었는지 다시 셉니다. 줄을 바꾸는 명령은 아무것도 못 바꿔도 성공으로 끝나, 배포만 조용히 빠질 수 있기 때문입니다. [docs:history/build_log/07_project_deploy.md:212-220]
 
 모든 것이 이 길을 타지는 않습니다. 인증서 관리 도구(cert-manager), 로드밸런서(MetalLB), Harbor, Jenkins, ingress-nginx 같은 기반은 ArgoCD 밖에 있고 사람이 손으로 넣습니다. 기록된 까닭은 이것들이 ArgoCD보다 먼저 깔린 기반이라는 것입니다. [code:bootstrap/root-app.yaml:13] 그중 cert-manager, MetalLB, Harbor, Jenkins는 Helm 차트로 넣었고, 차트 판과 설정 값 파일은 저장소에 둡니다. [docs:history/human_answers_20261117.md:14] [code:platform/versions.yaml:32-53]
 
@@ -47,7 +45,6 @@ Git을 기준으로 삼으면 바뀐 내용이 모두 커밋으로 남고, 되�
 - ArgoCD 밖의 기반은 저장소를 고쳐 올려도 클러스터가 바뀌지 않습니다. 사람이 Helm이나 kubectl로 다시 넣어야 하고, 판 기록 파일도 사람이 맞춰 고쳐야 합니다. [code:bootstrap/root-app.yaml:13] [code:platform/versions.yaml:3-6]
 - 자동 Sync인 앱은 push가 곧 배포입니다. 데이터베이스 구조를 바꾸는 배포는 자동 Sync를 잠시 끄고 사람이 단계마다 확인하며 넣습니다. [code:apps/runshoes/app.yaml:9]
 - 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
-- 태그 줄을 바꾸는 명령은 앱 저장소의 빌드 절차 파일에 있어 이 저장소에서 보이지 않습니다. 태그 줄 모양을 바꾸면 두 저장소를 함께 고쳐야 합니다. [code:apps/runshoes/kustomization.yaml:26]
 - Jenkins 본체가 하나이고 w3 노드에 묶여 있어, w3를 정비하는 동안 빌드가 멈춥니다. 이미 떠 있는 앱은 영향이 없습니다. [docs:history/build_log/06_jenkins.md:504]
 
 ## 막혔을 때: 자동 Sync가 켜진 채 push가 먼저 나간 일
@@ -58,4 +55,4 @@ Git을 기준으로 삼으면 바뀐 내용이 모두 커밋으로 남고, 되�
 
 다른 하나는 사람이 순서를 지키는 것인데, 여기서 실제로 어긋난 일이 있었습니다. 런슈즈의 한 구조 변경 배포에서 자동 Sync가 켜진 채 앱 push가 먼저 나갔습니다. Jenkins 빌드가 끝나 태그 커밋이 생기기 전에 자동 Sync를 꺼서 태그 커밋이 자동으로 들어가지 않았고, 덤프와 복원 확인을 거친 뒤 사람이 Sync했습니다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:150-155] 빌드가 더 빨랐다면 덤프 없이 구조가 바뀌었을 것입니다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
 
-그 뒤로 절차의 첫머리에 「자동 Sync를 끄고, 끈 것을 확인하는 일은 반드시 push 전에」를 다시 적었습니다. 끈 것을 확인하는 단계에서는 사람이 친 확인 명령의 출력을 붙여 보이고 나서야 push합니다. [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:40-50] [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]
+그 뒤로 절차 첫머리에 「자동 Sync를 끄고 끈 것을 확인하는 일은 반드시 push 전에」를 다시 적고, 확인 명령의 출력을 붙여 보인 뒤에야 push하게 했습니다. [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:40-50] [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]

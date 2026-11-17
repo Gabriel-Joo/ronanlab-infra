@@ -32,7 +32,7 @@ w4-k8s  워커            platform  (모니터링)
 
 까닭은 셋으로 기록되어 있습니다. 첫째, 실제 운영 클러스터는 control-plane과 워커가 나뉘어 있고, 일꾼 노드 하나가 죽어도 다른 노드가 파드를 대신 받도록 짜여 있습니다. 둘째, control-plane 하나와 워커 여러 대로 된 클러스터를 kubeadm으로 직접 세우는 일이 쿠버네티스 관리자 자격 시험(CKA)의 범위 자체입니다 [docs:history/build_log/01_cluster.md:136-137] [docs:history/build_log/kubernetes_install.md:124]. 셋째, 워커가 한 대뿐이면 분산을 보여 줄 수 없습니다. 파드가 여러 노드에 흩어지고, 한 노드가 멈췄을 때 다른 노드가 받는 모습은 워커가 적어도 두세 대는 있어야 실제로 일어납니다 [docs:history/build_log/01_cluster.md:138].
 
-이 까닭은 설정에도 그대로 남아 있습니다. 두 서비스 앱은 파드를 두 개씩 띄우되 같은 노드에 둘을 두지 못하게 규칙을 걸어 w1과 w2에 하나씩 나눕니다. 노드 하나가 죽어도 다른 노드의 파드가 요청을 받습니다 [code:apps/petmint/app/deployment.yaml:1-4] [code:apps/runshoes/app/deployment.yaml:8-10]. 워커마다 역할을 정해 둔 것도 같은 생각에서 나왔습니다. 한 노드가 죽었을 때 무엇이 멈추는지를 미리 정해 두어, 배포 도구가 있는 w3가 멈추면 새 배포와 빌드만, 모니터링이 있는 w4가 멈추면 모니터링만 멈춥니다 [code:cluster/label-nodes.sh:7-8]. 실제로 노드를 비워 가며 도구를 옮긴 일과, 그때 무엇이 끊기지 않았고 무엇이 잠깐 끊겼는지는 → 「워커를 늘리고 옮기기」에 있습니다 [docs:history/human_answers_20261117.md:15].
+이 까닭은 설정에도 그대로 남아 있습니다. 두 서비스 앱은 파드를 두 개씩 띄우되 같은 노드에 둘을 두지 못하게 규칙을 걸어 w1과 w2에 하나씩 나눕니다. 노드 하나가 죽어도 다른 노드의 파드가 요청을 받습니다 [code:apps/petmint/app/deployment.yaml:1-4] [code:apps/runshoes/app/deployment.yaml:8-10]. 워커마다 역할을 정해 둔 것도 같은 생각에서 나왔습니다. 한 노드가 죽었을 때 무엇이 멈추는지를 미리 정해 두어, 배포 도구가 있는 w3가 멈추면 새 배포와 빌드가, 모니터링이 있는 w4가 멈추면 모니터링이 멈춥니다 [code:cluster/label-nodes.sh:7-8]. 실제로 노드를 비워 가며 도구를 옮긴 일과, 그때 무엇이 끊기지 않았고 무엇이 잠깐 끊겼는지는 → 「워커를 늘리고 옮기기」에 있습니다 [docs:history/human_answers_20261117.md:15].
 
 ## 치른 값
 
