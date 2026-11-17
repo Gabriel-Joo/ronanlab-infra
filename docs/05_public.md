@@ -21,13 +21,16 @@
 
 ### 경로와 Access
 
-| 호스트 | 무리 | Access(대시보드, 저장소 밖) | 근거 |
-| --- | --- | --- | --- |
-| argocd, harbor, jenkins, grafana, prometheus | 운영 도구 | Access 앱 「운영도구」 | [code:apps/monitoring/ingress.yaml:3] [code:apps/cloudflared/configmap.yaml:35] |
-| runshoes | 공개 앱 | 없음(공개 사이트) | [code:apps/cloudflared/configmap.yaml:30] |
-| petmint | 공개 앱 | 저장소에 적힌 것 없음 | |
+왜 이것은 막고 저것은 열었는지를 이 표 한 곳에 둔다. 앱 쪽 까닭은 한 줄로 줄이고 그 저장소 문서를 가리킨다. 까닭은 사람이 적은 것이다 [c:57ca8a9].
 
-- Jenkins `/github-webhook/`만 Access Bypass, HMAC SHA-256 서명이 지킨다 [code:platform/jenkins/values.yaml:92-93]
+| 호스트 | 무리 | Access(대시보드, 저장소 밖) | 까닭 | 근거 |
+| --- | --- | --- | --- | --- |
+| argocd, harbor, jenkins, grafana, prometheus | 운영 도구 | Access 앱 「운영도구」 | 터널만 뚫으면 주소를 아는 누구나 부를 수 있다. Prometheus는 자체 로그인이 없어 Access가 유일한 문이다 | [code:apps/monitoring/ingress.yaml:3] [code:apps/cloudflared/configmap.yaml:35] [docs:history/build_log/03_cloudflare_tunnel.md:175] |
+| argocd `/api/webhook`, jenkins `/github-webhook/` | 웹훅 경로 둘 | 그 경로만 Bypass, HMAC SHA-256 서명이 지킨다 | GitHub 웹훅이 들어와야 한다 | [docs:history/build_log/04_argocd.md:45] [code:platform/jenkins/values.yaml:92-93] |
+| runshoes | 공개 앱 | 없음 | 사람들이 실제로 와서 쓰는 공개 서비스다. 로그인 관문을 앞에 두면 서비스가 아니게 된다 | [code:apps/cloudflared/configmap.yaml:30] |
+| petmint | 공개 앱 | 없음, 앱 자체 로그인(`PETMINT_AUTH=app`) | 사내에서 쓸 것이라 본래는 막아야 하지만, 데모를 보는 사람에게 사내 계정이 없어 일부러 뺐다. 앱 로그인은 그대로다. 자세한 것은 펫퍼민트 `docs/02_pipeline/13_access_and_tunnel.md` | [docs:history/build_log/03_cloudflare_tunnel.md:50] |
+| ollama(호스트에 따로 도는 터널, 이 저장소 밖) | 추론 API | Service Auth, 서비스 토큰 | GPU가 한 장이라 늘 Access 뒤에 둔다 | [docs:history/build_log/03_cloudflare_tunnel.md:690] [docs:history/build_log/03_cloudflare_tunnel.md:701] |
+| FOREMAN 관제 화면(터널에 없음) | 관제 | 바깥에 열지 않는다 | 관제실은 호스트 셸과 승인 권한을 쥐고 있다. 여기가 한 번 뚫리면 네 저장소 전부에 push할 수 있고, 위험 작업을 통과시킬 수 있고, 비밀값이 든 설정도 만질 수 있다. 다른 서비스는 뚫려도 그 서비스 하나지만 여기는 나머지 전부로 번진다. 그래서 Access를 앞에 두는 것으로 그치지 않고 아예 열지 않았다. 밖에서 필요한 것은 텔레그램으로 받는다. 자세한 것은 FOREMAN `README.md` 3.13 | |
 - Prometheus는 자체 로그인이 없어 바깥에서는 Access가 유일한 문이다. Grafana는 자체 로그인과 Access 두 겹 [code:apps/monitoring/ingress.yaml:5-7]
 - 사설망(호스트와 VM만 있는 망)에서는 MetalLB VIP 192.168.122.240으로 같은 Ingress에 Access 없이 닿는다 [code:apps/monitoring/ingress.yaml:4-6]
 - 노드 containerd는 `/etc/hosts`의 `192.168.122.240 harbor.ronanlab.dev`로 Harbor에 https로 닿는다 [code:cluster/Vagrantfile:33-36] [code:platform/harbor/values.yaml:4]
@@ -142,5 +145,4 @@ kubectl get ingress -A
 - ConfigMap은 기동 때만 읽는다. Sync만 하고 `rollout restart`를 빠뜨리면 바뀐 설정이 안 들어간다 [code:apps/cloudflared/configmap.yaml:3]
 - cloudflared에서 ingress-nginx까지는 `noTLSVerify`라 원점 인증서를 검증하지 않는다 [code:apps/cloudflared/configmap.yaml:17]
 - `ssl-redirect: "false"`라 사설망에서는 http(80)로도, Access 없이 운영 도구에 닿는다. Prometheus는 자체 로그인이 없다 [code:platform/argocd/ingress.yaml:7] [code:apps/monitoring/ingress.yaml:5-6]
-- `apps/cloudflared/README.md`는 「앞단은 Cloudflare Access」라고 적지만, 같은 저장소의 ConfigMap 주석은 runshoes에 Access가 없다고 적는다. petmint의 Access 여부는 저장소에 적혀 있지 않다 [code:apps/cloudflared/README.md:4] [code:apps/cloudflared/configmap.yaml:30]
 - `apps/cloudflared/README.md`, `configmap.yaml`이 가리키는 `docs/13`은 이 저장소가 아니라 petmint-rag-chatbot 저장소의 문서다 [code:apps/cloudflared/kustomization.yaml:1]

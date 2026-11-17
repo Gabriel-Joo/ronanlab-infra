@@ -1,7 +1,7 @@
 # apps/cloudflared — 클러스터 공용 Cloudflare 터널
 
 터널 `ronanlab-tunnel`(`02ad6a13-ce45-4262-a32a-40241bf034dc`, 2026-10-18 전 이름 `petmint-tunnel`) 하나가 공개 주소 일곱을 받는다 — `petmint`·`argocd`·`harbor`·`jenkins`·`runshoes`·`grafana`·`prometheus` `.ronanlab.dev`(runshoes는 2026-10-18 추가, Access 없음. grafana · prometheus는 2026-11-11 추가).
-원점은 전부 ingress-nginx ClusterIP(`ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`), 앞단은 Cloudflare Access(petmint-rag-chatbot docs/13).
+원점은 전부 ingress-nginx ClusterIP(`ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`), 앞단의 Cloudflare Access는 운영 도구 다섯(argocd, harbor, jenkins, grafana, prometheus)에만 있다. runshoes와 petmint에는 없고 petmint는 앱 로그인이 받는다(2026-11-17 바로잡음, 호스트마다 까닭은 docs/05_public.md 「경로와 Access」, petmint는 petmint-rag-chatbot docs/13).
 ArgoCD Application `cloudflared`(`app.yaml`, 루트 `bootstrap/root-app.yaml`이 만든다)가 이 디렉터리를 본다. 네임스페이스 `cloudflared`.
 2026-11-02 `platform/cloudflared`에서 옮겼다(App of Apps — 호스트 `~/k8s-cluster/backup/2026-11-02-app-of-apps/ROLLBACK.md`).
 

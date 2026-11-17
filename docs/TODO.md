@@ -52,7 +52,6 @@
 
 - infra-35 (2026-11-17) `apps/runshoes/runbooks/` 옛 런북 값(maxUnavailable 0, replicas 1, 없는 파일 `platform/argocd/applications/runshoes.yaml`). 고칠지, 머리에 「지금과 다른 곳」 한 줄을 달지 정한다 → 원고 09-03편, 포스트잇 70
 - infra-36 (2026-11-17) `apps/cloudflared/configmap.yaml`에 운영 도구 호스트의 noTLSVerify 까닭 주석 달기(까닭은 `history/notls_check_20261117.md`에 확인됨) → 포스트잇 67
-- infra-37 (2026-11-17) `apps/cloudflared/README.md`의 Access 설명과 configmap 주석이 다르다. 대시보드로 확인하고 한쪽을 고친다 → 포스트잇 68
 - infra-38 (2026-11-17) `apps/petmint/mysql/statefulset.yaml` 주석의 옛 값(워커 4GB 등) 고치기 → 포스트잇 69
 - infra-39 (2026-11-17) `apps/petmint/README.md` 안의 방화벽 설명이 서로 다르다. 호스트 실제 규칙을 보고 맞춘다 → 포스트잇 72
 - infra-40 (2026-11-17) 원고 02-03편 「w4가 죽으면 모니터링만 멈춘다」의 「만」이 지나칠 수 있다(ingress-nginx나 MetalLB 알림 노드가 w4에 있을 수 있다) → 포스트잇 73
