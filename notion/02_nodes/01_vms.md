@@ -37,13 +37,12 @@ Vagrantfile에는 VM 정의 말고도 VM을 처음 만들 때 안에서 한 번 
 
 ## 노드가 스스로 알리는 주소
 
-쿠버네티스는 노드마다 그 노드를 가리키는 내부 주소(InternalIP)를 하나 기록한다. 이 값은 노드마다 도는 에이전트인 kubelet이 정한다. 이 클러스터의 kubelet에는 어느 주소를 쓸지 지정하는 설정이 없고, 다섯 대 모두 내부 주소가 관리용 망(eth0) 쪽 주소로 잡혀 있다. [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:26] 일부러 그렇게 한 것이 아니라 기본값이 그대로 남은 것이다. [docs:history/human_answers_20261116.md:15] 클러스터가 실제로 통신하는 길은 위에서 말한 대로 고정 주소 망이라, 지금 클러스터는 정상으로 돈다. 다만 아래 한계가 따라온다.
+쿠버네티스는 노드마다 그 노드를 가리키는 내부 주소(InternalIP)를 하나 기록한다. 이 값은 노드마다 도는 에이전트인 kubelet이 정한다. 이 클러스터의 kubelet에는 어느 주소를 쓸지 지정하는 설정이 없고, 다섯 대 모두 내부 주소가 관리용 망(eth0) 쪽 주소로 잡혀 있다. [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:26] 일부러 그렇게 한 것이 아니라 기본값이 그대로 남은 것이다. [docs:history/human_answers_20261116.md:15] 클러스터가 실제로 통신하는 길은 위에서 말한 대로 고정 주소 망이라, 지금 클러스터는 정상으로 돈다.
+
+다만 이 때문에 생길 수 있는 일이 셋 있다. 노드 목록을 넓게 보는 명령이 보여 주는 노드 주소는 관리용 망 주소라, 그 화면만 보고 노드끼리 어느 길로 통신하는지 판단하면 틀린다. [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:23-24] 노드의 내부 주소를 그대로 가져다 쓰는 기능은 관리용 망을 탄다. 모니터링이 각 노드의 kubelet에서 컨테이너 사용량을 긁어 올 때 찾아가는 주소가 이 내부 주소다. [code:apps/monitoring/prometheus/configmap.yaml:33-43] 그리고 관리용 망 주소는 다시 켤 때 바뀔 수 있어, 바뀌면 노드가 알리는 내부 주소도 따라 바뀐다. [docs:history/human_answers_20261116.md:7] [docs:history/human_answers_20261116.md:15] kubelet에 주소를 지정해 고정 주소 망으로 옮기는 일은 남은 일로 적어 두었다. [c:a40b111]
 
 ## 알려진 한계
 
-- 노드 목록을 넓게 보는 명령이 보여 주는 노드 주소는 관리용 망 주소다. 클러스터가 실제로 통신하는 고정 주소 망의 주소와 다르므로, 그 화면만 보고 노드끼리 어느 길로 통신하는지 판단하면 틀린다. [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:23-24]
-- 노드의 내부 주소를 그대로 가져다 쓰는 기능은 관리용 망 주소를 쓰게 된다. 예를 들어 모니터링이 각 노드의 kubelet에서 컨테이너 사용량을 긁어 올 때 찾아가는 주소가 이 내부 주소다. [code:apps/monitoring/prometheus/configmap.yaml:33-43]
-- 관리용 망 주소는 다시 켤 때 바뀔 수 있으므로, 바뀌면 노드가 알리는 내부 주소도 따라 바뀐다. [docs:history/human_answers_20261116.md:7] [docs:history/human_answers_20261116.md:15]
 - 프로비저너는 VM을 처음 만들 때만 돈다. Vagrantfile을 고쳐도 이미 있는 노드에는 따로 다시 돌려야 들어간다. [docs:history/build_log/01_cluster.md:73]
 - 다섯 대가 모두 같은 서버 한 대 위에 있다. 서버가 멈추면 노드도 전부 멈춘다. [docs:history/build_log/01_cluster.md:699]
 

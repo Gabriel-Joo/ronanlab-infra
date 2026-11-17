@@ -46,6 +46,5 @@ BGP 부품을 끈 까닭은 파드 망을 맡는 Calico가 이미 노드마다 B
 
 - 모든 요청이 한 문을 지나므로 ingress-nginx가 멈추면 모든 서비스가 같이 멈춥니다. 그래서 컨트롤러를 두 벌 띄우고 서로 다른 노드에 뜨도록 했습니다. 다만 강제가 아니라 선호로 두어, 노드가 모자라면 한 노드에 둘이 같이 뜰 수 있습니다 [code:platform/ingress-nginx/overlay/deployment-patch.yaml:1-2] [code:platform/ingress-nginx/overlay/deployment-patch.yaml:21-24]
 - L2 방식에서는 VIP를 노드 한 대가 맡아 알립니다. 그 노드가 죽으면 다른 노드가 넘겨받을 때까지 VIP로 가는 요청이 잠깐 끊깁니다 [docs:history/build_log/02_metrics_storage_ingress.md:385]
-- 두 벌로 늘린 뒤에도 컨트롤러를 다시 띄울 때 아주 짧은 끊김이 남아 있습니다 [docs:history/build_log/02_metrics_storage_ingress.md:384]
 - MetalLB와 ingress-nginx는 GitOps 밖에 있어, 저장소에 올려도 클러스터에 들어가지 않습니다. 바꾼 사람이 손으로 넣어야 하고, 넣지 않으면 저장소와 클러스터가 어긋납니다 [code:platform/ingress-nginx/overlay/kustomization.yaml:1]
 - 예전 노드 쪽 높은 번호 포트 길도 끊지 않으려고 그 번호를 그대로 고정해 두었습니다. 문에 닿는 길이 하나 더 남아 있는 셈입니다 [code:platform/ingress-nginx/overlay/service-patch.yaml:2]

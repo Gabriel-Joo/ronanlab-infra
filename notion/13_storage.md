@@ -47,10 +47,7 @@ PV를 지워도 호스트의 파일은 그대로 남는다. 반환 규칙을 Ret
 - local-path PV는 노드에 묶인다. 그 노드가 멈추면 그 PV를 쓰는 파드는 다른 노드로 옮겨 뜨지 못한다. [code:apps/monitoring/prometheus/statefulset.yaml:2]
 - local-path는 PVC를 지우면 데이터도 지운다. Harbor처럼 손으로 Retain으로 바꿔 둔 PV만 예외다. [code:platform/harbor/pvc-w3.yaml:6]
 - local-path와 NFS 모두 크기를 강제하지 않는다. 실제 상한은 노드 디스크와 호스트 디스크다. [code:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
-- local-path-provisioner 매니페스트는 저장소에 없다. 다시 깔면 기본 StorageClass 지정을 손으로 다시 해야 한다. [code:platform/versions.yaml:23-26]
 - NFS는 호스트 하나에 있다. 호스트가 멈추면 약관을 읽는 앱과 백업이 함께 멈춘다. 다만 VM들도 같은 호스트에서 돌므로 클러스터 전체가 함께 멈춘다. [code:apps/petmint/data/nfs.yaml:1]
-- 호스트 방화벽이 꺼져 있어, NFS를 사설망으로 좁히는 것은 내보내기 설정 하나뿐이다. [code:apps/petmint/README.md:102]
-- 호스트의 NFS 설정은 이 저장소 밖(펫퍼민트 저장소)에 있다. 이 저장소만으로는 같은 환경을 다시 만들 수 없다. [code:apps/petmint/data/nfs.yaml:2]
 - 약관 파일을 바꿔도 앱을 다시 띄우기 전에는 반영되지 않는다. [code:apps/petmint/data/nfs.yaml:6-7]
 
 ## 용어 풀이

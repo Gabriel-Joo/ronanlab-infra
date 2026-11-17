@@ -26,11 +26,12 @@
 
 MetalLB를 eth1 하나로 묶은 것도 같은 까닭입니다. MetalLB가 나눠 주는 대표 주소가 고정 주소 대역 안에 있으니, 그 대역이 붙은 랜카드로만 알려야 합니다 [docs:history/human_answers_20261116.md:13] [docs:history/cluster_state_20261116.md:32-33].
 
-## 치른 값과 남은 한계
+## 기본값이 남은 곳
 
-설계는 고정망으로 했지만, 한 군데는 기본값이 그대로 남았습니다. 쿠버네티스는 노드마다 그 노드를 가리키는 내부 주소(InternalIP)를 하나 기록하는데, 이 값은 노드마다 도는 에이전트 kubelet이 정합니다. 이 클러스터의 kubelet에는 어느 주소를 쓸지 정하는 설정(`--node-ip`)이 없어서, 다섯 대 모두 내부 주소가 관리망(eth0) 쪽으로 잡혀 있습니다 [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:26]. 일부러 그렇게 한 것이 아니라 기본값이 남은 것입니다 [docs:history/human_answers_20261116.md:15]. 실제 통신은 위에서 말한 대로 고정망을 타기 때문에 클러스터는 정상으로 돕니다. 다만 이것을 고치지 않고 지금 상태 그대로 문서에 적었고, 그 때문에 따라오는 일을 한계로 남겼습니다.
+설계는 고정망으로 했지만, 한 군데는 기본값이 그대로 남았습니다. 쿠버네티스는 노드마다 그 노드를 가리키는 내부 주소(InternalIP)를 하나 기록하는데, 이 값은 노드마다 도는 에이전트 kubelet이 정합니다. 이 클러스터의 kubelet에는 어느 주소를 쓸지 정하는 설정(`--node-ip`)이 없어서, 다섯 대 모두 내부 주소가 관리망(eth0) 쪽으로 잡혀 있습니다 [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:26]. 일부러 그렇게 한 것이 아니라 기본값이 남은 것입니다 [docs:history/human_answers_20261116.md:15]. 실제 통신은 위에서 말한 대로 고정망을 타기 때문에 클러스터는 정상으로 돕니다. 다만 지금 상태 그대로 문서에 적고, 그 때문에 생길 수 있는 일도 함께 적었습니다.
 
-- 노드 목록 화면에 보이는 노드 주소는 관리망 주소입니다. 그 화면만 보고 노드끼리 어느 길로 통신하는지 판단하면 틀립니다 [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:23-24].
-- 노드의 내부 주소를 그대로 가져다 쓰는 기능은 관리망을 탑니다. 예를 들어 모니터링이 노드마다 컨테이너 사용량을 긁어 올 때 찾아가는 주소가 이 내부 주소입니다 [code:apps/monitoring/prometheus/configmap.yaml:33-43].
-- 관리망 주소는 재부팅 때 바뀔 수 있으므로, 바뀌면 노드의 내부 주소도 따라 바뀝니다 [docs:history/human_answers_20261116.md:7] [docs:history/human_answers_20261116.md:15].
+노드 목록 화면에 보이는 노드 주소는 관리망 주소라, 그 화면만 보고 노드끼리 어느 길로 통신하는지 판단하면 틀립니다 [docs:history/cluster_state_20261116.md:9-15] [docs:history/cluster_state_20261116.md:23-24]. 노드의 내부 주소를 그대로 가져다 쓰는 기능은 관리망을 탑니다. 모니터링이 노드마다 컨테이너 사용량을 긁어 올 때 찾아가는 주소가 이 내부 주소입니다 [code:apps/monitoring/prometheus/configmap.yaml:33-43]. 그리고 관리망 주소는 재부팅 때 바뀔 수 있어, 바뀌면 노드의 내부 주소도 따라 바뀝니다 [docs:history/human_answers_20261116.md:7] [docs:history/human_answers_20261116.md:15]. 고치지 않을 까닭은 없어서, kubelet에 주소를 지정해 고정망으로 옮기는 일을 남은 일 목록에 올려 두었습니다 [c:a40b111].
+
+## 치른 값
+
 - 바깥 인터넷으로 나가는 기본 길은 관리망 쪽입니다. 랜카드 둘이 하는 일이 완전히 갈라진 것은 아닙니다 [docs:history/cluster_state_20261116.md:21].

@@ -60,11 +60,7 @@ helm 차트와 매니페스트 주소로 바로 넣은 것(Calico, metrics-serve
 ## 알려진 한계
 
 - Jenkins 본체가 하나이고 w3에 묶여 있다. w3를 정비하는 동안 빌드가 멈춘다. 떠 있는 앱은 영향이 없다. [docs:history/build_log/06_jenkins.md:504]
-- 빌드 파드의 자리가 정해져 있지 않다. 빌드가 앱 노드에 뜨면 앱과 메모리를 나눠 쓴다. [docs:history/build_log/06_jenkins.md:503]
-- 빌드 캐시가 빌드마다 비어 있어 매번 처음부터 굽는다. [docs:history/build_log/06_jenkins.md:505]
 - Harbor 로봇 계정에 만료가 없다. 기한을 관리할 체계가 없어 두지 않았다. [docs:history/build_log/06_jenkins.md:502]
-- 태그 줄을 바꾸는 명령은 앱 저장소의 Jenkinsfile에 있어 이 저장소에서 보이지 않는다. `newTag` 줄 모양을 바꾸면 두 저장소를 함께 고쳐야 한다. [code:apps/runshoes/kustomization.yaml:26]
-- `platform/versions.yaml`은 설치기가 읽지 않는 기록이다. 판을 올리고 이 파일을 고치지 않으면 기록과 클러스터가 어긋난다. [code:platform/versions.yaml:3-6]
 - 태그 커밋을 revert해도 데이터베이스 마이그레이션은 되돌아가지 않는다. [code:apps/petmint/README.md:27]
 
 ## 용어 풀이

@@ -56,7 +56,6 @@ ArgoCD는 저장소를 정해진 간격으로 들여다보기도 하지만, GitH
 
 ## 알려진 한계
 
-- ArgoCD 설치 매니페스트가 저장소에 없다. 다시 넣으면 w3 고정이 사라져 `pin-infra.sh`를 다시 돌려야 하고, 알림 설정도 지워질 수 있어 그 파일도 다시 넣어야 한다 [code:platform/argocd/notifications-cm.yaml:5]
 - ArgoCD가 w3 한 노드에만 있다. w3가 내려가면 새 배포가 멈춘다. 이미 떠 있는 앱은 그대로 돈다 [code:cluster/label-nodes.sh:7]
 - prune을 꺼 두어서 저장소에서 지운 리소스는 클러스터에 남는다. 사람이 따로 지워야 한다 [code:bootstrap/root-app.yaml:11]
 - `app.yaml`의 자동 Sync 값과 클러스터의 실제 값이 다를 수 있다. 실제 값은 클러스터에서 확인해야 한다

@@ -35,9 +35,7 @@ Prometheus 화면은 Grafana와 같이 Cloudflare 터널과 ingress-nginx를 거
 ## 알려진 한계
 
 - Prometheus는 한 대이고 볼륨이 w4에 묶여 있다. w4가 죽거나 정비로 비우면 그동안의 지표가 빈다. [docs:history/build_log/09_monitoring.md:209]
-- 알림이 없다. 지표가 나빠져도 아무도 불리지 않는다. [docs:history/build_log/09_monitoring.md:208]
 - 펫퍼민트의 HTTP 지표는 ingress-nginx를 거친 요청만 보인다. [docs:history/build_log/09_monitoring.md:51]
-- 호스트의 검색 서비스와 model-service가 살아 있는지는 보지 못한다. [docs:history/build_log/09_monitoring.md:212]
 - 호스트의 GPU 수집기는 ArgoCD 밖이다. 사라지면 사람이 다시 띄운다. [docs:history/build_log/09_monitoring.md:124]
 - 사설망에서는 Access 없이 Prometheus에 닿는다. 그 망에는 호스트와 가상 머신만 있다. [code:apps/monitoring/ingress.yaml:6]
 - 15일을 넘는 추세는 볼 수 없고, 시계열이 늘면 9GB에 먼저 걸려 더 짧게 남는다. [docs:history/build_log/09_monitoring.md:117]

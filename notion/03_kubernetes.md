@@ -48,11 +48,8 @@ CoreDNS 설정은 배포 도구(ArgoCD)가 지켜보는 범위 밖이라, 바꾸
 
 ## 알려진 한계
 
-- 컨트롤 플레인이 한 대다. m-k8s가 멈추면 이미 뜬 파드는 계속 돌지만 새 배치와 복구, 사람의 명령이 멈춘다. [docs:history/build_log/01_cluster.md:700]
-- Calico 매니페스트는 저장소에 없다. 다시 깔거나 올릴 때는 판 기록에 적힌 주소에서 시작한다. [code:platform/versions.yaml:16-18] [docs:history/build_log/01_cluster.md:703]
+- 컨트롤 플레인이 한 대다. m-k8s가 멈추면 이미 뜬 파드는 계속 돌지만 새 배치와 복구, 사람의 명령이 멈춘다. [docs:history/build_log/01_cluster.md:700] 컨트롤 플레인을 늘리려면 etcd가 과반으로 결정하는 방식 때문에 셋이 필요하다. 그런데 VM이 모두 같은 물리 서버 한 대 위에 있어, 셋으로 늘려도 서버가 꺼지면 함께 꺼진다. 들이는 자원만큼 얻는 것이 없다. [c:a40b111]
 - kubeadm으로 클러스터 판을 올리면 CoreDNS 설정을 새로 옮겨 적는다. 올린 뒤에는 이미지 저장소 이름을 고쳐 쓰는 덩어리가 남았는지 확인해야 한다. [code:platform/coredns/configmap.yaml:8]
-- Calico를 고른 까닭인 NetworkPolicy는 지금 저장소의 매니페스트 어디에도 없다. 기능은 들어 있지만 쓰지 않고 있다. [code:apps/] [code:platform/]
-- 판 기록 파일은 사람이 손으로 맞춘다. 클러스터의 실제 판과 저절로 맞춰지지 않는다. [code:platform/versions.yaml:3-6]
 
 ## 용어 풀이
 

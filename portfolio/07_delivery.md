@@ -45,7 +45,6 @@ Jenkins는 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣
 - ArgoCD 밖의 기반은 저장소를 고쳐 올려도 클러스터가 바뀌지 않습니다. 사람이 Helm이나 kubectl로 다시 넣어야 하고, 판 기록 파일도 사람이 맞춰 고쳐야 합니다. [code:bootstrap/root-app.yaml:13] [code:platform/versions.yaml:3-6]
 - 자동 Sync인 앱은 push가 곧 배포입니다. 데이터베이스 구조를 바꾸는 배포는 자동 Sync를 잠시 끄고 사람이 단계마다 확인하며 넣습니다. [code:apps/runshoes/app.yaml:9]
 - 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
-- Harbor에 취약점 검사 기능은 있지만, 포트폴리오 그림을 찍으며 처음 돌리기 전까지 한 번도 돌리지 않았습니다. 돌린 뒤에도 결과를 보고 조치한 것은 아직 없습니다. [docs:history/human_answers_20261117.md:19-22]
 - Jenkins 본체가 하나이고 w3 노드에 묶여 있어, w3를 정비하는 동안 빌드가 멈춥니다. 이미 떠 있는 앱은 영향이 없습니다. [docs:history/build_log/06_jenkins.md:504]
 
 ## 막혔을 때: 자동 Sync가 켜진 채 push가 먼저 나간 일

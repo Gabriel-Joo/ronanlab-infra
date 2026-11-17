@@ -37,6 +37,6 @@ w4-k8s  워커            platform  (모니터링)
 ## 치른 값
 
 - 노드를 다섯으로 나눠도 물리 서버는 한 대입니다. 서버가 멈추면 노드 다섯 대가 모두 함께 멈춥니다. 여러 노드로 막을 수 있는 것은 VM 한 대의 장애까지입니다 [docs:history/build_log/01_cluster.md:699].
-- control-plane은 m-k8s 한 대입니다. m-k8s가 멈추면 이미 뜬 파드는 계속 돌지만, 새 배치와 복구, 사람의 명령이 멈춥니다 [docs:history/build_log/01_cluster.md:700].
+- control-plane은 m-k8s 한 대입니다. m-k8s가 멈추면 이미 뜬 파드는 계속 돌지만, 새 배치와 복구, 사람의 명령이 멈춥니다 [docs:history/build_log/01_cluster.md:700]. 늘리려면 클러스터 상태를 저장하는 etcd가 과반으로 결정하는 방식이라 셋이 필요합니다. 그런데 VM이 모두 같은 물리 서버 한 대 위에 있어, 셋으로 늘려도 서버가 꺼지면 함께 꺼집니다. 들이는 자원만큼 얻는 것이 없습니다 [c:a40b111].
 - 노드마다 VM을 따로 두는 만큼 서버 자원을 VM 몫으로 미리 떼어 둡니다. 다섯 대 몫을 떼고 남은 호스트 메모리를 언어 모델과 학습 작업이 나눠 씁니다 [code:cluster/Vagrantfile:3-10] [docs:history/build_log/01_cluster.md:27].
 - 손으로 세운 만큼 설치한 판이 저장소에 저절로 남지 않습니다. kubeadm, 컨테이너 런타임, 파드 망 도구 Calico처럼 저장소에 매니페스트가 없는 것의 판은 원래 클러스터 안에만 있어서, 클러스터가 사라지면 같은 환경을 다시 만들 수 없습니다. 그래서 그 판을 `platform/versions.yaml`에 옮겨 적었습니다. 이 파일은 어떤 설치기도 읽지 않는 기록이라, 판을 올릴 때 사람이 같은 변경에서 함께 고쳐야 합니다 [docs:history/human_answers_20261116.md:19] [code:platform/versions.yaml:1-6] [code:platform/versions.yaml:14-18].

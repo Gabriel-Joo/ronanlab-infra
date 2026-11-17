@@ -52,8 +52,6 @@ Grafana의 메모리 상한은 넉넉하게 잡았다. 기동만으로 상당한
 - 화면에서 고친 대시보드는 남지 않는다. 고치려면 생성 스크립트를 고쳐 JSON을 다시 만든다. [code:apps/monitoring/grafana/dashboard-provider.yaml:2]
 - DB 칸을 읽는 패널은 복제본에 기댄다. 복제가 멈추거나 늦으면 그 패널도 멈추거나 늦는다. [docs:history/build_log/09_monitoring.md:70] [code:apps/monitoring/grafana/datasource.yaml:32] [code:apps/monitoring/grafana/datasource.yaml:48]
 - 서비스 DB에 새 칸이 생기면 읽기 권한을 사람이 손으로 더해야 패널이 값을 낸다. [docs:history/build_log/09_monitoring.md:70] [code:apps/monitoring/grafana/datasource.yaml:27] [code:apps/monitoring/grafana/datasource.yaml:43]
-- 펫퍼민트의 확인 불가 응답 비율은 거절 문구로 판정한다. 거절 문구 없이 얼버무린 답은 세지 않는다. [docs:history/build_log/09_monitoring.md:213]
-- 대시보드는 사람이 열어야 본다. 알림은 없다. [docs:history/build_log/09_monitoring.md:145]
 
 ## 용어 풀이
 

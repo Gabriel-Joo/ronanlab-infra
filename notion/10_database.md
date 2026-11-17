@@ -74,11 +74,7 @@ StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해
 
 - Primary가 죽으면 자동으로 넘어가지 않는다. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패한다. [docs:history/build_log/08_scale_out.md:28]
 - 두 앱의 Primary가 모두 w1에 있다. w1 하나가 멈추면 두 데이터베이스의 쓰기가 같이 멈춘다. [code:apps/runshoes/mysql/statefulset.yaml:6-7]
-- 펫퍼민트 Primary는 노드를 고르는 규칙 없이 저장 공간이 있는 자리에만 기대어 w1에 있다. 저장 공간을 새로 만들면 어느 노드에 뜰지 정해져 있지 않다. [code:apps/petmint/mysql/statefulset.yaml:21-29]
-- 런슈즈는 정기 백업이 없다. 구조를 바꾸는 배포 앞의 손 덤프가 전부다. [code:apps/runshoes/README.md:54]
 - 펫퍼민트 백업에는 계정이 없다. 덤프만으로 되살리면 계정은 초기화 작업으로 다시 만들어야 한다. [code:apps/petmint/backup/cronjob.yaml:2-3]
-- 백업은 VM을 돌리는 같은 호스트에 쌓인다. 호스트의 디스크를 잃으면 클러스터와 백업을 함께 잃는다. [code:apps/petmint/backup/cronjob.yaml:1]
-- 사본의 데이터베이스 설정 일부가 Primary와 한 파일에 있지 않다. 사본은 Primary 파일과 같은 값을 손으로 맞춰 적었으므로, Primary 설정을 바꾸면 사본 파일도 함께 고쳐야 한다. [code:apps/petmint/mysql/replica.yaml:61-67]
 
 ## 용어 풀이
 

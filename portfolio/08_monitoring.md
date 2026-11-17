@@ -38,10 +38,7 @@
 
 - 판을 올리는 일이 손일입니다. 이미지 태그를 하나씩 바꾸고 호환을 직접 확인합니다. 차트가 주는 기본 대시보드와 경보 규칙도 없습니다. [docs:history/build_log/09_monitoring.md:34]
 - Grafana는 저장 공간 없이 돕니다. 화면에서 고친 대시보드는 파드를 다시 만들면 사라지므로, 대시보드는 저장소의 파일로만 바꿉니다. [code:apps/monitoring/grafana/deployment.yaml:2]
-- 알림(Alertmanager)이 아직 없습니다. 무슨 일이 생겼는지는 사람이 대시보드를 열어야 압니다. [code:apps/monitoring/README.md:3]
 - 데이터베이스에 새 칸이 생기면 읽기 계정의 권한을 손으로 더해야 합니다. 복제본이 멈추거나 늦으면 상담 패널도 멈추거나 늦습니다. [docs:history/build_log/09_monitoring.md:70]
-- 로그 거르기는 글자 일치입니다. 앱이 로그 꼴을 바꾸거나 다른 앱이 새로 원문을 찍으면, 수집기 설정을 고치기 전까지 걸러지지 않고 들어갑니다. [docs:history/build_log/09_monitoring.md:109-110]
-- 호스트의 검색 서비스와 model-service가 살아 있는지는 보지 못합니다. [docs:history/build_log/09_monitoring.md:212]
 
 ## 막혔을 때
 

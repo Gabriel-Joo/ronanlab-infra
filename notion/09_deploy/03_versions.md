@@ -75,9 +75,7 @@
 - 자동 Sync를 끄고 켜는 일이 사람 손에 달려 있다. 끄기를 잊고 push하면 덤프 없이 스키마가 바뀔 수 있다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
 - 자동 Sync를 끈 정확한 시각은 ArgoCD에 남지 않는다. [code:apps/runshoes/runbooks/v21-grafana-compare-views.md:167]
 - 덤프와 Sync 사이에 들어온 쓰기는 덤프로 복원하면 사라진다. [code:apps/runshoes/runbooks/auth-v3.md:28]
-- 덤프는 호스트 디스크 한 곳에만 있다. [code:apps/runshoes/runbooks/auth-v3.md:180]
 - 이미지 안 파일 확인 스크립트는 호스트에서 노드로 접속해 돌며, 노드에서 잠깐 받기 계정 비밀번호가 명령 인자로 보인다. [code:apps/runshoes/scripts/check-image-migrations.sh:11]
-- 오래된 런북에는 지금과 다른 값이 남아 있다. 롤링 설정, 파드 수, 자동 Sync 스위치를 고치는 파일 자리가 그때 기준이다. 지금 값은 매니페스트를 따른다. [code:apps/runshoes/runbooks/auth-v3.md:122] [code:apps/runshoes/runbooks/catalog-v4-v5.md:55] [code:apps/runshoes/app/deployment.yaml:22-28]
 
 ## 용어 풀이
 

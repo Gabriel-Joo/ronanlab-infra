@@ -32,10 +32,7 @@ Loki에는 인증이 없다. 클러스터 안에서만 닿는 주소로 열려 �
 
 ## 알려진 한계
 
-- 대화 원문을 거르는 것은 글자 맞추기다. 앱이 로그 꼴을 바꾸면(「질문:」을 다른 말로) 거르지 못하고 들어간다. 다른 앱이 새로 원문을 찍어도 Alloy 설정을 고치기 전까지는 들어간다. [docs:history/build_log/09_monitoring.md:110]
 - Loki는 한 대이고 볼륨이 w4에 묶여 있다. w4가 죽거나 정비로 비우면 그동안 로그가 빈다. [docs:history/build_log/09_monitoring.md:209]
-- 7일이 지난 로그는 남지 않는다. 그보다 오래된 일을 되짚으려면 앱의 DB 기록을 봐야 한다. [code:apps/monitoring/loki/loki.yaml:34]
-- 로그를 보고 알림을 보내는 장치는 없다. [docs:history/build_log/09_monitoring.md:208]
 
 ## 용어 풀이
 

@@ -49,7 +49,6 @@ MetalLB에는 L2 말고 BGP(라우터끼리 길을 주고받는 규약) 방식�
 ## 알려진 한계
 
 - L2 방식에서는 사설 VIP를 노드 한 대가 맡아 알린다. 그 노드가 죽으면 다른 노드가 넘겨받을 때까지 사설 VIP로 가는 요청이 잠깐 끊긴다 [docs:history/build_log/02_metrics_storage_ingress.md:385]
-- 컨트롤러가 두 벌이어도 재시작할 때 아주 짧게 끊길 수 있다 [docs:history/build_log/02_metrics_storage_ingress.md:384]
 - 원본 판을 올리면 지표를 켜는 수정이 인자 자리를 다시 맞춰야 한다. 맞지 않으면 적용이 멈춘다(의도한 멈춤이다) [code:platform/ingress-nginx/overlay/kustomization.yaml:10]
 - MetalLB와 ingress-nginx는 저장소에 올려도 들어가지 않는다. 바꾼 사람이 직접 넣어야 하고, 넣지 않으면 저장소와 클러스터가 어긋난다 [code:platform/ingress-nginx/overlay/kustomization.yaml:1]
 
