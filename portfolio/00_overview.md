@@ -10,7 +10,7 @@
 
 ## 무엇을 만들었나
 
-홈랩은 집이나 사무실에 직접 차려 두고 이것저것 시험해 보는 서버 환경을 말합니다. 모든 것은 물리 서버 한 대 위에 있습니다. 이 서버에는 NVIDIA GeForce RTX 5070 Ti 그래픽카드 한 장이 꽂혀 있습니다 [docs:history/notion_hardware_20261116.md:16] [docs:history/cluster_state_20261116.md:76]. 쿠버네티스(여러 컴퓨터를 한 덩어리로 묶어 프로그램을 알아서 나눠 띄우고, 죽으면 다시 띄워 주는 관리 시스템)는 이 서버 안의 가상 머신(VM, 소프트웨어로 흉내 낸 컴퓨터) 다섯 대 위에 세웠습니다 [code:cluster/Vagrantfile:3-10] [code:README.md:3].
+홈랩은 집이나 사무실에 직접 차려 두고 이것저것 시험해 보는 서버 환경을 말합니다. 모든 것은 물리 서버 한 대 위에 있습니다. 이 서버에는 NVIDIA GeForce RTX 5070 Ti 그래픽카드 한 장이 꽂혀 있습니다 [docs:history/notion_hardware_20261116.md:16] [docs:history/cluster_state_20261116.md:76]. 쿠버네티스(여러 컴퓨터를 한 덩어리로 묶어 프로그램을 알아서 나눠 띄우고, 죽으면 다시 띄워 주는 관리 시스템)는 이 서버 안의 가상 머신(VM, 소프트웨어로 흉내 낸 컴퓨터) 다섯 대 위에 세웠습니다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8].
 
 다섯 대 가운데 m-k8s 한 대는 클러스터 전체를 지휘하는 control-plane이고, 나머지 w1부터 w4까지 네 대는 실제 프로그램을 돌리는 워커입니다 [docs:history/cluster_state_20261116.md:9-15]. 워커는 맡은 일이 정해져 있습니다. w1과 w2는 서비스 앱과 데이터베이스를, w3는 배포와 빌드 도구를, w4는 모니터링을 맡습니다. 그래서 w3가 멈추면 새 배포와 빌드가 멈춰도 돌던 서비스는 그대로이고, w4가 멈추면 모니터링이 멈춥니다 [code:cluster/label-nodes.sh:6-8].
 
@@ -46,5 +46,5 @@
 
 ## 치른 값
 
-- 모든 것이 물리 서버 한 대 안에 있습니다. 서버가 꺼지면 클러스터, 운영 도구, 추론 서버가 함께 멈춥니다 [code:README.md:3] [docs:history/build_log/01_cluster.md:699].
+- 모든 것이 물리 서버 한 대 안에 있습니다. 서버가 꺼지면 클러스터, 운영 도구, 추론 서버가 함께 멈춥니다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8] [docs:history/build_log/01_cluster.md:699].
 - 바깥 공개 주소는 모두 터널 하나를 지납니다. 터널이 깨지면 서비스와 함께 ArgoCD, Grafana 같은 고칠 도구의 화면도 바깥에서 보이지 않습니다 [code:apps/cloudflared/app.yaml:4-7].

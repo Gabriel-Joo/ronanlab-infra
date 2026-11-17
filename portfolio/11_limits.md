@@ -14,7 +14,7 @@
 
 ## 하드웨어와 클러스터 구조
 
-- **물리 서버가 한 대입니다.** VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [code:README.md:3] [docs:history/build_log/01_cluster.md:699]. 노드를 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애만 막습니다. 서버 자체가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버가 함께 멈춥니다 [docs:history/build_log/08_scale_out.md:436].
+- **물리 서버가 한 대입니다.** VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8] [docs:history/build_log/01_cluster.md:699]. 노드를 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애만 막습니다. 서버 자체가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버가 함께 멈춥니다 [docs:history/build_log/08_scale_out.md:436].
 - **컨트롤 플레인(클러스터 전체를 관리하는 노드)이 m-k8s 한 대입니다** [docs:history/cluster_state_20261116.md:11]. m-k8s가 멈추면 이미 떠 있는 파드는 계속 돌지만, 새 배치와 복구, 사람이 내리는 명령이 멈춥니다 [docs:history/build_log/01_cluster.md:700]. 늘리려면 클러스터 상태를 저장하는 etcd가 과반으로 결정하는 방식이라 셋이 필요합니다. 그런데 VM이 모두 같은 물리 서버 한 대 위에 있어, 셋으로 늘려도 서버가 꺼지면 함께 꺼집니다. 들이는 자원만큼 얻는 것이 없습니다 [c:a40b111].
 - **이미지 저장소와 배포 도구가 있는 w3, 모니터링이 있는 w4는 한 대씩입니다.** w3이 죽으면 배포와 빌드가, w4가 죽으면 모니터링이 그 노드가 돌아올 때까지 멈춥니다. 목표로 받아들인 한계입니다 [docs:history/build_log/08_scale_out.md:434]. 앱 노드도 둘뿐이라, 하나가 빠지면 각 앱이 파드 하나로 버팁니다 [docs:history/build_log/08_scale_out.md:433]. → 「워커를 늘리고 옮기기」
 
@@ -26,7 +26,7 @@
 
 ## 사람 손에 남은 것
 
-- **비밀값은 저장소에 없고, 사람이 클러스터에 직접 만듭니다** [code:README.md:14] [code:CLAUDE.md:46]. 비밀값이 커밋에 새지 않는 대신, 클러스터를 다시 세우면 사람이 다시 넣어야 합니다.
+- **비밀값은 저장소에 없고, 사람이 클러스터에 직접 만듭니다** [code:CLAUDE.md:46]. 비밀값이 커밋에 새지 않는 대신, 클러스터를 다시 세우면 사람이 다시 넣어야 합니다.
 - **호스트 서비스는 GitOps 밖입니다.** 추론 서버, 벡터 DB, 검색 서비스 같은 것은 VM이 아니라 호스트에서 컨테이너나 서비스로 돕니다 [docs:history/cluster_state_20261116.md:77-78]. 저장소로 상태를 되돌릴 수 없습니다. GPU 지표 수집기는 사라지면 사람이 스크립트를 다시 돌려 띄우고 [docs:history/build_log/09_monitoring.md:124] [code:scripts/host-gpu-exporter.sh:11]. → 「GPU는 호스트에, 파드는 불러 쓰기만」
 - **데이터베이스 원본이 죽으면 사람이 사본을 올립니다.** 자동 전환은 없습니다 [docs:runbooks/mysql-replica.md:3]. 자동 전환 도구는 부품과 메모리를 더 먹어 쓰지 않았습니다 [docs:history/build_log/08_scale_out.md:134-137]. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패합니다 [docs:history/build_log/08_scale_out.md:28]. 올리는 시험은 했지만, 앱 트래픽까지 옮기는 진짜 전환은 아직 해 보지 않았습니다 [docs:history/build_log/08_scale_out.md:432].
 - **저장소에서 지운 것은 클러스터에 남습니다.** 루트 Application에서 지운 리소스를 클러스터에서도 지우는 기능(prune)을 꺼 두었습니다. 사람이 따로 지워야 합니다 [code:bootstrap/root-app.yaml:11].

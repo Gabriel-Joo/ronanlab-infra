@@ -6,6 +6,19 @@
 
 GPU 호스트 한 대 안의 VM 다섯 대로 세운 kubeadm 클러스터와, 그 위의 앱 둘과 운영 도구를 한 장에 모은다. 각 부분의 설정과 명령은 같은 번호의 개발자 문서에 있다.
 
+## 저장소 구조
+
+처음 오는 사람은 문서 차례 [docs/README.md](README.md)부터 본다. 폴더는 아래와 같다.
+
+| 폴더 | 무엇 |
+| --- | --- |
+| `bootstrap/root-app.yaml` | 루트 Application(App of Apps). `main`의 `apps/*/app.yaml`을 읽어 앱 Application을 만든다 [code:bootstrap/root-app.yaml:22-28] |
+| `apps/` | ArgoCD가 배포하는 것. petmint, runshoes, cloudflared, harbor-backup, monitoring [code:apps/] |
+| `platform/` | ArgoCD 밖에서 사람이 Helm이나 kubectl로 넣은 기반. cert-manager, coredns, ingress-nginx, metallb, harbor, jenkins, argocd ingress [code:bootstrap/root-app.yaml:13] [code:CLAUDE.md:13] |
+| `cluster/` | VM 정의 `Vagrantfile`, 노드 설치 `setup-node.sh`, 역할 라벨 `label-nodes.sh`. 앞의 둘은 호스트 `~/k8s-cluster`의 사본이라 고치면 양쪽을 같이 고친다 [code:CLAUDE.md:16-18] |
+| `scripts/` | 호스트 스크립트(`host-nfs-harbor-backup-setup.sh`는 sudo로 사람이 돌린다), 배포 키, MySQL 복제 맞추기와 확인, 문서 점검 [code:scripts/host-nfs-harbor-backup-setup.sh:3] [code:scripts/] |
+| `docs/` | 개발자 문서(00~14), 남은 일 `TODO.md`, 기록 `history/`. 노션 원고는 `notion/`, 포트폴리오는 `portfolio/` [docs:README.md] |
+
 ## 지금 구성
 
 ### 호스트
@@ -91,7 +104,7 @@ vagrant ssh m-k8s -c 'kubectl -n argocd get applications'            # root 와 
 
 ## 알려진 한계
 
-- 모든 것이 물리 서버 한 대 안에 있다. 호스트가 멈추면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다 [code:README.md:3]
+- 모든 것이 물리 서버 한 대 안에 있다. 호스트가 멈추면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8]
 - control-plane은 m-k8s 한 대다 [docs:history/cluster_state_20261116.md:11]
 - 공개 주소 일곱이 터널 하나를 지난다. 터널이 깨지면 ArgoCD, Grafana 화면도 바깥에서 안 보인다 [code:apps/cloudflared/app.yaml:4-7]
 - 노드 InternalIP가 eth0(DHCP) 주소로 잡혀 있다. kubelet에 `--node-ip`가 없어서다 [docs:history/cluster_state_20261116.md:26] [docs:history/human_answers_20261116.md:15]

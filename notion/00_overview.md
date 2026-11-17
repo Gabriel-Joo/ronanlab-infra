@@ -24,7 +24,7 @@
 
 ## 저장소가 곧 운영
 
-이 저장소의 main 브랜치에 적힌 것이 곧 클러스터의 모습이다. ArgoCD에는 맨 위에 루트 Application 하나만 사람이 넣고, 루트가 저장소의 앱 폴더마다 있는 정의 파일을 읽어 앱별 Application을 만든다. 이 방식을 App of Apps라 부른다. [code:bootstrap/root-app.yaml:1-6] 지금 앱 다섯 가운데 넷(runshoes, petmint, monitoring, harbor-backup)은 main에 커밋이 들어오면 저절로 반영되고, 바깥 공개를 맡은 cloudflared 하나만 사람이 반영 단추를 누른다. [docs:history/cluster_state_20261116.md:52-61] 반대로 클러스터의 바탕이 되는 기반(인증서 관리, 로드밸런서, 들어오는 문, Harbor, Jenkins 등)은 ArgoCD보다 먼저 깔아야 했기 때문에 ArgoCD 밖에 두고 사람이 직접 넣는다. [code:bootstrap/root-app.yaml:13] 비밀번호와 토큰은 저장소에 두지 않고 사람이 클러스터에 직접 만든다. [code:README.md:14] 이 저장소를 누가 어떻게 고치는지는 → 「운영 규칙과 문서 게시」에 있다.
+이 저장소의 main 브랜치에 적힌 것이 곧 클러스터의 모습이다. ArgoCD에는 맨 위에 루트 Application 하나만 사람이 넣고, 루트가 저장소의 앱 폴더마다 있는 정의 파일을 읽어 앱별 Application을 만든다. 이 방식을 App of Apps라 부른다. [code:bootstrap/root-app.yaml:1-6] 지금 앱 다섯 가운데 넷(runshoes, petmint, monitoring, harbor-backup)은 main에 커밋이 들어오면 저절로 반영되고, 바깥 공개를 맡은 cloudflared 하나만 사람이 반영 단추를 누른다. [docs:history/cluster_state_20261116.md:52-61] 반대로 클러스터의 바탕이 되는 기반(인증서 관리, 로드밸런서, 들어오는 문, Harbor, Jenkins 등)은 ArgoCD보다 먼저 깔아야 했기 때문에 ArgoCD 밖에 두고 사람이 직접 넣는다. [code:bootstrap/root-app.yaml:13] 비밀번호와 토큰은 저장소에 두지 않고 사람이 클러스터에 직접 만든다. [code:CLAUDE.md:47] 이 저장소를 누가 어떻게 고치는지는 → 「운영 규칙과 문서 게시」에 있다.
 
 ## 바깥에서 들어오는 길
 
@@ -36,7 +36,7 @@
 
 ## 알려진 한계
 
-- 모든 것이 물리 서버 한 대 안에 있다. 노드를 다섯으로 나눴어도 서버 자체가 꺼지면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다. [code:README.md:3]
+- 모든 것이 물리 서버 한 대 안에 있다. 노드를 다섯으로 나눴어도 서버 자체가 꺼지면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다. [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8]
 - control-plane은 m-k8s 한 대다. m-k8s가 멈추면 돌던 파드는 그대로 돌지만 새 배포와 클러스터 관리가 멈춘다. [docs:history/cluster_state_20261116.md:11] 늘리려면 셋이 필요한데, VM이 모두 같은 서버 한 대 위에 있어 셋으로 늘려도 서버가 꺼지면 함께 꺼진다. 들이는 자원만큼 얻는 것이 없다. [c:a40b111]
 - 바깥 공개 주소는 모두 터널 하나를 지난다. 터널이 깨지면 서비스와 함께 ArgoCD, Grafana 같은 고칠 도구의 화면도 바깥에서 보이지 않는다. [code:apps/cloudflared/app.yaml:4-7]
 

@@ -35,7 +35,7 @@
 
 ### 비밀값
 
-- 저장소에 Secret이 없다. 각 `apps/<앱>/scripts/create-secrets.sh` 또는 README 「처음 한 번」의 `kubectl create secret`으로 사람이 만든다 [code:README.md:14] [code:CLAUDE.md:47]
+- 저장소에 Secret이 없다. 각 `apps/<앱>/scripts/create-secrets.sh` 또는 README 「처음 한 번」의 `kubectl create secret`으로 사람이 만든다 [code:CLAUDE.md:47]
 - 비밀값 파일은 Edit, Write로 고치지 않고 값은 `/usr/bin/grep -cF`로 개수만 센다 [code:CLAUDE.md:48-49]
 - Loki에는 서버 로그만 넣는다. 대화 원문은 `apps/monitoring/alloy/alloy.yaml`이 버린다 [code:CLAUDE.md:50]
 - `.gitignore`가 막는 꼴 [code:.gitignore:1-6]
