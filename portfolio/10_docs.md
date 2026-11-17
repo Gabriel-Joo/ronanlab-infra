@@ -1,6 +1,6 @@
 <!--
 다루는 곳: docs/style_guide.md, scripts/docs-check.py, .foreman/notion.toml, docs/README.md, docs/history/notls_check_20261117.md, docs/history/rule_breach_20261116.md, CLAUDE.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 문서를 기계로 검사하기
 

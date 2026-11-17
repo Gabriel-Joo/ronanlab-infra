@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/cloudflared/, apps/monitoring/ingress.yaml
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 포트포워딩 없이 공개하기
 

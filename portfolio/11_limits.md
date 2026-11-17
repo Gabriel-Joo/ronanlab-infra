@@ -1,6 +1,6 @@
 <!--
 다루는 곳: README.md, cluster/Vagrantfile, apps/cloudflared/configmap.yaml, apps/cloudflared/app.yaml, platform/argocd/ingress.yaml, apps/monitoring/README.md, apps/monitoring/prometheus/configmap.yaml, apps/harbor-backup/README.md, apps/runshoes/README.md, bootstrap/root-app.yaml, scripts/host-gpu-exporter.sh, docs/runbooks/mysql-replica.md, CLAUDE.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 하지 않은 것과 한계
 
@@ -33,6 +33,8 @@
 - **데이터베이스 원본이 죽으면 사람이 사본을 올립니다.** 자동 전환은 없습니다 [docs:runbooks/mysql-replica.md:3]. 자동 전환 도구는 부품과 메모리를 더 먹어 쓰지 않았습니다 [docs:history/build_log/08_scale_out.md:134-137]. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패합니다 [docs:history/build_log/08_scale_out.md:28]. 올리는 시험은 했지만, 앱 트래픽까지 옮기는 진짜 전환은 아직 해 보지 않았습니다 [docs:history/build_log/08_scale_out.md:432].
 - **알림이 없습니다.** 모니터링은 지표와 로그를 모으고 대시보드로 보여 주지만, 알림을 보내는 구성 요소는 아직 없습니다. 무엇을 누구에게 알릴지 정하기 전입니다 [code:apps/monitoring/README.md:3]. 문제는 사람이 대시보드를 열어야 보입니다.
 - **저장소에서 지운 것은 클러스터에 남습니다.** 루트 Application에서 지운 리소스를 클러스터에서도 지우는 기능(prune)을 꺼 두었습니다. 사람이 따로 지워야 합니다 [code:bootstrap/root-app.yaml:11].
+
+- **이미지 취약점 검사 결과를 보고 조치하는 기준이 없습니다.** 포트폴리오 그림을 찍으며 처음 돌린 검사에서 이미지마다 Critical 22건이 나왔고, 22건 모두 고친 판이 나와 있다는 뜻의 Fixable이었습니다. 베이스 이미지를 올리면 줄어들 것으로 보이지만 확인한 것은 아니고, 아직 아무것도 고치지 않았습니다 [docs:history/human_answers_20261117.md:19-23].
 
 ## 백업
 

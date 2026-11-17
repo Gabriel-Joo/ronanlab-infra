@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/cloudflared/configmap.yaml, platform/cert-manager/, platform/harbor/values.yaml, platform/argocd/ingress.yaml, docs/style_guide.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # TLS가 끝나는 곳과 noTLSVerify를 확인한 일
 

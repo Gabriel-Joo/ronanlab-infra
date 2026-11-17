@@ -1,6 +1,6 @@
 <!--
 다루는 곳: cluster/label-nodes.sh, cluster/Vagrantfile, apps/petmint/app/deployment.yaml, apps/petmint/app/pdb.yaml, apps/runshoes/app/deployment.yaml, apps/runshoes/app/pdb.yaml, platform/harbor/pvc-w3.yaml, platform/harbor/values.yaml, platform/argocd/pin-infra.sh, platform/jenkins/values.yaml, apps/petmint/mysql/replica.yaml, docs/runbooks/mysql-replica.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 워커를 늘리고 옮기기
 

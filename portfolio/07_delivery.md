@@ -1,6 +1,6 @@
 <!--
 다루는 곳: bootstrap/root-app.yaml, apps/runshoes/app.yaml, apps/cloudflared/app.yaml, apps/harbor-backup/app.yaml, apps/petmint/kustomization.yaml, apps/runshoes/kustomization.yaml, platform/jenkins/values.yaml, platform/versions.yaml, platform/ingress-nginx/base/deploy.yaml, apps/runshoes/runbooks/
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 사람 손을 타지 않는 배포
 
@@ -16,17 +16,17 @@
 
 배포는 네 단계로 이어집니다. 앱 저장소에 push가 생기면 GitHub가 웹훅(일이 생겼을 때 다른 서비스를 불러 알려 주는 장치)으로 Jenkins를 부릅니다. [code:platform/jenkins/values.yaml:100-101] Jenkins는 클러스터 안에 빌드 파드를 띄워 이미지를 굽고, 앱 커밋 해시 앞 12자리를 태그로 붙여 Harbor에 올립니다. [code:platform/jenkins/values.yaml:104] [code:platform/jenkins/values.yaml:147] 그다음 이 저장소에서 그 앱의 이미지 태그 한 줄을 새 태그로 바꿔 커밋합니다. [code:apps/petmint/kustomization.yaml:3] [code:apps/runshoes/kustomization.yaml:25-26] 마지막으로 ArgoCD(Git 저장소와 클러스터를 계속 견주어 저장소 쪽으로 맞추는 도구)가 그 커밋을 받아 파드를 새 이미지로 바꿉니다. 자동 Sync인 앱은 태그 커밋이 3분 안에 배포됩니다. [code:apps/runshoes/app.yaml:5]
 
-![Jenkins 파이프라인 화면. 빌드가 단계마다 지나간 기록입니다](img/07_jenkins_stages.png)
+![Jenkins의 runshoes-app 작업 화면. 빌드 기록에 문서만 바뀌어 건너뛴 빌드와, 커밋 해시 태그로 이미지를 올린 빌드가 함께 보입니다](img/07_jenkins_stages.png)
 
 ArgoCD 쪽은 App of Apps로 짰습니다. ArgoCD에서 「어느 폴더를 어디에 넣을지」를 적은 단위를 Application이라고 하는데, 사람이 손으로 넣는 것은 루트 Application 하나뿐입니다. 루트는 `apps` 아래 앱 폴더마다 있는 `app.yaml`을 읽어 앱 Application을 만들어 줍니다. 새 앱을 올릴 때는 폴더 하나를 더해 push하면 됩니다. [code:bootstrap/root-app.yaml:1-4]
 
-![ArgoCD 화면. 앱 다섯이 모두 Synced 상태입니다](img/00_argocd_apps.png)
+![ArgoCD 화면. 앱 다섯이 모두 Synced 상태입니다. 작성자 메일 주소는 가렸습니다](img/00_argocd_apps.png)
 
 앱 Application은 다섯이고, 그중 runshoes, petmint, monitoring, harbor-backup 넷이 자동 Sync입니다. cloudflared 하나만 사람이 Sync를 누릅니다. [docs:history/cluster_state_20261116.md:54-61] cloudflared는 바깥에서 클러스터로 들어오는 터널이라, 잘못된 커밋 하나로 터널이 깨지면 서비스만 멈추는 것이 아니라 고칠 때 쓰는 ArgoCD 화면과 상황을 볼 Grafana까지 함께 보이지 않게 됩니다. 그래서 커밋이 곧바로 반영되지 않게 하고, 사람이 Sync한 뒤 새 파드로 갈아타는 과정을 지켜봅니다. [code:apps/cloudflared/app.yaml:4-8] 터널은 → 「포트포워딩 없이 공개하기」에서 다룹니다.
 
 이미지 태그는 하나도 빠짐없이 판을 고정했습니다. 클러스터에서 도는 파드 이미지 가운데 「가장 새것」을 뜻하는 `latest`는 하나도 없습니다. [docs:history/cluster_state_20261116.md:71] 앱 이미지는 커밋 해시 태그를 Kustomize(여러 매니페스트를 묶고 공통 값을 덧씌우는 도구)의 태그 칸 한 곳에 적고, Jenkins가 그 줄만 바꿉니다. [code:apps/petmint/kustomization.yaml:30-32] 들어오는 문인 ingress-nginx는 판 태그에 더해 digest(이미지 내용으로 계산한 지문)까지 고정했습니다. [code:platform/ingress-nginx/base/deploy.yaml:445] Helm 차트나 매니페스트 주소로 저장소 밖에서 넣은 것은 클러스터만 판을 알고 있었기 때문에, 다시 만들 때 같은 판을 깔 수 있도록 판 기록 파일에 옮겨 적었습니다. [code:platform/versions.yaml:1-6] [docs:history/human_answers_20261116.md:19]
 
-![Harbor의 이미지 목록. 태그가 커밋 해시로 붙어 있고 latest가 없습니다](img/07_harbor_tags.png)
+![Harbor의 runshoes 이미지 목록. 태그가 커밋 해시로 붙어 있고 latest가 없습니다. 처음 돌린 취약점 검사 결과(이미지마다 Critical 22건, 모두 Fixable)도 함께 보입니다](img/07_harbor_tags.png)
 
 ## 까닭
 
@@ -45,6 +45,7 @@ Jenkins는 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣
 - ArgoCD 밖의 기반은 저장소를 고쳐 올려도 클러스터가 바뀌지 않습니다. 사람이 Helm이나 kubectl로 다시 넣어야 하고, 판 기록 파일도 사람이 맞춰 고쳐야 합니다. [code:bootstrap/root-app.yaml:13] [code:platform/versions.yaml:3-6]
 - 자동 Sync인 앱은 push가 곧 배포입니다. 데이터베이스 구조를 바꾸는 배포는 자동 Sync를 잠시 끄고 사람이 단계마다 확인하며 넣습니다. [code:apps/runshoes/app.yaml:9]
 - 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
+- Harbor에 취약점 검사 기능은 있지만, 포트폴리오 그림을 찍으며 처음 돌리기 전까지 한 번도 돌리지 않았습니다. 돌린 뒤에도 결과를 보고 조치한 것은 아직 없습니다. [docs:history/human_answers_20261117.md:19-22]
 - Jenkins 본체가 하나이고 w3 노드에 묶여 있어, w3를 정비하는 동안 빌드가 멈춥니다. 이미 떠 있는 앱은 영향이 없습니다. [docs:history/build_log/06_jenkins.md:504]
 
 ## 막혔을 때: 자동 Sync가 켜진 채 push가 먼저 나간 일

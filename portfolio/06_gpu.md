@@ -1,6 +1,6 @@
 <!--
 다루는 곳: scripts/host-gpu-exporter.sh, apps/petmint/app/configmap.yaml, apps/runshoes/app/deployment.yaml, apps/monitoring/json-exporter/json-exporter.yaml, CLAUDE.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # GPU는 호스트에, 파드는 불러 쓰기만
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 모니터링은 차트 대신 매니페스트로
 
@@ -18,7 +18,7 @@
 
 차트를 쓰지 않고 매니페스트를 직접 써서 `apps/monitoring/`에 두었습니다. ArgoCD(저장소의 내용대로 클러스터를 맞추는 도구)가 이 폴더를 자동으로 클러스터에 넣습니다. [code:apps/monitoring/app.yaml:20-27] Prometheus는 Operator(설정을 쿠버네티스 객체로 받아 대신 관리해 주는 프로그램) 없이 설정 파일 하나로 지표를 긁고, Grafana의 데이터 연결과 대시보드도 저장소의 파일로 넣습니다. [docs:history/build_log/09_monitoring.md:32] 대시보드는 저장소의 생성 스크립트를 고쳐 JSON을 다시 만들고, push하면 반영됩니다. [code:apps/monitoring/README.md:4]
 
-![Grafana의 앱 운영 대시보드. 실제로 돌아가는 서비스의 요청량과 응답 시간이 보입니다](img/08_grafana_dashboard.png)
+![Grafana의 runshoes 운영 대시보드. 실제로 돌아가는 서비스의 응답 가능한 서버 수, 요청량, 오류 비율, CPU와 메모리가 보입니다](img/08_grafana_dashboard.png)
 
 ## 까닭
 

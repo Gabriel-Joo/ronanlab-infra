@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/metallb/, platform/ingress-nginx/
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 문은 하나만: MetalLB와 ingress-nginx
 

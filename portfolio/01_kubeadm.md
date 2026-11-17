@@ -1,6 +1,6 @@
 <!--
 다루는 곳: cluster/Vagrantfile, cluster/label-nodes.sh, platform/versions.yaml, apps/petmint/app/deployment.yaml, apps/runshoes/app/deployment.yaml
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 손으로 세운 여러 노드 클러스터
 

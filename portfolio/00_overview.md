@@ -1,6 +1,6 @@
 <!--
 다루는 곳: README.md, cluster/Vagrantfile, cluster/label-nodes.sh, bootstrap/root-app.yaml, apps/cloudflared/, apps/monitoring/README.md, apps/petmint/app/, apps/runshoes/README.md
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 한눈에 보는 홈랩
 
@@ -20,7 +20,7 @@
 
 이 저장소의 main 브랜치에 적힌 것이 곧 클러스터의 모습입니다. ArgoCD에는 맨 위의 루트 앱 하나만 사람이 넣고, 루트가 저장소의 앱 폴더마다 있는 정의 파일을 읽어 앱별 배포 단위를 만듭니다 [code:bootstrap/root-app.yaml:1-6]. 앱 코드가 바뀌면 Jenkins가 이미지를 만들어 Harbor에 올리고, 이 저장소의 이미지 태그를 바꿔 커밋하며, ArgoCD가 그 커밋을 보고 앱을 새 이미지로 바꿔 끼웁니다 [docs:history/build_log/07_project_deploy.md:3] [code:apps/petmint/app.yaml:1-4].
 
-![ArgoCD 화면. 루트 앱 아래 앱 다섯이 나무로 달려 있고 모두 Synced 상태입니다](img/00_argocd_apps.png)
+![ArgoCD 화면. 루트 앱 아래 앱 다섯이 나무로 달려 있고 모두 Synced 상태입니다. 작성자 메일 주소는 가렸습니다](img/00_argocd_apps.png)
 
 ## 요청 하나가 닿는 길
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: cluster/Vagrantfile, platform/metallb/pool.yaml, apps/petmint/app/configmap.yaml, apps/monitoring/prometheus/configmap.yaml
-읽은 커밋: 02c240c
+읽은 커밋: ddbaadf
 -->
 # 랜카드 둘: 관리망과 고정망
 
