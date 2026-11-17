@@ -2,7 +2,7 @@
 다루는 곳: platform/cert-manager/
 읽은 커밋: e8e24ea
 -->
-# TLS가 끝나는 곳
+# 05-02 TLS가 끝나는 곳
 
 TLS는 브라우저와 서버 사이의 내용을 암호화하고, 상대가 진짜 그 주소의 주인인지 인증서로 확인하는 규약이다. 주소창의 자물쇠가 이것이다. 요청은 브라우저에서 앱까지 여러 구간을 지나는데, 구간마다 암호화를 풀고 다시 싸는 자리가 다르다. 암호화를 푸는 자리를 「TLS가 끝나는 곳」이라고 부른다. 이 클러스터에서는 공개 앱과 운영 도구가 서로 다른 자리에서 TLS를 끝낸다. 길 자체는 → 「공개 경로와 내부 경로」에서 다뤘다.
 
@@ -12,7 +12,11 @@ petmint와 runshoes의 Ingress에는 인증서 칸(tls)이 없다. 우리 쪽은
 
 엣지에서 클러스터 안 cloudflared까지는 터널이 잇는다. 터널은 그 자체가 암호화된 통로다. cloudflared에서 ingress-nginx까지는 다시 HTTPS로 간다. 터널 설정이 원점을 HTTPS로 적고 있어서다. HTTP로 적으면 ingress-nginx가 HTTPS로 다시 오라고 돌려보낼 수 있고, 그 응답이 터널을 거쳐 다시 들어오면서 같은 자리를 맴돌 수 있다. [code:apps/cloudflared/configmap.yaml:13-17] [docs:history/build_log/03_cloudflare_tunnel.md:159-160]
 
-다만 이 HTTPS 구간에서 cloudflared는 ingress-nginx의 인증서를 확인하지 않는다. 일곱 주소 모두 확인을 끄는 설정(noTLSVerify)을 달았다. 인증서가 없는 호스트에 대해 ingress-nginx는 스스로 만든 임시 인증서를 내놓는데, 이것은 어느 기관도 보증하지 않아 확인이 실패한다. 이 구간은 클러스터 안의 통신이고 바깥 구간은 터널이 이미 암호화하므로 확인을 껐다. [code:apps/cloudflared/configmap.yaml:13-43] [docs:history/cluster_state_20261116.md:50] [docs:history/build_log/03_cloudflare_tunnel.md:160]
+다만 이 HTTPS 구간에서 cloudflared는 ingress-nginx의 인증서를 확인하지 않는다. 일곱 주소 모두 확인을 끄는 설정(noTLSVerify)을 달았다. [code:apps/cloudflared/configmap.yaml:13-43] [docs:history/cluster_state_20261116.md:50]
+
+두 앱 주소에서 확인을 끈 까닭은 구축 기록에 있다. 두 앱의 Ingress에는 인증서가 없어서 ingress-nginx는 스스로 만든 임시 인증서를 내놓는데, 이것은 어느 기관도 보증하지 않아 확인이 실패한다. 이 구간은 클러스터 안의 통신이고 바깥 구간은 터널이 이미 암호화하므로 확인을 껐다. [code:apps/cloudflared/configmap.yaml:14-17] [code:apps/cloudflared/configmap.yaml:30-33] [docs:history/build_log/03_cloudflare_tunnel.md:160]
+
+운영 도구 다섯 주소에도 같은 설정이 붙어 있지만, 그 다섯에서 확인을 끈 까닭은 기록에 없다. [code:apps/cloudflared/configmap.yaml:18-29] [code:apps/cloudflared/configmap.yaml:34-43]
 
 ingress-nginx에서 앱 파드까지는 암호화하지 않은 HTTP다. ingress-nginx는 따로 말하지 않으면 뒤쪽 서비스에 HTTP로 요청하고, 두 앱의 Ingress는 그 설정을 바꾸지 않는다. [code:apps/petmint/app/ingress.yaml:10-28] [docs:history/build_log/04_argocd.md:176]
 
