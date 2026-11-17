@@ -1,5 +1,5 @@
 <!--
-다루는 곳: README.md, cluster/Vagrantfile, apps/cloudflared/configmap.yaml, apps/cloudflared/app.yaml, platform/argocd/ingress.yaml, apps/monitoring/README.md, apps/monitoring/prometheus/configmap.yaml, apps/harbor-backup/README.md, apps/runshoes/README.md, bootstrap/root-app.yaml, scripts/host-gpu-exporter.sh, docs/runbooks/mysql-replica.md, CLAUDE.md
+다루는 곳: README.md, cluster/Vagrantfile, apps/cloudflared/configmap.yaml, apps/cloudflared/app.yaml, platform/argocd/ingress.yaml, apps/monitoring/README.md, apps/monitoring/prometheus/configmap.yaml, apps/harbor-backup/README.md, apps/runshoes/README.md, bootstrap/root-app.yaml, scripts/host-gpu-exporter.sh, docs/runbooks/mysql-replica.md
 읽은 커밋: ddbaadf
 -->
 # 하지 않은 것과 한계

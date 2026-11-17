@@ -1,5 +1,5 @@
 <!--
-다루는 곳: docs/style_guide.md, scripts/docs-check.py, .foreman/notion.toml, docs/README.md, docs/history/notls_check_20261117.md, docs/history/rule_breach_20261116.md, CLAUDE.md
+다루는 곳: docs/style_guide.md, scripts/docs-check.py, .foreman/notion.toml, docs/README.md, docs/history/notls_check_20261117.md, docs/history/rule_breach_20261116.md
 읽은 커밋: ddbaadf
 -->
 # 문서를 기계로 검사하기
@@ -61,4 +61,4 @@
 
 고친 뒤에는 이 일을 규칙으로 남겼습니다. 옛 기록을 근거로 걸 때는 그 기록이 쓰인 때와 지금이 같은 범위인지 먼저 확인하고, 노드 수나 인증서 유무처럼 바뀐 것이 있으면 범위를 좁혀 쓰거나 「까닭은 기록에 없다」고 적습니다. 까닭을 모르면 모른다고 적고 옛 기록으로 메우지 않습니다 [docs:style_guide.md:71]. 이 규칙은 기계가 검사할 수 없어서 쓰는 사람의 몫으로 남아 있습니다.
 
-규칙을 어긴 일도 감추지 않고 기록했습니다. 이 저장소는 파일을 정해진 편집 도구로만 고치게 하는데, 문서를 나눠 쓴 작업 세션 셋이 새 문서 파일을 python으로 한 번씩 고쳤습니다 [docs:history/rule_breach_20261116.md:3-9]. 셋 모두 스스로 보고했고, 고친 것은 아직 추적되기 전의 새 파일이라 피해는 없었습니다. 관리자가 합치기 전에 점검 스크립트로 다시 보았고, 사람은 기록만 남기기로 판단했습니다 [docs:history/rule_breach_20261116.md:11-13].
+규칙을 어긴 일도 감추지 않고 기록했습니다. 이 저장소는 파일을 정해진 편집 도구로만 고치게 하는데 [code:CLAUDE.md:93], 문서를 나눠 쓴 작업 세션 셋이 새 문서 파일을 python으로 한 번씩 고쳤습니다 [docs:history/rule_breach_20261116.md:3-9]. 셋 모두 스스로 보고했고, 고친 것은 아직 추적되기 전의 새 파일이라 피해는 없었습니다. 관리자가 합치기 전에 점검 스크립트로 다시 보았고, 사람은 기록만 남기기로 판단했습니다 [docs:history/rule_breach_20261116.md:11-13].
