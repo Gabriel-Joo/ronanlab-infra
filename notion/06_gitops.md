@@ -2,7 +2,7 @@
 다루는 곳: bootstrap/, platform/argocd/, apps/*/app.yaml
 읽은 커밋: e8e24ea
 -->
-# GitOps
+# 06 GitOps
 
 이 클러스터에 올라가는 앱은 사람이 명령으로 하나하나 넣지 않는다. 저장소의 기본 브랜치인 `main`에 적힌 내용을 ArgoCD(Git 저장소와 클러스터를 계속 견주어, 다른 곳이 있으면 저장소 쪽으로 맞춰 주는 도구)가 읽어 클러스터에 넣는다. 그래서 이 저장소에서는 `main`이 곧 운영이다. `main`에 무엇이 들어가면 그것이 클러스터에 들어간다는 뜻이고, 거꾸로 클러스터에 무엇이 있는지 알고 싶으면 `main`을 보면 된다. [code:bootstrap/root-app.yaml:20-24]
 

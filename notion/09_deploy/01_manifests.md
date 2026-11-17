@@ -2,7 +2,7 @@
 다루는 곳: apps/petmint/app/, apps/runshoes/app/
 읽은 커밋: e8e24ea
 -->
-# 매니페스트의 꼴
+# 09-01 매니페스트의 꼴
 
 앱 하나는 매니페스트(쿠버네티스에 「이런 것을 이렇게 띄워라」라고 적은 YAML 파일) 여러 장으로 이루어진다. 두 앱 모두 `apps/<앱>/kustomization.yaml`이 그 목록이고, 목록의 모든 리소스에 네임스페이스와 소속 라벨을 한꺼번에 붙인다. 소속 라벨은 파드를 고르는 선택자에는 넣지 않고 리소스에만 붙인다. [code:apps/petmint/kustomization.yaml:4-28] [code:apps/runshoes/kustomization.yaml:4-23] 목록에 네임스페이스 자체와 Secret은 없다. 그 까닭은 → 「처음 배포와 시크릿」에서 다룬다.
 

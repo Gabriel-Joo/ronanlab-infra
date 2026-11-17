@@ -2,7 +2,7 @@
 다루는 곳: apps/petmint/data/nfs.yaml
 읽은 커밋: e8e24ea
 -->
-# 공유 저장소
+# 13 공유 저장소
 
 파드는 언제든 지워지고 다시 만들어진다. 파드 안에 쓴 파일은 파드와 함께 사라지므로, 남겨야 하는 데이터는 파드 바깥의 저장 공간에 둔다. 쿠버네티스에서는 이 저장 공간을 PV(PersistentVolume, 실제로 데이터가 놓이는 공간)라 하고, 파드가 「이만큼의 공간을 달라」고 내는 요청을 PVC(PersistentVolumeClaim)라 한다. [docs:history/build_log/02_metrics_storage_ingress.md:179] 이 클러스터는 저장 공간을 두 갈래로 쓴다. 하나는 노드의 로컬 디스크를 그대로 쓰는 local-path이고, 다른 하나는 호스트(VM들을 돌리는 물리 서버)의 디렉터리를 네트워크로 나눠 받는 NFS다. 이 편은 두 갈래가 어떻게 다르고 무엇이 어느 쪽을 쓰는지를 다룬다.
 

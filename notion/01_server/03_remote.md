@@ -2,7 +2,7 @@
 다루는 곳: docs/history/notion_hardware_20261116.md
 읽은 커밋: e8e24ea
 -->
-# 원격 접속
+# 01-03 원격 접속
 
 ## 모니터 없이 관리하는 서버
 

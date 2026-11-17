@@ -2,7 +2,7 @@
 다루는 곳: docs/history/notion_hardware_20261116.md
 읽은 커밋: e8e24ea
 -->
-# OS와 드라이버
+# 01-02 OS와 드라이버
 
 ## 호스트 OS
 

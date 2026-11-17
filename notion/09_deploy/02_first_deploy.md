@@ -2,7 +2,7 @@
 다루는 곳: apps/petmint/scripts/, apps/runshoes/scripts/create-secrets.sh, apps/petmint/jobs/
 읽은 커밋: e8e24ea
 -->
-# 처음 배포와 시크릿
+# 09-02 처음 배포와 시크릿
 
 이 저장소에는 Secret(비밀번호나 키를 담는 쿠버네티스 리소스)이 하나도 없다. 매니페스트에는 「이 이름의 Secret에서 이 키를 읽어라」라는 참조만 있고, 실제 값은 사람이 스크립트를 돌려 클러스터에 직접 만든다. [code:apps/petmint/kustomization.yaml:28] [code:apps/runshoes/kustomization.yaml:23] 그래서 빈 클러스터에 앱을 처음 세울 때는 ArgoCD가 매니페스트를 적용하기 전에 사람이 해 둘 일이 몇 가지 있다. 이 편은 그 순서와, 비밀값을 저장소 밖에 두는 구조를 다룬다.
 

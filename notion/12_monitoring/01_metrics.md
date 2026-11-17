@@ -2,7 +2,7 @@
 다루는 곳: apps/monitoring/prometheus/, apps/monitoring/node-exporter/, apps/monitoring/kube-state-metrics/, apps/monitoring/json-exporter/
 읽은 커밋: e8e24ea
 -->
-# 지표
+# 12-01 지표
 
 지표는 시간에 따라 바뀌는 숫자다. 노드의 CPU 사용량, 파드가 다시 시작된 횟수, 초당 요청 수, GPU 메모리 사용량 같은 것이 모두 지표다. 이 클러스터에서는 Prometheus 한 대가 지표를 모으고 저장한다. Prometheus는 지표를 내보내는 곳(수집 대상)에 정해진 간격마다 찾아가 값을 긁어 오는 방식으로 일한다. 간격은 30초다. [code:apps/monitoring/prometheus/configmap.yaml:7-10] 앱이 Prometheus에 값을 밀어 넣는 것이 아니라 Prometheus가 가져가는 것이라, 수집 대상은 지표를 읽을 수 있는 주소만 열어 두면 된다.
 

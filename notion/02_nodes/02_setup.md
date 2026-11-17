@@ -2,7 +2,7 @@
 다루는 곳: cluster/setup-node.sh
 읽은 커밋: e8e24ea
 -->
-# 노드 설치
+# 02-02 노드 설치
 
 갓 만든 VM은 평범한 Ubuntu 서버일 뿐이다. 쿠버네티스 노드가 되려면 커널 설정을 바꾸고, 컨테이너를 실제로 띄우는 런타임과 쿠버네티스 꾸러미를 깔아야 한다. 이 일을 `cluster/setup-node.sh` 한 파일이 맡는다. 노드 다섯 대가 모두 이 스크립트로 같은 상태가 됐다. [code:cluster/setup-node.sh]
 

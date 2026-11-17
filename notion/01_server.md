@@ -2,7 +2,7 @@
 다루는 곳: docs/history/notion_hardware_20261116.md
 읽은 커밋: e8e24ea
 -->
-# 서버와 호스트 OS
+# 01 서버와 호스트 OS
 
 이 홈랩의 모든 것은 물리 서버 한 대 위에 있다. 사무실에는 서버 PC가 열 대 있고, 이 프로젝트가 쓰는 것은 그 가운데 NVIDIA GeForce RTX 5070 Ti 그래픽카드가 든 한 대다. [docs:history/notion_hardware_20261116.md:9-12] 이 서버에 Ubuntu 26.04.1 LTS를 깔고, 그 위에 가상 머신 다섯 대를 띄워 쿠버네티스 클러스터를 만들었다. [docs:history/notion_hardware_20261116.md:17] 가상 머신과 클러스터는 → 「가상 머신과 노드」에서 다루고, 이 편은 그 아래 바닥, 곧 서버가 놓인 망과 호스트 OS, 드라이버, 그리고 사람이 서버에 닿는 길을 다룬다.
 

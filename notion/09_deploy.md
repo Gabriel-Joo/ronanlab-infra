@@ -2,7 +2,7 @@
 다루는 곳: apps/petmint/app/, apps/petmint/jobs/, apps/petmint/scripts/, apps/petmint/README.md, apps/runshoes/app/, apps/runshoes/scripts/, apps/runshoes/README.md, apps/runshoes/runbooks/
 읽은 커밋: e8e24ea
 -->
-# 앱이 올라가는 길
+# 09 앱이 올라가는 길
 
 클러스터에는 앱이 둘 올라가 있다. 펫퍼민트(`petmint`)와 러닝화 스펙 아카이브인 런슈즈(`runshoes`)다. [code:apps/runshoes/README.md:3] 두 앱은 같은 길로 클러스터에 들어간다. 개발자가 앱 저장소 main에 push하면 Jenkins가 이미지를 굽고 인프라 저장소의 태그 한 줄을 바꿔 커밋하고, ArgoCD가 그 커밋을 받아 클러스터에 적용한다. 클러스터에서는 앱 파드 두 개가 하나씩 차례로 새 이미지로 바뀐다. [code:apps/petmint/README.md:23-27] [code:apps/runshoes/README.md:27-31] 이 가운데 빌드와 태그 커밋까지는 → 「빌드와 태그 고정」, 커밋을 클러스터가 받아 가는 장치는 → 「GitOps」에서 다룬다. 이 편은 그 뒤, 앱 하나가 어떤 매니페스트로 서 있고 처음에 어떻게 세우며 버전이 어떻게 바뀌어 가는지를 다룬다.
 

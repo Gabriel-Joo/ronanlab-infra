@@ -2,7 +2,7 @@
 다루는 곳: platform/harbor/, apps/harbor-backup/, scripts/host-nfs-harbor-backup-setup.sh
 읽은 커밋: e8e24ea
 -->
-# 이미지 저장소
+# 07 이미지 저장소
 
 빌드 서버가 앱을 컨테이너 이미지로 만들면, 그 이미지를 어딘가에 올려 두어야 클러스터의 노드가 받아 갈 수 있다. 이 클러스터는 그 자리로 클러스터 안에 직접 세운 사설 이미지 저장소를 쓴다. 저장소 소프트웨어는 Harbor이고, Helm 차트 1.19.2로 Harbor 2.15.2를 깔았다. [code:platform/versions.yaml:44-48]
 

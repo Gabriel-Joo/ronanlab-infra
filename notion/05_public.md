@@ -2,7 +2,7 @@
 다루는 곳: apps/cloudflared/, platform/cert-manager/
 읽은 커밋: e8e24ea
 -->
-# 바깥 공개와 인증서
+# 05 바깥 공개와 인증서
 
 클러스터는 사무실 서버 위의 VM 안에 있다. 바깥 인터넷에서 이 안으로 들어오는 포트는 하나도 열지 않았다. 대신 클러스터 안에서 도는 cloudflared가 Cloudflare 쪽으로 먼저 연결을 맺고, 바깥 요청은 Cloudflare가 그 연결을 거꾸로 타고 들여보낸다. 이것을 Cloudflare 터널이라고 부른다. 터널 하나가 공개 주소 일곱 개를 모두 받고, 받은 요청은 전부 → 「들어오는 문」에서 다룬 ingress-nginx로 넘긴다. [code:apps/cloudflared/configmap.yaml:1-2] [docs:history/build_log/03_cloudflare_tunnel.md:87]
 

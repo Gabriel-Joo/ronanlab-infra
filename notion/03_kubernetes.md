@@ -2,7 +2,7 @@
 다루는 곳: platform/versions.yaml, platform/coredns/
 읽은 커밋: e8e24ea
 -->
-# 쿠버네티스 설치와 파드 망
+# 03 쿠버네티스 설치와 파드 망
 
 ## kubeadm으로 직접 세운 클러스터
 

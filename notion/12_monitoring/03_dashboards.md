@@ -2,7 +2,7 @@
 다루는 곳: apps/monitoring/grafana/
 읽은 커밋: e8e24ea
 -->
-# 대시보드
+# 12-03 대시보드
 
 대시보드는 여러 지표와 로그를 그래프와 숫자 칸으로 한 화면에 모은 것이다. 이 클러스터에서는 Grafana 한 대가 대시보드를 그린다. Grafana는 스스로 데이터를 모으지 않는다. 데이터소스(Grafana가 값을 물어보러 가는 곳)에 쿼리를 보내 받은 값을 그릴 뿐이다. Grafana도 다른 모니터링 구성처럼 w4에 뜬다. [code:apps/monitoring/grafana/deployment.yaml:17-18]
 

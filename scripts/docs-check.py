@@ -132,7 +132,8 @@ def main() -> int:
     for p in manus:
         for line in p.read_text(encoding="utf-8").splitlines():
             if line.startswith("# "):
-                titles[line[2:].strip()] = p
+                # H1 앞 번호(「00 」, 「02-01 」)는 노션 제목용이다. 참조는 번호 없이 쓴다(2026-11-17)
+                titles[re.sub(r"^\d{2}(-\d{2})? ", "", line[2:].strip())] = p
                 break
 
     covered: set[str] = set()
