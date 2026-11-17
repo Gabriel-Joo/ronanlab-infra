@@ -11,6 +11,9 @@
   4. 범위: 읽은 커밋의 추적 파일(docs/, notion/, portfolio/ 밖) 하나하나가 notion/ 어느 편의 다루는 곳에 든다
   5. 편 사이 참조: → 「제목」의 제목이 notion/ 어느 편의 첫 # 줄과 같다
   6. 원고 금지어(notion/만): IP 주소, 도메인, 홈 경로, 토큰 꼴 문자열, 포트 번호
+  7. 포트폴리오(portfolio/*.md, 2026-11-17): 1~3과 같은 머리 주석, 근거 점검. 읽은 커밋은 포트폴리오 편끼리 하나다
+     (기술문서와는 따로). 금지어는 6과 같되 도메인은 ronanlab.dev만 된다. 그림 ![…](img/…)은 파일이 있어야 한다.
+     → 「제목」은 포트폴리오 편의 첫 # 줄을 본다
 
 근거 표시 문법은 FOREMAN 게시기(bridge/evidence.py)와 같다. 게시기가 노션 판에서 머리 주석과 근거 표시를 뗀다.
 틀린 것이 하나라도 있으면 1로 끝난다.
@@ -100,6 +103,9 @@ def main() -> int:
     warns: list[str] = []
     if not manus:
         errors.append("notion/ 원고가 없다")
+    folio = sorted((ROOT / "portfolio").glob("[0-9][0-9]_*.md"))
+    folio_errors: list[str] = []
+    folio_marks = check_portfolio(folio, folio_errors) if folio else 0
 
     reads: dict[str, str] = {}
     heads: dict[Path, dict[str, list[str]]] = {}
@@ -174,7 +180,69 @@ def main() -> int:
 
     print(f"읽은 커밋 {read}, 편 {len(targets)}(원고 {len(manus)}, 개발자 {len(devs)}), 근거 표시 {marks_total}, "
           f"범위 대상 파일 {len(outside)} 중 {len([f for f in outside if f in covered])} 덮음")
-    return report(errors, warns if a.verbose else [], len(targets), len(warns))
+    if folio:
+        print(f"포트폴리오 편 {len(folio)}, 근거 표시 {folio_marks}")
+    return report(errors + folio_errors, warns if a.verbose else [], len(targets), len(warns))
+
+
+def check_portfolio(folio: list[Path], errors: list[str]) -> int:
+    """포트폴리오 편 — 읽은 커밋은 포트폴리오끼리 하나, 금지어에서 ronanlab.dev는 뺀다, 그림 파일이 있어야 한다."""
+    heads = {p: head(p.read_text(encoding="utf-8")) for p in folio}
+    reads = set()
+    for p, h in heads.items():
+        if "다루는 곳" not in h or "읽은 커밋" not in h:
+            errors.append(f"{p.relative_to(ROOT).as_posix()}: 머리 주석에 다루는 곳 또는 읽은 커밋이 없다")
+            continue
+        reads.add(h["읽은 커밋"][0])
+    if len(reads) != 1:
+        errors.append(f"포트폴리오 읽은 커밋이 하나가 아니다: {sorted(reads)}")
+        return 0
+    read = reads.pop()
+    if subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", f"{read}^{{commit}}"], capture_output=True).returncode:
+        errors.append(f"포트폴리오 읽은 커밋 {read}이 저장소에 없다")
+        return 0
+    tracked = git("ls-tree", "-r", "--name-only", read).split()
+    tracked_set = set(tracked)
+    cache: dict[str, int] = {}
+
+    def n_lines(path: str) -> int:
+        if path not in cache:
+            cache[path] = len(git("show", f"{read}:{path}").splitlines())
+        return cache[path]
+
+    titles = set()
+    for p in folio:
+        for line in p.read_text(encoding="utf-8").splitlines():
+            if line.startswith("# "):
+                titles.add(line[2:].strip())
+                break
+    img = re.compile(r"!\[[^\]]*\]\((?P<src>[^)\s]+)\)")
+    marks = 0
+    for p in folio:
+        rel = p.relative_to(ROOT).as_posix()
+        for pat in heads[p].get("다루는 곳", []):
+            if not matches(pat, tracked):
+                errors.append(f"{rel}: 다루는 곳 「{pat}」이 읽은 커밋에 없다")
+        for i, line, fenced in body_lines(p.read_text(encoding="utf-8")):
+            for m in MARK.finditer(line):
+                marks += 1
+                why = check_mark(m["k"], m["v"], tracked_set, n_lines, read)
+                if why:
+                    errors.append(f"{rel}:{i}: {m.group(0)} {why}")
+            for x in XREF.finditer(line):
+                if x["t"] not in titles:
+                    errors.append(f"{rel}:{i}: → 「{x['t']}」 제목을 가진 포트폴리오 편이 없다")
+            for g in img.finditer(line):
+                if not re.match(r"https?://", g["src"]) and not (p.parent / g["src"]).is_file():
+                    errors.append(f"{rel}:{i}: 그림 파일이 없다 {g['src']}")
+            plain = img.sub("", EVIDENCE.sub("", line))
+            for name, rx in BANNED:
+                for hit in rx.finditer(plain):
+                    if name == "도메인" and hit.group(0).lower().endswith("ronanlab.dev"):
+                        continue
+                    errors.append(f"{rel}:{i}: 원고 금지어({name}) 「{hit.group(0)}」")
+                    break
+    return marks
 
 
 def check_mark(k: str, v: str, tracked: set[str], n_lines, read: str) -> str | None:
