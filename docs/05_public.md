@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/cloudflared/, platform/cert-manager/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 바깥 공개와 인증서
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/metallb/, platform/ingress-nginx/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 04 들어오는 문
 

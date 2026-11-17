@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/data/nfs.yaml
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 공유 저장소
 
@@ -82,7 +82,7 @@ kubectl -n petmint rollout restart deploy/petmint-app
 kubectl -n petmint rollout status  deploy/petmint-app
 ```
 
-`apps/petmint/data/nfs.yaml`을 고치면 push 뒤 petmint 자동 Sync로 들어간다. [docs:history/cluster_state_20261116.md:58] PV의 `spec.nfs`처럼 바꿀 수 없는 필드를 고치면 Sync가 실패한다. 그때 PV를 지우고 다시 만드는 일은 사람 승인이 필요하다. [code:CLAUDE.md:38]
+`apps/petmint/data/nfs.yaml`을 고치면 push 뒤 petmint 자동 Sync로 들어간다. [docs:history/cluster_state_20261116.md:58] PV의 `spec.nfs`처럼 바꿀 수 없는 필드를 고치면 Sync가 실패한다. 그때 PV를 지우고 다시 만드는 일은 사람 승인이 필요하다. [code:CLAUDE.md:39]
 
 local-path-provisioner를 다시 깐다. [code:platform/versions.yaml:23-26]
 

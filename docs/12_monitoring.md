@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 모니터링
 
@@ -48,7 +48,7 @@ ingress-nginx와 runshoes 주석의 근거: [code:platform/ingress-nginx/overlay
 - 라벨: `namespace`, `pod`, `container`, `node` 넷 [code:apps/monitoring/alloy/alloy.yaml:61-76]
 - 버리는 것: jenkins 네임스페이스에서 `jenkins-0`이 아닌 파드(빌드 Pod), runshoes `chatbot` 컨테이너의 `.*질문: .*` 줄(대화 원문) [code:apps/monitoring/alloy/alloy.yaml:49-60] [code:apps/monitoring/alloy/alloy.yaml:96-102]
 - Loki: `auth_enabled: false`, tsdb v13 파일시스템, `retention_period: 168h`, 수신 4MB/s(버스트 8MB), compactor가 지운다 [code:apps/monitoring/loki/loki.yaml:10-43]
-- Loki에는 서버 로그만 넣는다. 대화 기록은 넣지 않는다 [code:CLAUDE.md:49]
+- Loki에는 서버 로그만 넣는다. 대화 기록은 넣지 않는다 [code:CLAUDE.md:50]
 
 Grafana:
 

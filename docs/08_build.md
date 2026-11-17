@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/jenkins/, scripts/make-deploy-keys.sh, apps/*/kustomization.yaml
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 빌드와 태그 고정
 
@@ -51,7 +51,7 @@ Jenkins가 앱 이미지를 굽고 Harbor에 올린 뒤 이 저장소의 `newTag
 ### 태그 커밋
 
 - Jenkinsfile이 빌드 뒤 이 저장소를 `sh 'git clone'`으로 받아 `newTag` 줄을 sed로 바꾸고, grep으로 다시 센 뒤 main에 push한다 [docs:history/build_log/07_project_deploy.md:212-228]
-- 커밋 제목은 `<앱>: 이미지 태그 <해시>` 꼴이다. 기계가 쓰는 커밋이라 이 저장소의 커밋 메시지 규칙을 따르지 않는다 [code:CLAUDE.md:88]
+- 커밋 제목은 `<앱>: 이미지 태그 <해시>` 꼴이다. 기계가 쓰는 커밋이라 이 저장소의 커밋 메시지 규칙을 따르지 않는다 [code:CLAUDE.md:89]
 - 바뀐 파일이 모두 문서뿐인 push는 SUCCESS로 끝내고 이미지와 태그 커밋을 건너뛴다 [docs:history/build_log/06_jenkins.md:487]
 
 ### 이미지 판 고정
@@ -121,7 +121,7 @@ helm repo add jenkins https://charts.jenkins.io && helm repo update
 helm install jenkins jenkins/jenkins --version 5.9.68 -n jenkins -f platform/jenkins/values.yaml
 ```
 
-명령 출처: [docs:history/build_log/06_jenkins.md:105-110]. values를 고친 뒤에는 같은 차트 판과 `-f platform/jenkins/values.yaml`로 `helm upgrade`한다. `--reuse-values`는 앞의 값을 덮을 수 있어 쓰지 않는다 [code:CLAUDE.md:102]
+명령 출처: [docs:history/build_log/06_jenkins.md:105-110]. values를 고친 뒤에는 같은 차트 판과 `-f platform/jenkins/values.yaml`로 `helm upgrade`한다. `--reuse-values`는 앞의 값을 덮을 수 있어 쓰지 않는다 [code:CLAUDE.md:103]
 
 - 플러그인 판을 올릴 때: 올릴 플러그인과 그 의존을 목록에서 같이 고치고 `helm upgrade` [code:platform/jenkins/values.yaml:174]
 - Job을 더한 `helm upgrade` 뒤 Job이 안 보이면 관리 → Configuration as Code → Reload 한 번 [code:platform/jenkins/values.yaml:128-130]

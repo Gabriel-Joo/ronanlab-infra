@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/versions.yaml, platform/coredns/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 03 쿠버네티스 설치와 파드 망
 

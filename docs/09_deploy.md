@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/app/, apps/petmint/jobs/, apps/petmint/scripts/, apps/petmint/README.md, apps/runshoes/app/, apps/runshoes/scripts/, apps/runshoes/README.md, apps/runshoes/runbooks/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 앱이 올라가는 길
 

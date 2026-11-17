@@ -1,6 +1,6 @@
 <!--
 다루는 곳: scripts/host-gpu-exporter.sh
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 11 GPU와 호스트 서비스
 

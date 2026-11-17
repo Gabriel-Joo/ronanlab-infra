@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/loki/, apps/monitoring/alloy/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 12-02 로그
 

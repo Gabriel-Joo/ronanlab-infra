@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/runshoes/runbooks/, apps/runshoes/scripts/check-image-migrations.sh
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 09-03 버전이 바뀌는 길
 

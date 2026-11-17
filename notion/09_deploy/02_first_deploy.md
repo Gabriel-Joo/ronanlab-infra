@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/scripts/, apps/runshoes/scripts/create-secrets.sh, apps/petmint/jobs/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 09-02 처음 배포와 시크릿
 

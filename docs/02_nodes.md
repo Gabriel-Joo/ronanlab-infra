@@ -1,6 +1,6 @@
 <!--
 다루는 곳: cluster/
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 가상 머신과 노드
 
@@ -119,7 +119,7 @@ echo "$J" | vagrant ssh w5-k8s -c 'read -r C; sudo $C'; unset J
 
 - 새 IP는 `default` 망의 DHCP 범위와 MetalLB 풀(192.168.122.240-250) 밖에서 고른다. DHCP 범위는 `docs/04_ingress.md` [docs:history/cluster_state_20261116.md:32]
 - 노드를 새로 만들거나 다시 join하면 역할 라벨이 없다. `bash cluster/label-nodes.sh`를 m-k8s에서 다시 돌린다 [code:cluster/label-nodes.sh:3-4]
-- 노드 정비(cordon, 앱 Pod 먼저 drain, halt, up, uncordon) 순서는 옛 기록 `docs/history/build_log/08_scale_out.md` 1-5절에 있다. VM 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함)는 사람 승인이 필요하다 [docs:history/build_log/08_scale_out.md:81-96] [code:CLAUDE.md:36-40]
+- 노드 정비(cordon, 앱 Pod 먼저 drain, halt, up, uncordon) 순서는 옛 기록 `docs/history/build_log/08_scale_out.md` 1-5절에 있다. VM 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함)는 사람 승인이 필요하다 [docs:history/build_log/08_scale_out.md:81-96] [code:CLAUDE.md:37-41]
 
 ## 확인
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/mysql/, apps/runshoes/mysql/, apps/petmint/backup/, scripts/mysql-replica-seed.sh, scripts/mysql-replica-check.sh
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 데이터베이스 복제와 백업
 
@@ -108,7 +108,7 @@ bash scripts/mysql-replica-seed.sh runshoes runshoes-mysql-0 runshoes-mysql-0.ru
 kubectl -n petmint create job --from=cronjob/mysql-backup mysql-backup-manual-$(date +%s)
 ```
 
-다음은 사람 승인이 있어야 한다. 운영 DB `DROP`과 데이터 지우기, PVC와 PV 삭제, 네임스페이스 삭제. [code:CLAUDE.md:35-38] PVC를 지우면 local-path reclaimPolicy Delete라 노드의 데이터 디렉터리도 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8]
+다음은 사람 승인이 있어야 한다. 운영 DB `DROP`과 데이터 지우기, PVC와 PV 삭제, 네임스페이스 삭제. [code:CLAUDE.md:36-39] PVC를 지우면 local-path reclaimPolicy Delete라 노드의 데이터 디렉터리도 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8]
 
 ## 확인
 

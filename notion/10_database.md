@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/mysql/, apps/runshoes/mysql/, apps/petmint/backup/, scripts/mysql-replica-seed.sh, scripts/mysql-replica-check.sh
-읽은 커밋: 6290346
+읽은 커밋: 736d833
 -->
 # 10 데이터베이스 복제와 백업
 
@@ -68,7 +68,7 @@ Primary가 있는 w1이 오래 돌아오지 않으면 사람이 사본을 Primar
 
 ## 지우는 일은 사람이 정한다
 
-StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해 두었다. [code:apps/petmint/mysql/statefulset.yaml:3] [code:apps/petmint/mysql/statefulset.yaml:18-20] 하지만 기본 저장소의 규칙상 PVC를 지우면 노드 디스크의 데이터도 함께 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8] 그래서 운영 데이터베이스의 데이터를 지우는 일, PVC와 PV를 지우는 일, 네임스페이스를 지우는 일은 사람의 승인 없이 하지 않는다. 이 저장소에서 일하는 세션도 같은 규칙을 따른다. [code:CLAUDE.md:35-38]
+StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해 두었다. [code:apps/petmint/mysql/statefulset.yaml:3] [code:apps/petmint/mysql/statefulset.yaml:18-20] 하지만 기본 저장소의 규칙상 PVC를 지우면 노드 디스크의 데이터도 함께 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8] 그래서 운영 데이터베이스의 데이터를 지우는 일, PVC와 PV를 지우는 일, 네임스페이스를 지우는 일은 사람의 승인 없이 하지 않는다. 이 저장소에서 일하는 세션도 같은 규칙을 따른다. [code:CLAUDE.md:36-39]
 
 ## 알려진 한계
 

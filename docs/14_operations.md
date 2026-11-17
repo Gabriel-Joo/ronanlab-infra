@@ -1,6 +1,6 @@
 <!--
-다루는 곳: CLAUDE.md, .foreman/notion.toml, .gitignore, scripts/docs-check.py
-읽은 커밋: 6290346
+다루는 곳: CLAUDE.md, .foreman/notion.toml, .gitignore, scripts/docs-check.py, scripts/docs_for_code.py
+읽은 커밋: 736d833
 -->
 # 운영 규칙과 문서 게시
 
@@ -19,25 +19,25 @@
 
 ### 역할과 일 나누기
 
-- 관리자: 원본 폴더 `~/ronanlab-infra`에서 도는 manager 세션 하나. 합치기와 push를 한다 [code:CLAUDE.md:98-100]
-- 파일만 고치는 일(문서, 매니페스트 초안): worktree에서 커밋까지만 [code:CLAUDE.md:100]
-- 클러스터를 만지는 일(kubectl, helm, vagrant, Sync): 원본 폴더 `main`에서 한 번에 한 세션만 [code:CLAUDE.md:23] [code:CLAUDE.md:101-102]
+- 관리자: 원본 폴더 `~/ronanlab-infra`에서 도는 manager 세션 하나. 합치기와 push를 한다 [code:CLAUDE.md:99-101]
+- 파일만 고치는 일(문서, 매니페스트 초안): worktree에서 커밋까지만 [code:CLAUDE.md:101]
+- 클러스터를 만지는 일(kubectl, helm, vagrant, Sync): 원본 폴더 `main`에서 한 번에 한 세션만 [code:CLAUDE.md:23] [code:CLAUDE.md:102-103]
 - push는 관리자만 한다. 자동 Sync 앱은 push가 곧 배포다 [code:CLAUDE.md:26]
-- 다른 저장소(foreman, runshoes, petmint-rag-chatbot)는 읽기만 한다 [code:CLAUDE.md:94]
+- 다른 저장소(foreman, runshoes, petmint-rag-chatbot)는 읽기만 한다 [code:CLAUDE.md:95]
 
 ### 사람 승인이 필요한 것
 
-- 운영 DB `DROP`, 데이터 지우기, PVC, PV, 네임스페이스 삭제, `vagrant destroy` [code:CLAUDE.md:39]
-- 서버, VM 재부팅과 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함) [code:CLAUDE.md:40]
-- `sudo`가 필요한 호스트 명령(예: `scripts/host-*.sh`) [code:CLAUDE.md:41]
-- Cloudflare 터널 DNS와 Access 바꾸기 [code:CLAUDE.md:42]
+- 운영 DB `DROP`, 데이터 지우기, PVC, PV, 네임스페이스 삭제, `vagrant destroy` [code:CLAUDE.md:40]
+- 서버, VM 재부팅과 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함) [code:CLAUDE.md:41]
+- `sudo`가 필요한 호스트 명령(예: `scripts/host-*.sh`) [code:CLAUDE.md:42]
+- Cloudflare 터널 DNS와 Access 바꾸기 [code:CLAUDE.md:43]
 - 호스트 Ollama의 `OLLAMA_KEEP_ALIVE`는 바꾸지 않는다 [code:CLAUDE.md:34]
 
 ### 비밀값
 
-- 저장소에 Secret이 없다. 각 `apps/<앱>/scripts/create-secrets.sh` 또는 README 「처음 한 번」의 `kubectl create secret`으로 사람이 만든다 [code:README.md:14] [code:CLAUDE.md:46]
-- 비밀값 파일은 Edit, Write로 고치지 않고 값은 `/usr/bin/grep -cF`로 개수만 센다 [code:CLAUDE.md:47-48]
-- Loki에는 서버 로그만 넣는다. 대화 원문은 `apps/monitoring/alloy/alloy.yaml`이 버린다 [code:CLAUDE.md:49]
+- 저장소에 Secret이 없다. 각 `apps/<앱>/scripts/create-secrets.sh` 또는 README 「처음 한 번」의 `kubectl create secret`으로 사람이 만든다 [code:README.md:14] [code:CLAUDE.md:47]
+- 비밀값 파일은 Edit, Write로 고치지 않고 값은 `/usr/bin/grep -cF`로 개수만 센다 [code:CLAUDE.md:48-49]
+- Loki에는 서버 로그만 넣는다. 대화 원문은 `apps/monitoring/alloy/alloy.yaml`이 버린다 [code:CLAUDE.md:50]
 - `.gitignore`가 막는 꼴 [code:.gitignore:1-6]
 
 | 꼴 | 뜻 |
@@ -49,10 +49,10 @@
 
 ### 커밋 메시지
 
-- 꼴 `타입: 설명`. 타입은 feat, fix, docs, refactor, perf, test, ops, build, ci, chore, revert. 이 저장소는 주로 ops [code:CLAUDE.md:60-74]
-- 설명은 한글, 한 줄 50자 안, 마침표 없음. 본문에는 까닭 [code:CLAUDE.md:76-81]
-- em dash와 가운뎃점 금지, 줄임말과 번호 코드는 풀어 쓴다 [code:CLAUDE.md:83-86]
-- scope는 쓰지 않는다. Jenkins 태그 커밋은 이 꼴 밖이다 [code:CLAUDE.md:88]
+- 꼴 `타입: 설명`. 타입은 feat, fix, docs, refactor, perf, test, ops, build, ci, chore, revert. 이 저장소는 주로 ops [code:CLAUDE.md:61-75]
+- 설명은 한글, 한 줄 50자 안, 마침표 없음. 본문에는 까닭 [code:CLAUDE.md:77-82]
+- em dash와 가운뎃점 금지, 줄임말과 번호 코드는 풀어 쓴다 [code:CLAUDE.md:84-87]
+- scope는 쓰지 않는다. Jenkins 태그 커밋은 이 꼴 밖이다 [code:CLAUDE.md:89]
 
 ### 문서 두 벌
 
@@ -65,14 +65,23 @@
 - 개발자 문서는 노션에 올리지 않는다 [code:.foreman/notion.toml:14]
 - 모든 편 맨 위에 「다루는 곳」과 「읽은 커밋」 머리 주석 [docs:style_guide.md:45-57]
 - 근거 표시는 세 종류(code 뒤에 저장소 경로와 줄, docs 뒤에 docs 아래 경로와 줄, c 뒤에 커밋)를 대괄호로 단다. 줄 번호는 읽은 커밋 기준 [docs:style_guide.md:59-67]
-- 원고 금지어: IP 주소, 도메인, 홈 경로, 토큰 꼴, 포트 번호 [docs:style_guide.md:87] [code:scripts/docs-check.py:37-43]
+- 원고 금지어: IP 주소, 도메인, 홈 경로, 토큰 꼴, 포트 번호 [docs:style_guide.md:87] [code:scripts/docs-check.py:40-46]
 
 ### 점검 스크립트 `scripts/docs-check.py`
 
-- 보는 것: 머리 주석, 다루는 곳이 읽은 커밋에 있는지, 근거의 파일과 줄 범위, 범위(읽은 커밋의 추적 파일 중 `docs/`, `notion/`, `portfolio/` 밖이 모두 원고 어느 편의 다루는 곳에 드는지), 다른 편 제목 참조(화살표와 낫표), 원고 금지어 [code:scripts/docs-check.py:7-14] [code:scripts/docs-check.py:35]
-- 틀린 것이 하나라도 있으면 종료 코드 1 [code:scripts/docs-check.py:16] [code:scripts/docs-check.py:203-210]
-- `-v`는 숫자나 인용이 있는데 근거 표시가 없는 줄을 「의심」으로 더 보인다 [code:scripts/docs-check.py:5] [code:scripts/docs-check.py:167-168]
-- 근거 문법은 FOREMAN 게시기(`bridge/evidence.py`)와 같다 [code:scripts/docs-check.py:15]
+- 보는 것: 머리 주석, 다루는 곳이 읽은 커밋에 있는지, 근거의 파일과 줄 범위, 범위(읽은 커밋의 추적 파일 중 `docs/`, `notion/`, `portfolio/` 밖이 모두 원고 어느 편의 다루는 곳에 드는지), 다른 편 제목 참조(화살표와 낫표), 원고 금지어 [code:scripts/docs-check.py:7-17] [code:scripts/docs-check.py:38]
+- 틀린 것이 하나라도 있으면 종료 코드 1 [code:scripts/docs-check.py:19] [code:scripts/docs-check.py:271-278]
+- `-v`는 숫자나 인용이 있는데 근거 표시가 없는 줄을 「의심」으로 더 보인다 [code:scripts/docs-check.py:5] [code:scripts/docs-check.py:173-174]
+- 근거 문법은 FOREMAN 게시기(`bridge/evidence.py`)와 같다 [code:scripts/docs-check.py:18]
+- 포트폴리오(`portfolio/*.md`)도 본다. 읽은 커밋은 포트폴리오 편끼리 하나(기술문서와 따로), 도메인은 ronanlab.dev만, 그림 `img/…` 파일이 있어야 한다 [code:scripts/docs-check.py:14-16]
+
+### 거꾸로 찾는 도구 `scripts/docs_for_code.py`
+
+- 코드를 고치는 세션은 그 코드를 가리키는 문서도 같은 브랜치에서 고친다. 고칠 수 없으면 무엇이 걸리는지 보고한다 [code:CLAUDE.md:35]
+- 코드 파일(경로, 폴더 `…/`, `경로:줄-줄`)이나 `--range A..B`를 주면 그 코드를 가리키는 docs, notion, portfolio 문서와 줄, 문단을 보인다. 범위를 주면 고침과 안 고침까지 [code:scripts/docs_for_code.py:4-10] [code:scripts/docs_for_code.py:38-39]
+- `docs/history/`는 문서로도 코드로도 보지 않는다. `docs/NN_*.md`가 바뀌면 같은 번호 `notion/NN*`도 걸린다(번호 짝) [code:scripts/docs_for_code.py:15-26]
+- 근거 표시에 줄 범위가 있으면 바뀐 줄과 겹칠 때만 걸린다 [code:scripts/docs_for_code.py:35-36]
+- 읽기만 한다. git은 읽기 명령만 부른다 [code:scripts/docs_for_code.py:12]
 
 ### 노션 게시
 
@@ -93,8 +102,8 @@
 | `.foreman/notion.toml:21` | `headings = "md"` | 값만 확인했다 [code:.foreman/notion.toml:21] |
 | `.foreman/notion.toml:22` | `title = "h1"` | 페이지 제목은 원고의 첫 `# ` 줄 [code:.foreman/notion.toml:22] |
 | `.foreman/notion.toml:23` | `header = "footer"` | 맨 아래 갱신 줄에 읽은 커밋을 적는다 [code:.foreman/notion.toml:23] |
-| `scripts/docs-check.py:37-43` | `BANNED` | 원고 금지어 정규식 [code:scripts/docs-check.py:37-43] |
-| `scripts/docs-check.py:35` | `OUTSIDE` | 범위 점검에서 빼는 폴더 [code:scripts/docs-check.py:35] |
+| `scripts/docs-check.py:37-43` | `BANNED` | 원고 금지어 정규식 [code:scripts/docs-check.py:40-46] |
+| `scripts/docs-check.py:35` | `OUTSIDE` | 범위 점검에서 빼는 폴더 [code:scripts/docs-check.py:38] |
 | `.gitignore:1-6` | 자격증명 꼴 | 위 「비밀값」 표 [code:.gitignore:1-6] |
 
 `skip`과 `order`는 지금 파일에 없다 [code:.foreman/notion.toml:16-23]
@@ -117,10 +126,12 @@ cd ~/k8s-cluster && vagrant ssh m-k8s -c "kubectl -n argocd patch app <앱> --ty
 ```
 python3 scripts/docs-check.py        # 틀린 것 0, 종료 코드 0
 python3 scripts/docs-check.py -v     # 의심 줄까지
+python3 scripts/docs_for_code.py --range main...HEAD --unfixed   # 이 브랜치가 바꾼 코드로 걸리는데 안 고친 문서
+python3 scripts/docs_for_code.py --self-test                     # 자기 점검 통과 N/N
 git status                           # 자기 파일만 바뀌었는지
 ```
 
-- 점검 명령과 기대: [docs:style_guide.md:6] [code:scripts/docs-check.py:4-5]
+- 점검 명령과 기대: [docs:style_guide.md:6] [code:scripts/docs-check.py:4-5] [docs:style_guide.md:142-143] [code:scripts/docs_for_code.py:10]
 
 ## 알려진 한계
 
