@@ -10,7 +10,7 @@
 
 바깥 사용자가 공개 주소를 열면 요청은 먼저 Cloudflare 엣지(Cloudflare가 세계 곳곳에 둔 서버)에 닿는다. 엣지는 그 주소가 어느 터널에 묶여 있는지 보고, 터널을 따라 클러스터 안의 cloudflared에게 요청을 넘긴다. cloudflared는 받은 요청을 ingress-nginx의 클러스터 내부 주소로 보내고, ingress-nginx가 호스트 이름을 보고 알맞은 앱으로 넘긴다. [code:apps/cloudflared/configmap.yaml:1-2] [code:apps/cloudflared/configmap.yaml:13-17]
 
-터널은 방향이 거꾸로다. 서버 쪽 cloudflared가 Cloudflare로 나가는 연결을 먼저 맺어 두고, 바깥 요청은 그 연결을 거꾸로 타고 들어온다. 공유기에 구멍을 뚫어 바깥 요청을 서버로 넘기는 흔한 방식(포트포워딩)은 회선 주소가 바뀌면 끊기고, 열어 둔 구멍으로 누구나 들어오려 할 수 있다. 터널은 서비스용으로 들어오는 포트를 하나도 열지 않아 이 문제가 없다. [docs:history/build_log/03_cloudflare_tunnel.md:79-89] 이 사무실의 공유기 포트포워딩은 관리용 SSH 하나에만 쓰고, 웹 서비스에는 쓰지 않는다. [docs:history/notion_hardware_20261116.md:10]
+터널은 방향이 거꾸로다. 서버 쪽 cloudflared가 Cloudflare로 나가는 연결을 먼저 맺어 두고, 바깥 요청은 그 연결을 거꾸로 타고 들어온다. 공유기에 구멍을 뚫어 바깥 요청을 서버로 넘기는 흔한 방식(포트포워딩)은 회선 주소가 바뀌면 끊기고, 열어 둔 구멍으로 누구나 들어오려 할 수 있다. 터널은 서비스용으로 들어오는 포트를 하나도 열지 않아 이 문제가 없다. [docs:history/build_log/03_cloudflare_tunnel.md:79-89] 이 사무실의 공유기 포트포워딩은 관리용 SSH 하나에만 쓰고, 웹 서비스에는 쓰지 않는다. [docs:history/notion_hardware_20261116.md:11]
 
 cloudflared는 서버 호스트의 프로세스가 아니라 클러스터 안의 파드로 띄웠다. 파드로 두면 죽었을 때 쿠버네티스가 다시 띄우고, 두 벌로 늘리는 것도 설정 한 줄이며, 설정이 저장소에 남는다. 지금 cloudflared는 cloudflared 네임스페이스에 두 벌이 떠 있고 둘 다 같은 터널에 붙는다. 하나가 죽어도 다른 하나가 받는다. [docs:history/build_log/03_cloudflare_tunnel.md:129-139] [code:apps/cloudflared/deployment.yaml:1] [code:apps/cloudflared/deployment.yaml:13]
 
