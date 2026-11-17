@@ -61,7 +61,7 @@ petmint와 runshoes 두 앱의 매니페스트, 처음 세우는 순서와 Secre
 | `apps/petmint/app/deployment.yaml:96-99` | preStop `sleep 5` | Ingress가 엔드포인트를 뺄 시간 [code:apps/petmint/app/deployment.yaml:96-99] |
 | `apps/runshoes/app/deployment.yaml:121-130` | `/readyz`, `/livez` on http | 이미지와 묶인 경로. 옛 이미지로 되돌리면 경로도 [code:apps/runshoes/app/deployment.yaml:117-130] |
 | `apps/runshoes/app/deployment.yaml:61-73` | initContainer `wait-mysql` 2초 × 90 | MySQL 3306이 열릴 때까지 [code:apps/runshoes/app/deployment.yaml:57-73] |
-| `apps/runshoes/app/deployment.yaml:106-107` | `ACTIVITY_CLEANUP_CRON: "-"` | Pod 둘의 정리 경합을 피해 끔. ShedLock 뒤 뺀다 [code:apps/runshoes/app/deployment.yaml:103-107] |
+| (없음) | `ACTIVITY_CLEANUP_CRON` | 2026-11-17 뺐다. 앱 606b73052c41부터 정리 job이 MySQL GET_LOCK으로 한 Pod만 돌아 앱 기본값(매일 04:00 서울)으로 켠다 [c:d8997bb] |
 | `apps/runshoes/app/deployment.yaml:111-113` | `envFrom secretRef runshoes-auth`(optional 아님) | Secret이 없으면 새 Pod `CreateContainerConfigError` [code:apps/runshoes/app/deployment.yaml:108-113] |
 | `apps/petmint/app/ingress.yaml:12-15` | ssl-redirect false, proxy read/send 3600, buffering off | 터널 https, WebSocket 1시간 [code:apps/petmint/app/ingress.yaml:1-15] |
 | `apps/petmint/app/configmap.yaml:38-53` | 검색과 답 플래그 | 되돌리기는 이 줄을 지우고 Sync 뒤 rollout restart [code:apps/petmint/app/configmap.yaml:38-39] |
@@ -179,6 +179,5 @@ curl -sI https://petmint.ronanlab.dev | head -1; curl -sI https://runshoes.ronan
 - runshoes 스키마 변경은 자동 Sync 끄기를 사람이 잊으면 덤프 없이 들어갈 수 있다 [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
 - 자동 Sync를 끈 시각은 ArgoCD에 남지 않는다 [code:apps/runshoes/runbooks/v21-grafana-compare-views.md:167]
 - `check-image-migrations.sh`는 w2에서 pull robot 비밀번호가 ctr 인자로 잠깐 보인다 [code:apps/runshoes/scripts/check-image-migrations.sh:11]
-- `ACTIVITY_CLEANUP_CRON`을 꺼 activity_logs가 쌓인다 [code:apps/runshoes/app/deployment.yaml:105]
 - runshoes MySQL에 정기 백업이 없다 [code:apps/runshoes/README.md:54]
 - 옛 런북의 값은 그때 기준이다. `auth-v3.md`, `catalog-v4-v5.md`, `v11-admin-history.md`의 `maxUnavailable 0`, `auth-v3.md` 5.2의 replicas 1, `catalog-v4-v5.md` 1.1의 `platform/argocd/applications/runshoes.yaml`은 지금과 다르다(지금은 maxUnavailable 1, replicas 2, `apps/runshoes/app.yaml`) [code:apps/runshoes/runbooks/auth-v3.md:122] [code:apps/runshoes/runbooks/v11-admin-history.md:91] [code:apps/runshoes/runbooks/auth-v3.md:151] [code:apps/runshoes/runbooks/catalog-v4-v5.md:55] [code:apps/runshoes/app/deployment.yaml:22-28]
