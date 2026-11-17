@@ -1,0 +1,20 @@
+# 문서 규칙(FOREMAN 문서 도구가 읽는다, tools/docs.py). 없는 칸은 FOREMAN 기본값
+records = ["docs/history/"]     # 기록 폴더. 문서도 아니고 걸게 하지도 않는다
+pair_numbers = true             # docs/NN_*.md가 바뀌면 같은 번호 원고 notion/NN_*도 건다
+allowed_domains = ["ronanlab.dev"]
+
+[sets]
+notion = "notion/"
+
+[check]
+sets = ["notion", "portfolio", "docs"]
+numbered_only = ["docs", "portfolio"]
+head_at = "top"
+fenced = true
+kinds = ["c", "docs", "code"]
+xref = { docs = "notion" }
+files_at = "read"
+claim = '\d|“|”'
+claim_min = 0
+banned = ["notion", "portfolio"]
+cover_by = ["notion"]
