@@ -1,8 +1,10 @@
 # ronanlab-infra docs
 
-인프라 문서는 두 벌이다. `docs/00_overview.md` ~ `14_operations.md`는 운영하는 사람이 보는 개발자 문서이고, 저장소 맨 위 `notion/`은 비개발자도 읽는 노션 기술문서 원고다. 두 벌은 같은 번호와 같은 편 나눔을 쓴다. 코드와 지금 상태가 원칙이고 문서가 그것을 따른다. 쓰는 법과 점검은 [style_guide.md](style_guide.md), `python3 scripts/docs-check.py`(2026-11-16 새로 씀).
+인프라 문서는 두 벌이다. `docs/00_overview.md` ~ `14_operations.md`는 운영하는 사람이 보는 개발자 문서이고, 저장소 맨 위 `notion/`은 비개발자도 읽는 노션 기술문서 원고다. 두 벌은 같은 번호와 같은 편 나눔을 쓴다. 코드와 지금 상태가 원칙이고 문서가 그것을 따른다. 쓰는 법과 점검은 [style_guide.md](style_guide.md), `python3 scripts/docs-check.py`(2026-11-16 새로 씀). 같은 스크립트가 포트폴리오 `portfolio/` 열두 편도 점검한다. 포트폴리오는 기술문서와 따로 자기 편끼리 읽은 커밋 하나를 쓰고, 도메인은 ronanlab.dev만 된다(2026-11-17).
 
 노션에는 `notion/` 원고만 올라간다(`.foreman/notion.toml`의 `src`). 게시기가 머리 주석, 근거 표시, 저장소 링크를 떼고 맨 아래 갱신 줄에 읽은 커밋을 적는다.
+
+- 코드를 고치면 그 코드를 가리키는 문서도 같은 브랜치에서 고친다. 걸리는 문서는 `python3 scripts/docs_for_code.py <코드 경로>` 또는 `--range main...HEAD --unfixed`로 본다(2026-11-17, 규칙은 [style_guide.md](style_guide.md) 7절)
 
 ## 차례
 
