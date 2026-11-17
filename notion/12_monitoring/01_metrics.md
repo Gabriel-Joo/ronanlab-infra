@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/prometheus/, apps/monitoring/node-exporter/, apps/monitoring/kube-state-metrics/, apps/monitoring/json-exporter/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 12-01 지표
 

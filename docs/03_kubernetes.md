@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/versions.yaml, platform/coredns/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 쿠버네티스 설치와 파드 망
 
@@ -73,7 +73,7 @@ kubectl apply -f platform/coredns/configmap.yaml
 근거: [docs:history/build_log/01_cluster.md:524-526] [docs:history/build_log/01_cluster.md:543-545] [code:platform/versions.yaml:16-18] [code:platform/coredns/configmap.yaml:2]
 
 - `--apiserver-advertise-address`를 주지 않으면 kubeadm이 eth0(DHCP) 주소를 고를 수 있다 [docs:history/build_log/01_cluster.md:529]
-- Pod 대역은 Calico 기본값(192.168.0.0/16)이 사무실 망과 VM 망(192.168.122.0/24)을 덮어서 따로 골랐다 [docs:history/build_log/01_cluster.md:151-159]
+- Pod 대역은 Calico 기본값(192.168.0.0/16)이 사무실 망과 VM 망(192.168.122.0/24), vagrant-libvirt 관리망(192.168.121.0/24)을 덮어서 따로 골랐다 [docs:history/build_log/01_cluster.md:151-159] [docs:history/cluster_state_20261116.md:28]
 - 워커 join은 `docs/02_nodes.md` 「바꾸거나 다시 만들기」. 토큰은 화면에 내지 않고 15분짜리로 새로 만든다 [docs:history/build_log/01_cluster.md:638-645]
 - 저장소 밖 설치물은 `platform/versions.yaml`의 판과 URL로 다시 깐다. 판을 올리면 그 파일도 같은 커밋에서 고친다 [code:platform/versions.yaml:6]
 - CoreDNS 설정을 바꾸면 `kubectl apply -f platform/coredns/configmap.yaml`. reload가 30초 안에 다시 읽는다 [code:platform/coredns/configmap.yaml:2]

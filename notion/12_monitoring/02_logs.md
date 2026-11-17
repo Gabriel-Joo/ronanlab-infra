@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/loki/, apps/monitoring/alloy/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 12-02 로그
 
@@ -18,7 +18,7 @@ Alloy는 DaemonSet(노드마다 파드를 하나씩 띄우는 객체)으로 돈�
 
 ## 넣지 않는 것
 
-Loki에는 서버 로그만 넣는다. 대화 기록, 곧 사용자가 한 질문과 받은 답의 원문은 넣지 않는다. [code:apps/monitoring/loki/loki.yaml:1-2] 대화 기록은 이미 각 서비스의 DB에 있다. 로그에도 들어가면 같은 내용이 권한이 다른 곳에 한 벌 더 생긴다. DB에서는 대시보드 계정이 질문과 답 칸을 읽지 못하게 막아 두었는데, 로그로 새어 나가면 그 막음이 소용없어진다. [docs:history/build_log/09_monitoring.md:90] [code:apps/monitoring/grafana/datasource.yaml:26-28]
+Loki에는 서버 로그만 넣는다. 대화 기록, 곧 사용자가 한 질문과 받은 답의 원문은 넣지 않는다. [code:apps/monitoring/loki/loki.yaml:1-2] 대화 기록은 이미 각 서비스의 DB에 있다. 로그에도 들어가면 같은 내용이 권한이 다른 곳에 한 벌 더 생긴다. DB에서는 대시보드 계정이 질문과 답 칸을 읽지 못하게 막아 두었는데, 로그로 새어 나가면 그 막음이 소용없어진다. [docs:history/build_log/09_monitoring.md:90] [code:apps/monitoring/grafana/datasource.yaml:26-28] [code:apps/monitoring/grafana/datasource.yaml:43-44]
 
 그런데 런슈즈 챗봇은 질문을 받을 때마다 질문 원문을 한 줄로 로그에 찍는다. 그래서 Alloy가 런슈즈 네임스페이스의 챗봇 컨테이너에서 나온 줄 가운데 「질문:」이 든 줄을 Loki로 보내기 전에 버린다. [code:apps/monitoring/alloy/alloy.yaml:2-3] [code:apps/monitoring/alloy/alloy.yaml:96-102] 펫퍼민트 앱 로그에는 대화 내용이 들어 있지 않다. [code:apps/monitoring/grafana/dashboards/gen_petmint.py:207]
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: scripts/host-gpu-exporter.sh
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 11 GPU와 호스트 서비스
 
@@ -50,7 +50,7 @@ GPU 수집기는 sudo 없이 Docker 그룹 권한으로 사람이 한 번 띄운
 
 - GPU가 한 장이다. 바깥에서 터널로 긴 생성을 돌리면 펫퍼민트 서빙이 멈출 수 있다. 그래서 그 터널은 늘 Access 뒤에 둔다. [docs:history/build_log/03_cloudflare_tunnel.md:701]
 - 서버 한 대가 전부다. 호스트가 꺼지면 추론 서버, 벡터 DB, model-service와 쿠버네티스 가상 머신이 함께 멈춘다. [docs:history/build_log/kubernetes_install.md:198]
-- 호스트 서비스는 ArgoCD 밖이다. 저장소로 상태를 되돌릴 수 없고, 사라지면 사람이 다시 띄운다. [docs:history/build_log/09_monitoring.md:124]
+- 호스트 서비스는 ArgoCD 밖이라 저장소로 상태를 되돌릴 수 없다. [docs:history/cluster_state_20261116.md:76-77] GPU 수집기는 컨테이너가 사라지면 사람이 스크립트를 다시 돌려 띄운다. [docs:history/build_log/09_monitoring.md:124] [code:scripts/host-gpu-exporter.sh:11] 추론 서버와 다른 호스트 서비스가 사라졌을 때 어떻게 다시 띄우는지는 이 저장소에 기록이 없다.
 - 검색 서비스와 model-service가 살아 있는지는 모니터링이 보지 못한다. 추론 서버와 벡터 DB만 응답 여부를 본다. [docs:history/build_log/09_monitoring.md:212]
 - 벡터 DB는 가상 머신 사설망에 인증 없이 열려 있다. 그 망에는 호스트와 가상 머신만 있다. [docs:history/build_log/09_monitoring.md:211] [code:apps/monitoring/ingress.yaml:6]
 - 파드가 부르는 호스트 주소는 매니페스트에 글자로 박혀 있다. 사설망 대역이 바뀌면 펫퍼민트와 런슈즈 매니페스트를 함께 고쳐야 한다. [code:apps/petmint/app/configmap.yaml:23-26] [code:apps/runshoes/app/deployment.yaml:98-99]

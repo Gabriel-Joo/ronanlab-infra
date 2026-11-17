@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/cert-manager/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 05-02 TLS가 끝나는 곳
 
@@ -10,13 +10,11 @@ TLS는 브라우저와 서버 사이의 내용을 암호화하고, 상대가 진
 
 petmint와 runshoes의 Ingress에는 인증서 칸(tls)이 없다. 우리 쪽은 이 두 주소의 인증서를 갖고 있지 않다는 뜻이다. 그래서 브라우저가 맺은 TLS는 Cloudflare 엣지에서 끝난다. 브라우저가 보는 자물쇠는 Cloudflare가 내놓은 것이다. [code:apps/petmint/app/ingress.yaml:1] [code:apps/runshoes/app/ingress.yaml:1] [docs:history/cluster_state_20261116.md:45-46]
 
-엣지에서 클러스터 안 cloudflared까지는 터널이 잇는다. 터널은 그 자체가 암호화된 통로다. cloudflared에서 ingress-nginx까지는 다시 HTTPS로 간다. 터널 설정이 원점을 HTTPS로 적고 있어서다. HTTP로 적으면 ingress-nginx가 HTTPS로 다시 오라고 돌려보낼 수 있고, 그 응답이 터널을 거쳐 다시 들어오면서 같은 자리를 맴돌 수 있다. [code:apps/cloudflared/configmap.yaml:13-17] [docs:history/build_log/03_cloudflare_tunnel.md:159-160]
+엣지에서 클러스터 안 cloudflared까지는 터널이 잇는다. 터널은 그 자체가 암호화된 통로다. cloudflared에서 ingress-nginx까지는 다시 HTTPS로 간다. 터널 설정이 원점을 HTTPS로 적고 있어서다. [code:apps/cloudflared/configmap.yaml:13-17] 이 설정은 학교 클러스터 시절에서 왔다. 그때 원점은 다른 문 프로그램(traefik)이었고, HTTP로 들어온 요청을 HTTPS로 다시 오라고 돌려보내 그 응답이 터널을 거쳐 같은 자리를 맴돌 수 있었다. [docs:history/build_log/03_cloudflare_tunnel.md:157-159] 지금 Ingress 일곱 개는 모두 그 돌려보내기를 꺼 두었으므로, 이 걱정은 지금 문에는 해당하지 않는다. [code:apps/petmint/app/ingress.yaml:11-12] [code:apps/runshoes/app/ingress.yaml:11] [code:platform/argocd/ingress.yaml:15] [code:platform/harbor/values.yaml:16] [code:platform/jenkins/values.yaml:10] [code:apps/monitoring/ingress.yaml:39] [code:apps/monitoring/ingress.yaml:66]
 
 다만 이 HTTPS 구간에서 cloudflared는 ingress-nginx의 인증서를 확인하지 않는다. 일곱 주소 모두 확인을 끄는 설정(noTLSVerify)을 달았다. [code:apps/cloudflared/configmap.yaml:13-43] [docs:history/cluster_state_20261116.md:50]
 
-두 앱 주소에서 확인을 끈 까닭은 구축 기록에 있다. 두 앱의 Ingress에는 인증서가 없어서 ingress-nginx는 스스로 만든 임시 인증서를 내놓는데, 이것은 어느 기관도 보증하지 않아 확인이 실패한다. 이 구간은 클러스터 안의 통신이고 바깥 구간은 터널이 이미 암호화하므로 확인을 껐다. [code:apps/cloudflared/configmap.yaml:14-17] [code:apps/cloudflared/configmap.yaml:30-33] [docs:history/build_log/03_cloudflare_tunnel.md:160]
-
-운영 도구 다섯 주소에도 같은 설정이 붙어 있지만, 그 다섯에서 확인을 끈 까닭은 기록에 없다. [code:apps/cloudflared/configmap.yaml:18-29] [code:apps/cloudflared/configmap.yaml:34-43]
+확인을 켜면 일곱 주소 모두 실패한다. 터널 설정은 원점을 클러스터 안 서비스 이름으로 적었고, 따로 정하지 않으면 cloudflared는 원점 인증서에 그 서비스 이름이 적혀 있기를 기대한다. [code:apps/cloudflared/configmap.yaml:13-17] [docs:history/notls_check_20261117.md:16-18] 그런데 ingress-nginx가 내놓는 인증서에는 그 이름이 없다. 서비스 이름으로 물으면 스스로 만든 임시 인증서를 내놓는다. 공개 주소로 물으면 운영 도구는 그 공개 주소 이름의 인증서를, 인증서가 없는 공개 앱은 역시 임시 인증서를 내놓는다. [docs:history/notls_check_20261117.md:9-14] 어느 쪽이든 기대한 이름과 맞지 않는다. [docs:history/notls_check_20261117.md:20-24]
 
 ingress-nginx에서 앱 파드까지는 암호화하지 않은 HTTP다. ingress-nginx는 따로 말하지 않으면 뒤쪽 서비스에 HTTP로 요청하고, 두 앱의 Ingress는 그 설정을 바꾸지 않는다. [code:apps/petmint/app/ingress.yaml:10-28] [docs:history/build_log/04_argocd.md:176]
 

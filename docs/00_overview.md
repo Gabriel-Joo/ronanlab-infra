@@ -1,6 +1,6 @@
 <!--
 다루는 곳: README.md
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 전체 그림
 
@@ -75,7 +75,7 @@ GPU 호스트 한 대 안의 VM 다섯 대로 세운 kubeadm 클러스터와, �
 kubectl apply -f bootstrap/root-app.yaml
 ```
 
-- 부분별 절차는 같은 번호의 개발자 문서에 있다(차례는 `docs/style_guide.md` 1절) [docs:style_guide.md:5-39]
+- 부분별 절차는 같은 번호의 개발자 문서에 있다(차례는 `docs/style_guide.md` 1절) [docs:style_guide.md:5-41]
 
 ## 확인
 

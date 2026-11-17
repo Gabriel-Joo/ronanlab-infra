@@ -1,6 +1,6 @@
 <!--
 다루는 곳: scripts/host-gpu-exporter.sh
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # GPU와 호스트 서비스
 
@@ -96,7 +96,7 @@ Prometheus 수집 대상 `ollama`, `milvus`, `nvidia-gpu`가 모두 `up` 1이면
 - petmint 모드가 섞이면 두 모델을 번갈아 올려 답이 느려진다. runshoes 모델과도 서로 내렸다 올린다 [code:apps/monitoring/grafana/dashboards/gen_petmint.py:202-203] [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:289-290]
 - model-service는 임베딩 모델을 VRAM에 늘 올려 둔다 [docs:history/build_log/00_server.md:586]
 - 호스트가 꺼지면 Ollama, Milvus, model-service, NFS와 VM 다섯 대가 함께 멈춘다 [docs:history/build_log/kubernetes_install.md:198]
-- 호스트 서비스와 GPU 수집기는 ArgoCD 밖이다 [docs:history/build_log/09_monitoring.md:124]
+- 호스트 서비스(Docker 컨테이너, systemd 서비스)와 GPU 수집기는 ArgoCD 밖이다 [docs:history/cluster_state_20261116.md:76-77]. 수집기는 사라지면 사람이 `scripts/host-gpu-exporter.sh`를 다시 돌린다 [docs:history/build_log/09_monitoring.md:124]. 다른 호스트 서비스를 다시 띄우는 절차는 이 저장소에 없다
 - search-service, model-service의 생존은 수집하지 않는다 [docs:history/build_log/09_monitoring.md:212]
 - Milvus 19530과 9091은 사설망에 인증 없이 열려 있다 [docs:history/build_log/09_monitoring.md:211]
 - 호스트 cloudflared-ollama 터널은 프로세스 하나이고, Cloudflare Access 정책은 저장소에 없다 [docs:history/build_log/03_cloudflare_tunnel.md:699-700]

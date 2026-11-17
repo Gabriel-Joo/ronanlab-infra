@@ -1,6 +1,6 @@
 <!--
 다루는 곳: bootstrap/, platform/argocd/, apps/*/app.yaml
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # GitOps
 

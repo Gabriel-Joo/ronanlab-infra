@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/app/, apps/runshoes/app/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 09-01 매니페스트의 꼴
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/versions.yaml, platform/coredns/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 03 쿠버네티스 설치와 파드 망
 
@@ -16,7 +16,7 @@
 
 클러스터 안에는 주소 대역이 둘 더 있다. 하나는 파드에게 주는 주소 대역이고, 다른 하나는 서비스(여러 파드 앞에 서서 하나의 고정된 이름과 주소로 요청을 받아 주는 묶음)에게 주는 주소 대역이다. [code:platform/versions.yaml:11-12] 서비스 대역은 kubeadm의 기본값을 그대로 썼다. [docs:history/build_log/01_cluster.md:49]
 
-파드 대역은 따로 골랐다. 서버 안에는 이미 사무실 공유기 망, 호스트의 Docker 망, VM의 고정 주소 망이 있다. 파드 망 도구 Calico를 아무 설정 없이 깔면 기본으로 쓰려는 대역이 너무 넓어서 사무실 망과 VM 망을 통째로 덮어 버린다. 그래서 어느 것과도 겹치지 않고, 이 분야에서 관례처럼 쓰는 사설 대역을 파드 몫으로 떼어 kubeadm에 알려 주었다. [docs:history/build_log/01_cluster.md:151-159] [docs:history/build_log/01_cluster.md:530]
+파드 대역은 따로 골랐다. 서버 안에는 이미 사무실 공유기 망, 호스트의 Docker 망, VM의 고정 주소 망, Vagrant가 VM마다 붙이는 관리망이 있다. [docs:history/cluster_state_20261116.md:28] 파드 망 도구 Calico를 아무 설정 없이 깔면 기본으로 쓰려는 대역이 너무 넓어서 사무실 망과 VM 망을 통째로 덮어 버린다. 그래서 어느 것과도 겹치지 않고, 이 분야에서 관례처럼 쓰는 사설 대역을 파드 몫으로 떼어 kubeadm에 알려 주었다. [docs:history/build_log/01_cluster.md:151-159] [docs:history/build_log/01_cluster.md:530]
 
 ## Calico: 노드를 건너는 파드 망
 

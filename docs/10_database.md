@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/mysql/, apps/runshoes/mysql/, apps/petmint/backup/, scripts/mysql-replica-seed.sh, scripts/mysql-replica-check.sh
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 데이터베이스 복제와 백업
 

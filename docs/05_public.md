@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/cloudflared/, platform/cert-manager/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 바깥 공개와 인증서
 
@@ -62,7 +62,7 @@
 | --- | --- | --- |
 | `apps/cloudflared/app.yaml:4-8` | `syncPolicy`에 automated 없음 | 터널이 깨지면 공개 주소 7개와 고칠 도구(ArgoCD UI), 볼 도구(Grafana)가 같이 사라지고 m-k8s kubectl로만 되돌린다. 커밋이 곧바로 반영되지 않게 사람이 Sync를 누르고 롤링을 지켜본다 [code:apps/cloudflared/app.yaml:4-8] |
 | `apps/cloudflared/app.yaml:9-11` | prune 없음, finalizer 없음 | git에서 지운 리소스와 Application을 지운 뒤의 Pod가 클러스터에 남는다 [code:apps/cloudflared/app.yaml:9-11] |
-| `apps/cloudflared/configmap.yaml:13-17` 외 | `service: https://…:443`, `noTLSVerify: true` | http로 쓰면 리다이렉트가 터널로 돌아와 루프가 생길 수 있다. 인증서 없는 호스트에 ingress-nginx는 자체 서명 기본 인증서를 낸다 [docs:history/build_log/03_cloudflare_tunnel.md:159-160] |
+| `apps/cloudflared/configmap.yaml:13-17` 외 | `service: https://…:443`, `noTLSVerify: true` | https는 학교 vcluster 시절(원점 traefik)의 301 루프를 피하려던 설정이 남은 것이다 [docs:history/build_log/03_cloudflare_tunnel.md:157-159]. 지금 Ingress 7개는 모두 `ssl-redirect: "false"`라 그 루프는 지금 ingress-nginx에는 해당하지 않는다 [code:apps/petmint/app/ingress.yaml:12] [code:apps/runshoes/app/ingress.yaml:11] [code:platform/argocd/ingress.yaml:15] [code:platform/harbor/values.yaml:16] [code:platform/jenkins/values.yaml:10] [code:apps/monitoring/ingress.yaml:39] [code:apps/monitoring/ingress.yaml:66]. `noTLSVerify`는 7개 모두에 필요하다. `originServerName`이 없어 cloudflared는 인증서에 서비스 이름을 기대하는데, ingress-nginx는 그 이름으로 물으면 Fake Certificate를, 공개 이름으로 물으면 공개 이름의 인증서(운영 도구는 Let's Encrypt, 앱은 Fake)를 낸다 [docs:history/notls_check_20261117.md:9-24] |
 | `apps/cloudflared/deployment.yaml:18-19` | maxSurge 1, maxUnavailable 0 | 새 커넥터가 Ready가 된 뒤 옛 것을 내린다 [code:apps/cloudflared/deployment.yaml:4] |
 | `platform/cert-manager/values.yaml:1` | DNS-01 | 인바운드 포트가 없고 Access, 터널 뒤라 HTTP-01을 못 쓴다 [code:platform/cert-manager/values.yaml:1] |
 | `platform/cert-manager/values.yaml:6-7` | `dns01RecursiveNameservers: "8.8.8.8:53,8.8.4.4:53"`, `...Only: true` | 전파 확인을 공개 리졸버로만. 1.1.1.1:53은 이 망에서 시간 초과다 [code:platform/cert-manager/values.yaml:4-7] |

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/jenkins/, scripts/make-deploy-keys.sh, apps/*/kustomization.yaml
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 빌드와 태그 고정
 

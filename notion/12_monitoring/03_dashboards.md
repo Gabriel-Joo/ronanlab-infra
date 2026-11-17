@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/monitoring/grafana/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 12-03 대시보드
 
@@ -25,7 +25,7 @@ Grafana는 저장 공간을 따로 갖지 않는다. 파드 안의 데이터 폴
 
 [code:apps/monitoring/grafana/datasource.yaml:10-58]
 
-두 MySQL 데이터소스는 대시보드에 질문 수, 답 걸린 시간, 평가 같은 서비스 숫자를 그리려고 둔 것이다. 이런 숫자는 지표로 나오지 않고 각 서비스가 DB에 남기는 기록에만 있다. [docs:history/build_log/09_monitoring.md:64] 그런데 그 기록에는 질문과 답 원문도 함께 있다. 그래서 세 겹으로 막았다.
+두 MySQL 데이터소스는 대시보드에 질문 수, 답 걸린 시간, 평가 같은 서비스 숫자를 그리려고 둔 것이다. 이런 숫자는 지표로 나오지 않고 각 서비스가 DB에 남기는 기록에만 있다. [docs:history/build_log/09_monitoring.md:64] [code:apps/monitoring/grafana/datasource.yaml:26-36] [code:apps/monitoring/grafana/datasource.yaml:43-53] 그런데 그 기록에는 질문과 답 원문도 함께 있다. 그래서 세 겹으로 막았다.
 
 첫째, 운영 DB(Primary)가 아니라 복제본(Replica)을 읽는다. 대시보드 쿼리가 서비스의 쓰기에 부하를 주지 않게 하기 위해서다. [code:apps/monitoring/grafana/datasource.yaml:26] [code:apps/monitoring/grafana/datasource.yaml:43] 둘째, 읽기 계정은 칸 단위로만 읽기 권한을 받았다. 분류, 시간, 상태 같은 칸은 읽지만 질문, 답, 상담원 코멘트, 고객 정보 칸은 권한이 없어 쿼리를 보내도 거절된다. [code:apps/monitoring/grafana/datasource.yaml:27-28] [code:apps/monitoring/grafana/datasource.yaml:43-44] 셋째, 계정의 동시 연결 수에 상한을 두었다. [code:apps/monitoring/README.md:30]
 
@@ -50,8 +50,8 @@ Grafana의 메모리 상한은 넉넉하게 잡았다. 기동만으로 상당한
 ## 알려진 한계
 
 - 화면에서 고친 대시보드는 남지 않는다. 고치려면 생성 스크립트를 고쳐 JSON을 다시 만든다. [code:apps/monitoring/grafana/dashboard-provider.yaml:2]
-- DB 칸을 읽는 패널은 복제본에 기댄다. 복제가 멈추거나 늦으면 그 패널도 멈추거나 늦는다. [docs:history/build_log/09_monitoring.md:70]
-- 서비스 DB에 새 칸이 생기면 읽기 권한을 사람이 손으로 더해야 패널이 값을 낸다. [docs:history/build_log/09_monitoring.md:70]
+- DB 칸을 읽는 패널은 복제본에 기댄다. 복제가 멈추거나 늦으면 그 패널도 멈추거나 늦는다. [docs:history/build_log/09_monitoring.md:70] [code:apps/monitoring/grafana/datasource.yaml:32] [code:apps/monitoring/grafana/datasource.yaml:48]
+- 서비스 DB에 새 칸이 생기면 읽기 권한을 사람이 손으로 더해야 패널이 값을 낸다. [docs:history/build_log/09_monitoring.md:70] [code:apps/monitoring/grafana/datasource.yaml:27] [code:apps/monitoring/grafana/datasource.yaml:43]
 - 펫퍼민트의 확인 불가 응답 비율은 거절 문구로 판정한다. 거절 문구 없이 얼버무린 답은 세지 않는다. [docs:history/build_log/09_monitoring.md:213]
 - 대시보드는 사람이 열어야 본다. 알림은 없다. [docs:history/build_log/09_monitoring.md:145]
 

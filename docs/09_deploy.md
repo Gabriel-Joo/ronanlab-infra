@@ -1,6 +1,6 @@
 <!--
 다루는 곳: apps/petmint/app/, apps/petmint/jobs/, apps/petmint/scripts/, apps/petmint/README.md, apps/runshoes/app/, apps/runshoes/scripts/, apps/runshoes/README.md, apps/runshoes/runbooks/
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 앱이 올라가는 길
 
@@ -151,12 +151,14 @@ kubectl -n runshoes get deploy runshoes -o jsonpath='{.spec.strategy.rollingUpda
 kubectl get pdb -A
 # petmint-app 1, runshoes 1 (ALLOWED DISRUPTIONS 1)
 kubectl get cronjob -A
+# harbor    harbor-db-backup  45 3 * * *  Asia/Seoul
+# petmint   mysql-backup      30 3 * * *  Asia/Seoul
 # runshoes  runshoes-summary  30 3 * * *  Asia/Seoul
 kubectl -n runshoes get secret; kubectl -n petmint get secret
 # 이름만 본다
 ```
 
-기대 결과 출처: [docs:history/build_log/07_project_deploy.md:589-621]
+기대 결과 출처: [docs:history/build_log/07_project_deploy.md:589-621]. CronJob 셋은 저장소 [code:apps/harbor-backup/cronjob.yaml:13-18] [code:apps/petmint/backup/cronjob.yaml:12-17] [code:apps/runshoes/app/cronjob.yaml:10-15]
 
 ```bash
 # 이미지가 newTag와 같은지(웹, 챗봇, CronJob이 같은 태그)

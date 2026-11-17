@@ -1,6 +1,6 @@
 <!--
 다루는 곳: CLAUDE.md, .foreman/notion.toml, .gitignore, scripts/docs-check.py
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 운영 규칙과 문서 게시
 
@@ -61,17 +61,17 @@
 | 원고 | `notion/` | 비개발자까지 | 노션에 올린다 |
 | 개발자 문서 | `docs/NN_*.md` | 운영하는 사람 | 올리지 않는다 |
 
-- 두 벌은 같은 번호와 편 나눔을 쓴다 [docs:style_guide.md:3] [docs:style_guide.md:39]
+- 두 벌은 같은 번호와 편 나눔을 쓴다 [docs:style_guide.md:3] [docs:style_guide.md:41]
 - 개발자 문서는 노션에 올리지 않는다 [code:.foreman/notion.toml:14]
-- 모든 편 맨 위에 「다루는 곳」과 「읽은 커밋」 머리 주석 [docs:style_guide.md:43-55]
-- 근거 표시는 세 종류(code 뒤에 저장소 경로와 줄, docs 뒤에 docs 아래 경로와 줄, c 뒤에 커밋)를 대괄호로 단다. 줄 번호는 읽은 커밋 기준 [docs:style_guide.md:57-65]
-- 원고 금지어: IP 주소, 도메인, 홈 경로, 토큰 꼴, 포트 번호 [docs:style_guide.md:83] [code:scripts/docs-check.py:37-43]
+- 모든 편 맨 위에 「다루는 곳」과 「읽은 커밋」 머리 주석 [docs:style_guide.md:45-57]
+- 근거 표시는 세 종류(code 뒤에 저장소 경로와 줄, docs 뒤에 docs 아래 경로와 줄, c 뒤에 커밋)를 대괄호로 단다. 줄 번호는 읽은 커밋 기준 [docs:style_guide.md:59-67]
+- 원고 금지어: IP 주소, 도메인, 홈 경로, 토큰 꼴, 포트 번호 [docs:style_guide.md:87] [code:scripts/docs-check.py:37-43]
 
 ### 점검 스크립트 `scripts/docs-check.py`
 
 - 보는 것: 머리 주석, 다루는 곳이 읽은 커밋에 있는지, 근거의 파일과 줄 범위, 범위(읽은 커밋의 추적 파일 중 `docs/`, `notion/`, `portfolio/` 밖이 모두 원고 어느 편의 다루는 곳에 드는지), 다른 편 제목 참조(화살표와 낫표), 원고 금지어 [code:scripts/docs-check.py:7-14] [code:scripts/docs-check.py:35]
-- 틀린 것이 하나라도 있으면 종료 코드 1 [code:scripts/docs-check.py:16] [code:scripts/docs-check.py:202-209]
-- `-v`는 숫자나 인용이 있는데 근거 표시가 없는 줄을 「의심」으로 더 보인다 [code:scripts/docs-check.py:5] [code:scripts/docs-check.py:166-167]
+- 틀린 것이 하나라도 있으면 종료 코드 1 [code:scripts/docs-check.py:16] [code:scripts/docs-check.py:203-210]
+- `-v`는 숫자나 인용이 있는데 근거 표시가 없는 줄을 「의심」으로 더 보인다 [code:scripts/docs-check.py:5] [code:scripts/docs-check.py:167-168]
 - 근거 문법은 FOREMAN 게시기(`bridge/evidence.py`)와 같다 [code:scripts/docs-check.py:15]
 
 ### 노션 게시
@@ -124,5 +124,5 @@ git status                           # 자기 파일만 바뀌었는지
 
 ## 알려진 한계
 
-- 점검 스크립트는 근거의 파일과 줄 범위가 있는지만 본다. 줄이 사실과 맞는지는 사람이 연다 [docs:style_guide.md:65]
+- 점검 스크립트는 근거의 파일과 줄 범위가 있는지만 본다. 줄이 사실과 맞는지는 사람이 연다 [docs:style_guide.md:67]
 - 자동 Sync의 실제 스위치가 클러스터에 있어 `app.yaml`만으로 지금 Sync 방식을 단정할 수 없다 [code:CLAUDE.md:11]

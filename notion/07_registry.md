@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/harbor/, apps/harbor-backup/, scripts/host-nfs-harbor-backup-setup.sh
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 07 이미지 저장소
 

@@ -1,6 +1,6 @@
 <!--
 다루는 곳: platform/harbor/, apps/harbor-backup/, scripts/host-nfs-harbor-backup-setup.sh
-읽은 커밋: e8e24ea
+읽은 커밋: 6290346
 -->
 # 이미지 저장소
 
@@ -128,7 +128,7 @@ kubectl -n harbor get job
 - 모든 구성 요소와 데이터가 w3에 있다. w3가 내려가면 Harbor 전체가 멈춘다. 떠 있는 앱 파드는 이미지를 노드에 갖고 있어 그대로다 [code:cluster/label-nodes.sh:7]
 - 이미지 레이어(`harbor-registry-w3`)는 백업하지 않는다. 레이어가 없는 태그는 pull이 안 되고, 앱 저장소 커밋에서 Jenkins로 다시 빌드하는 것을 전제로 한다 [code:apps/harbor-backup/README.md:15-16]
 - 백업이 운영과 같은 물리 서버에 있다 [docs:TODO.md:16]
-- 옛 PVC 다섯이 남아 있다. 모두 Retain이라 PVC를 지워도 PV와 데이터가 남으니 PV도 따로 정리한다 [docs:TODO.md:7] [docs:history/build_log/05_harbor.md:482]
+- 옛 PVC 다섯이 남아 있다. 모두 Retain이라 PVC를 지워도 PV와 데이터가 남으니 PV도 따로 정리한다 [docs:TODO.md:7] [docs:history/build_log/05_harbor.md:481]
 - `harborAdminPassword`는 릴리스 값에만 있다 [docs:history/build_log/05_harbor.md:485]
 - `values.yaml`의 registry `size`(30Gi)는 배포된 릴리스 값(20Gi)과 다르다. existingClaim이라 렌더 결과는 같다 [docs:history/build_log/05_harbor.md:163] [code:platform/harbor/values.yaml:32-35]
 - 네임스페이스 `harbor`는 차트가 만든다고 `app.yaml`에 적혀 있지만, 다시 세우는 순서에서는 Certificate와 PVC를 먼저 넣기 위해 사람이 먼저 만든다 [code:apps/harbor-backup/app.yaml:4] [docs:history/build_log/05_harbor.md:139]
