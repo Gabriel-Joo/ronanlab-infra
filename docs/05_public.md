@@ -4,6 +4,8 @@
 -->
 # 바깥 공개와 인증서
 
+Cloudflare 터널로 바깥에 공개하는 길과 경로마다의 Access, cert-manager 인증서와 TLS가 끝나는 곳을 다룬다.
+
 원고: → 「바깥 공개와 인증서」, → 「공개 경로와 내부 경로」, → 「TLS가 끝나는 곳」. 문(ingress-nginx, MetalLB)은 `docs/04_ingress.md`. [code:apps/cloudflared/]
 
 ## 지금 구성

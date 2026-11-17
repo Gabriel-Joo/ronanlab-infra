@@ -4,6 +4,8 @@
 -->
 # 들어오는 문
 
+클러스터 안으로 들어오는 문인 ingress-nginx와, 그 앞에 대표 주소 하나를 주는 MetalLB를 다룬다.
+
 원고: → 「들어오는 문」. 바깥 길과 인증서는 `docs/05_public.md`. [code:platform/ingress-nginx/]
 
 ## 지금 구성
