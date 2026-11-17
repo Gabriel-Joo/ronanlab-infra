@@ -139,4 +139,8 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 ```
 python3 scripts/docs-check.py        # 틀린 것 0이어야 한다
 python3 scripts/docs-check.py -v     # 근거 없는 숫자 줄도 본다
+python3 scripts/docs_for_code.py <코드 파일 경로>               # 그 코드를 가리키는 문서와 줄
+python3 scripts/docs_for_code.py --range main...HEAD --unfixed  # 이 브랜치가 바꾼 것으로 걸리는데 안 고친 문서
 ```
+
+코드를 고치는 세션은 그 코드를 가리키는 문서도 같은 브랜치에서 고친다. 어느 문서가 걸리는지는 `python3 scripts/docs_for_code.py`로 본다. 고칠 수 없으면 무엇이 걸리는지 보고한다(2026-11-17 사용자). 디자이너와 조사 세션에는 적용하지 않는다.
