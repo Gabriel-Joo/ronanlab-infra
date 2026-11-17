@@ -4,7 +4,9 @@
 # 설정은 같은 클러스터의 petmint MySQL(apps/petmint/mysql)과 맞췄다.
 #
 # local-path 라 처음 뜬 노드에 PV 가 묶인다 — w1 을 선호한다(2026-10-18 limits 여유가 가장 큰 노드).
-# petmint MySQL 의 PV 도 w1 에 있다 — w1 이 멈추면 두 DB 가 같이 멈춘다(노드가 3대라 감수).
+# petmint MySQL 의 PV 도 w1 에 있어 w1 이 멈추면 두 DB 가 같이 멈춘다. 처음에는 노드가 셋이라 감수했다.
+# 지금 워커는 넷이지만 DB 를 둘 수 있는 앱 노드는 w1, w2 둘 그대로다. 2026-11-10부터 두 DB 모두 w2 에 Replica 가 있어 손으로 승격한다.
+# Primary 둘을 w1, w2 로 나눌지는 docs/TODO.md infra-8.
 # PVC 는 StatefulSet · Pod 를 지워도 남는다(Retain). StorageClass reclaimPolicy 가 Delete 라 PVC 를 지우면 데이터도 지워진다.
 apiVersion: apps/v1
 kind: StatefulSet
