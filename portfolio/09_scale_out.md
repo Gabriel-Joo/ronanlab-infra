@@ -42,7 +42,6 @@ Harbor를 옮긴 방식은 local-path의 성질에서 나왔습니다. local-pat
 
 - 앱 노드가 둘뿐이라 새 파드를 먼저 띄우는 보통의 교체 방식을 쓸 수 없게 됐습니다. 세 번째 파드가 갈 노드가 없기 때문입니다. 그래서 옛 파드 하나를 먼저 내리고 새 파드를 띄우며, 교체하는 동안 잠깐 파드가 하나뿐입니다 [code:apps/petmint/app/deployment.yaml:5-7].
 - infra와 platform은 노드가 한 대씩입니다. w3이 죽으면 배포와 빌드가, w4가 죽으면 모니터링이 그 노드가 돌아올 때까지 멈춥니다. 목표로 받아들인 한계입니다 [docs:history/build_log/08_scale_out.md:434].
-- 데이터베이스 원본 둘이 모두 w1에 있어, w1 하나가 멈추면 두 앱의 쓰기가 같이 멈춥니다 [docs:history/build_log/08_scale_out.md:28].
 - Harbor를 옮기는 동안 Harbor는 약 4분 멈췄습니다 [docs:history/build_log/08_scale_out.md:285]. w3을 정비하는 동안 Jenkins도 약 5분 멈췄습니다. 둘 다 미리 정한 중단입니다 [docs:history/build_log/08_scale_out.md:225].
 - 노드 역할은 VM을 나눈 것일 뿐 같은 서버 위에 있습니다. 서버 자체가 죽으면 전부 멈춥니다 [docs:history/build_log/08_scale_out.md:436].
 

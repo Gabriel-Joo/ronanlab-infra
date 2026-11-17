@@ -153,4 +153,4 @@ kubectl -n petmint logs job/<가장 최근 Job>
 - petmint 백업에 `mysql` 스키마(계정)가 없다. 계정은 초기화 Job이 다시 만든다. [code:apps/petmint/backup/cronjob.yaml:2-3]
 - 백업이 VM을 돌리는 같은 호스트 디스크에 있다. [code:apps/petmint/backup/cronjob.yaml:1]
 - Replica 인자는 Primary 인자를 손으로 복사한 것이다. Primary 인자를 바꾸면 replica.yaml도 같이 고친다. [code:apps/petmint/mysql/replica.yaml:61-67]
-- 매니페스트 주석 몇 곳이 지금과 다르다. petmint statefulset 머리의 「나중에 runshoes」(runshoes는 따로 MySQL을 둔다), 두 statefulset의 「워커 VM이 4GB」(지금 8GB), runshoes statefulset의 「노드가 3대」(지금 워커 넷). [code:apps/petmint/mysql/statefulset.yaml:1] [code:apps/petmint/mysql/statefulset.yaml:33] [code:apps/runshoes/mysql/statefulset.yaml:7] [docs:history/build_log/08_scale_out.md:3]
+- 매니페스트 주석 몇 곳이 지금과 다르다. petmint statefulset 머리의 「나중에 runshoes」(runshoes는 따로 MySQL을 둔다), 두 statefulset의 「워커 VM이 4GB」(지금 8GB). runshoes statefulset의 「노드가 3대」는 2026-11-17에 고쳤다. [code:apps/petmint/mysql/statefulset.yaml:1] [code:apps/petmint/mysql/statefulset.yaml:33] [c:f5ed69a] [docs:history/build_log/08_scale_out.md:3]
