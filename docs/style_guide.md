@@ -36,7 +36,7 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 | 12-02 | `notion/12_monitoring/02_logs.md` | 로그 | `apps/monitoring/loki/`, `apps/monitoring/alloy/` |
 | 12-03 | `notion/12_monitoring/03_dashboards.md` | 대시보드 | `apps/monitoring/grafana/` |
 | 13 | `notion/13_storage.md` | 공유 저장소 | `apps/petmint/data/nfs.yaml` |
-| 14 | `notion/14_operations.md` | 운영 규칙과 문서 게시 | `CLAUDE.md`, `.foreman/notion.toml`, `.gitignore`, `scripts/docs-check.py` |
+| 14 | `notion/14_operations.md` | 운영 규칙과 문서 게시 | `CLAUDE.md`, `.foreman/notion.toml`, `.foreman/docs.toml`, `.gitignore`, `scripts/docs-check.py`, `scripts/docs_for_code.py`, `scripts/foreman_tool.py` |
 
 개발자 문서는 같은 번호로 `docs/00_overview.md` ~ `docs/14_operations.md` 한 편씩이다(하위 편 없이 한 파일). 다루는 곳은 원고의 그 편과 하위 편을 합친 것이다.
 
@@ -54,7 +54,9 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 # 02-01 VM 다섯 대와 랜카드 둘
 ```
 
-읽은 커밋은 모든 편이 같은 값이다. 값은 일감 지시에 적어 준다. 그 커밋 뒤에 생긴 파일은 근거로 걸 수 없다.
+다루는 곳은 그 편이 덮는 저장소 파일이다. 덮기 점검(문서 폴더 밖 파일이 모두 원고 어느 편에 드는지)만 이 칸을 읽고, 거꾸로 찾기는 이 칸을 읽지 않고 근거 표시만 읽는다(2026-11-17 FOREMAN 문서 도구 합치기). 여러 얘기가 섞인 파일을 덮는다고 그 파일이 바뀔 때마다 걸리지 않는다.
+
+읽은 커밋은 편마다 적는다(2026-11-17부터. 그 전에는 모든 편이 같은 값이었다). 그 커밋 뒤에 생긴 파일은 근거로 걸 수 없다.
 
 근거의 내용은 그대로이고 줄 번호만 밀렸을 때는 줄 번호만 고치고 읽은 커밋은 올리지 않는다. 읽은 커밋은 그 편을 실제로 열어 내용을 확인한 커밋에만 적는다(2026-11-17 사용자).
 
@@ -127,7 +129,7 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 
 제목에는 번호를 붙이지 않는다. 게시기가 파일 이름의 번호를 앞에 붙인다.
 
-- 머리 주석과 근거 표시는 기술문서와 같다. 읽은 커밋은 포트폴리오 편끼리 하나다(기술문서와 따로)
+- 머리 주석과 근거 표시는 기술문서와 같다. 읽은 커밋도 편마다 적는다
 - 경어체(합니다체) 문단으로 쓴다. 날짜를 쓰지 않는다. 목록은 「치른 값」이나 한계를 늘어놓을 때만
 - 편의 차례: 첫머리 `> 이 글은 …을 다룹니다.` 한 줄, 굵은 한두 문장 요약, 그다음 「상황」, 「고른 것」, 「까닭」, 「치른 값」, 막힌 일이 있었으면 「막혔을 때」. 절 제목은 `##`로 편마다 맞게 바꿔도 된다
 - 쿠버네티스를 모르는 사람도 읽는다. 어려운 말은 처음 나오는 자리에서 괄호나 한 문장으로 푼다
@@ -144,5 +146,7 @@ python3 scripts/docs-check.py -v     # 근거 없는 숫자 줄도 본다
 python3 scripts/docs_for_code.py <코드 파일 경로>               # 그 코드를 가리키는 문서와 줄
 python3 scripts/docs_for_code.py --range main...HEAD --unfixed  # 이 브랜치가 바꾼 것으로 걸리는데 안 고친 문서
 ```
+
+두 명령은 FOREMAN 문서 도구(`tools/docs.py`의 `check`, `refs`)를 부르는 껍데기다(2026-11-17 문서 도구 합치기). 규칙은 FOREMAN에 있고, 이 저장소만의 값은 `.foreman/docs.toml`에 있다. FOREMAN 폴더는 환경 변수 `FOREMAN_DIR`가 먼저이고, 없으면 `scripts/foreman_tool.py`의 기본 경로를 쓴다. 둘 다 못 찾으면 종료 코드 2로 멈춘다. 점검이나 거꾸로 찾기의 규칙을 고칠 일은 FOREMAN 관리자에게 부탁한다.
 
 코드를 고치는 세션은 그 코드를 가리키는 문서도 같은 브랜치에서 고친다. 어느 문서가 걸리는지는 `python3 scripts/docs_for_code.py`로 본다. 고칠 수 없으면 무엇이 걸리는지 보고한다(2026-11-17 사용자). 디자이너와 조사 세션에는 적용하지 않는다.
