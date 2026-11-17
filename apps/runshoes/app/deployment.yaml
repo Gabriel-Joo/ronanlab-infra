@@ -100,11 +100,6 @@ spec:
             # 로그인 화면의 체험 카드(시드 3 + 데모 관리자, 앱 리포 docs/ADMIN_DEMO_DESIGN.md 8.3) — V7 이미지부터 읽는다. 끄려면 "false"
             - name: DEMO_LOGIN_ENABLED
               value: "true"
-            # activity_logs 정리(ActivityCleanup, application.yml app.activity.cleanup-cron)를 끈다 — 2026-11-10 replicas 2 와 같은 커밋(사용자 결정).
-            # @Scheduled 가 Pod 마다 돌아 두 Pod 가 같은 행을 같은 시각에 지우려 한다(잠금 경합). "-" 는 Spring 의 끄기 값(Scheduled.CRON_DISABLED).
-            # 끈 동안 activity_logs 가 지워지지 않고 쌓인다(알려진 한계). ShedLock(앱 리포 일)이 들어오면 이 env 두 줄을 뺀다
-            - name: ACTIVITY_CLEANUP_CRON
-              value: "-"
           # 로그인(앱 리포 docs/AUTH_DESIGN.md) — Secret runshoes-auth 의 키가 그대로 env 이름이다: JWT_SECRET · SEED_USER_PASSWORD · ADMIN_PASSWORD.
           # 사람이 만든다(scripts/create-secrets.sh). optional 이 아니다 — Secret 이 없으면 새 Pod 가 CreateContainerConfigError 로 멈추고
           # (롤링이 거기서 멈추고 남은 옛 Pod 하나가 계속 받는다) V3 이미지가 JWT_SECRET 없이 뜨는 일이 없다. V3 전 이미지는 이 env 를 읽지 않는다

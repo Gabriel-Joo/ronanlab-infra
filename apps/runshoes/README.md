@@ -9,7 +9,7 @@ mysql/statefulset.yaml   runshoes-mysql — MySQL 8.0.46, local-path 2Gi(Retain)
 mysql/service.yaml       runshoes-mysql:3306 (headless)
 mysql/replica.yaml       runshoes-mysql-replica — Replica(w2, 2026-11-10), 수동 승격: docs/runbooks/mysql-replica.md
 app/deployment.yaml      replicas 2 · app 노드(w1 · w2) + required anti-affinity · RollingUpdate(maxSurge 0, maxUnavailable 1 — 2026-11-10). runshoes(Spring, :3000) + chatbot(:8766)
-                         activity_logs 정리(ACTIVITY_CLEANUP_CRON "-")는 꺼 둠 — ShedLock 전까지(2026-11-10)
+                         데이터 정리 job은 앱 기본값(매일 04:00 서울)으로 돈다. 2026-11-10부터 ACTIVITY_CLEANUP_CRON "-"로 꺼 두었다가, 앱 606b73052c41에 MySQL GET_LOCK 잠금이 들어와 Pod 둘 중 하나만 정리하게 되어 env를 뺐다(2026-11-17 런슈즈 관리자 부탁, 사용자 승인)
 app/pdb.yaml             PDB minAvailable 1 — drain 때 하나는 남긴다(petmint 와 같다)
 app/cronjob.yaml         리뷰 요약 배치 runshoes-summary(V14) — 웹과 같은 이미지에 batch 프로필, 매일 03:30 KST(runbooks/v14-shoe-summaries.md)
 app/service.yaml         포트 http(80→3000) · chatbot(8766)

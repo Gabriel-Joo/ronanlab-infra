@@ -12,6 +12,5 @@
 
 ## 그 밖
 
-- runshoes ShedLock 들어오면 `ACTIVITY_CLEANUP_CRON` env 빼기(앱 리포 일 먼저) → 08 4절
 - 백업을 다른 물리 디스크 · 바깥으로 한 벌 더(지금 운영 DB와 같은 NVMe) → 08 4절
 - runshoes MySQL 정기 백업(지금 스키마 배포 전 수동 덤프만) → 08 1-4절
