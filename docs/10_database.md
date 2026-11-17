@@ -145,7 +145,7 @@ kubectl -n petmint logs job/<가장 최근 Job>
 
 ## 알려진 한계
 
-- 자동 전환이 없다. w1이 멈추면 승격 전까지 두 앱의 DB 쓰기가 실패한다. [docs:history/build_log/08_scale_out.md:28]
+- 자동 전환이 없다. w1이 멈추면 승격 전까지 두 앱의 DB 쓰기가 실패한다. 수동 승격을 고른 값이다(Operator는 부품과 메모리가 는다) [docs:history/build_log/08_scale_out.md:28] [docs:history/build_log/08_scale_out.md:132-137]
 - 두 Primary가 모두 w1에 있다. [code:apps/runshoes/mysql/statefulset.yaml:6-7]
 - petmint Primary에는 노드 규칙이 없다. PV를 새로 만들면 어느 노드에 뜰지 정해지지 않는다. [code:apps/petmint/mysql/statefulset.yaml:21-29]
 - runshoes는 정기 백업이 없다. 스키마를 바꾸기 전 손 덤프만 있다(`apps/runshoes/runbooks/auth-v3.md` 2절). [code:apps/runshoes/README.md:54]

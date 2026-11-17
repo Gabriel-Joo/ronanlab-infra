@@ -72,7 +72,7 @@ StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해
 
 ## 알려진 한계
 
-- Primary가 죽으면 자동으로 넘어가지 않는다. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패한다. [docs:history/build_log/08_scale_out.md:28]
+- Primary가 죽으면 자동으로 넘어가지 않는다. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패한다. [docs:history/build_log/08_scale_out.md:28] 자동 전환 도구는 붙는 부품이 늘고 메모리를 더 먹어, 구성이 단순하고 무엇을 하는지 다 보이는 수동 승격을 골랐다. [docs:history/build_log/08_scale_out.md:132-137]
 - 펫퍼민트 백업에는 계정이 없다. 덤프만으로 되살리면 계정은 초기화 작업으로 다시 만들어야 한다. [code:apps/petmint/backup/cronjob.yaml:2-3]
 
 ## 용어 풀이
