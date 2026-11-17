@@ -1,5 +1,5 @@
 <!--
-다루는 곳: apps/cloudflared/configmap.yaml, platform/cert-manager/, platform/harbor/values.yaml, platform/argocd/ingress.yaml, docs/style_guide.md
+다루는 곳: apps/cloudflared/configmap.yaml, platform/cert-manager/, platform/harbor/values.yaml, platform/argocd/ingress.yaml
 읽은 커밋: ddbaadf
 -->
 # TLS가 끝나는 곳과 noTLSVerify를 확인한 일
