@@ -19,3 +19,11 @@ claim_min = 0
 banned = ["notion", "portfolio"]
 cover_by = ["notion"]
 dashdot_base = "b587fe9"        # 새 줄 em dash와 가운뎃점 검사의 기준 커밋. 넣은 때의 인프라 main(2026-11-17)
+
+[readme]
+# 맨 위 README.md는 생성물이다(tools/docs.py readme, 점검 9번). 폴더 지도는 docs/00_overview.md 저장소 구조 절(2026-11-17 사용자)
+title = "ronanlab-infra"
+# docs 차례. 요약은 첫 # 줄 뒤 첫 문단의 첫 문장. 차례는 편 목록이라 번호 없는 TODO.md, style_guide.md는 뺀다(2026-11-17 사용자)
+docs = true
+docs_summary = "para"
+docs_numbered_only = true

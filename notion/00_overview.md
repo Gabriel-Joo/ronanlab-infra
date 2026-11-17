@@ -1,5 +1,5 @@
 <!--
-다루는 곳: README.md
+다루는 곳: bootstrap/root-app.yaml, cluster/Vagrantfile
 읽은 커밋: 736d833
 -->
 # 00 전체 그림
