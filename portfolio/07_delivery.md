@@ -43,10 +43,13 @@ Jenkins는 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣
 ## 치른 값
 
 - 자동 Sync인 앱은 push가 곧 배포입니다. 데이터베이스 구조를 바꾸는 배포는 자동 Sync를 잠시 끄고 사람이 단계마다 확인하며 넣습니다. [code:apps/runshoes/app.yaml:9]
-- 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
 - 저장소에서 지운 리소스를 클러스터에서도 지우는 기능(prune)을 꺼 두었습니다. 저장소에서 지운 것이 클러스터에서 바로 사라지지 않게 하려는 것이라, 클러스터에 남은 것은 사람이 따로 지워야 합니다. [code:bootstrap/root-app.yaml:11] [code:apps/runshoes/app.yaml:8] [docs:history/build_log/07_project_deploy.md:261]
 - Harbor는 데이터베이스만 백업하고 이미지 층은 백업하지 않습니다. 층이 사라진 태그는 내려받을 수 없고, 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 합니다. [code:apps/harbor-backup/README.md:15-16]
 - ArgoCD 밖의 기반을 사람이 손으로 넣는 것과 Jenkins가 한 노드에 묶인 것은 여러 결정에 걸려 → 「알려진 한계」에 모았습니다
+
+## 조건
+
+- 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
 
 ## 막혔을 때: 자동 Sync가 켜진 채 push가 먼저 나간 일
 

@@ -42,4 +42,7 @@ cloudflared를 파드로 띄운 까닭은 운영을 쿠버네티스에 맡기기
 
 - 공개 주소가 모두 터널 하나에 몰린 것은 여러 결정에 걸려 → 「알려진 한계」에 모았습니다
 - 터널이 끊겼을 때 쓰는 사설망 길에는 Access가 없습니다. 자체 로그인이 없는 Prometheus도 사설망 안에서는 그대로 열립니다 [code:apps/monitoring/ingress.yaml:6]
+
+## 조건
+
 - cloudflared는 설정을 켜질 때 한 번만 읽습니다. 설정을 반영한 뒤 파드를 차례로 다시 띄우는 단계까지 해야 새 설정이 들어갑니다. 새 설정이 깨져 있으면 새 파드가 준비되지 못해 교체가 멈추고, 옛 두 벌이 계속 받습니다 [code:apps/cloudflared/configmap.yaml:3] [code:apps/cloudflared/deployment.yaml:3-4]
