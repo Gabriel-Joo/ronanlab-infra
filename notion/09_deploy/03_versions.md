@@ -72,7 +72,7 @@
 
 ## 알려진 한계
 
-- 자동 Sync를 끄고 켜는 일이 사람 손에 달려 있다. 끄기를 잊고 push하면 덤프 없이 스키마가 바뀔 수 있다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
+- 자동 Sync를 끄고 켜는 일이 사람 손에 달린 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다
 - 자동 Sync를 끈 정확한 시각은 ArgoCD에 남지 않는다. [code:apps/runshoes/runbooks/v21-grafana-compare-views.md:167]
 - 덤프와 Sync 사이에 들어온 쓰기는 덤프로 복원하면 사라진다. [code:apps/runshoes/runbooks/auth-v3.md:28]
 - 이미지 안 파일 확인 스크립트는 호스트에서 노드로 접속해 돌며, 노드에서 잠깐 받기 계정 비밀번호가 명령 인자로 보인다. [code:apps/runshoes/scripts/check-image-migrations.sh:11]

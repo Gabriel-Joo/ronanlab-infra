@@ -44,9 +44,8 @@ cloudflared는 서버 호스트의 프로세스가 아니라 클러스터 안의
 
 ## 알려진 한계
 
-- 터널 하나에 공개 주소 일곱 개가 몰려 있다. 터널이 깨지면 공개 앱과 운영 도구가 한꺼번에 보이지 않는다 [code:apps/cloudflared/app.yaml:5-6]
 - 설정을 바꾸고 반영만 한 채 다시 띄우기를 빠뜨리면 새 설정이 들어가지 않는다 [code:apps/cloudflared/configmap.yaml:3]
-- 사설망 안에서는 Access 없이 운영 도구에 닿는다. 자체 로그인이 없는 Prometheus도 사설망에서는 그대로 열린다 [code:apps/monitoring/ingress.yaml:5-6]
+- 공개 주소가 모두 터널 하나에 몰린 것과 사설망 안에서는 Access 없이 운영 도구에 닿는 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다
 
 ## 용어 풀이
 

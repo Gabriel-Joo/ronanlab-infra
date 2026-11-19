@@ -59,7 +59,7 @@ helm 차트와 매니페스트 주소로 바로 넣은 것(Calico, metrics-serve
 
 ## 알려진 한계
 
-- Jenkins 본체가 하나이고 w3에 묶여 있다. w3를 정비하는 동안 빌드가 멈춘다. 떠 있는 앱은 영향이 없다. [docs:history/build_log/06_jenkins.md:504]
+- Jenkins 본체가 하나이고 한 노드에 묶인 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다
 - Harbor 로봇 계정에 만료가 없다. 기한을 관리할 체계가 없어 두지 않았다. [docs:history/build_log/06_jenkins.md:502]
 - 태그 커밋을 revert해도 데이터베이스 마이그레이션은 되돌아가지 않는다. [code:apps/petmint/README.md:27]
 

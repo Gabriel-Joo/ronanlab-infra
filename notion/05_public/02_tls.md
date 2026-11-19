@@ -56,7 +56,7 @@ Harbor는 Ingress를 Harbor의 helm 차트가 만든다. 차트에 인증서를 
 
 - cloudflared는 ingress-nginx의 인증서를 확인하지 않는다. 그 구간에서는 상대가 진짜 ingress-nginx인지 따지지 않는다 [code:apps/cloudflared/configmap.yaml:17]
 - 모든 Ingress가 HTTPS로 다시 오라고 돌려보내지 않게 꺼 두었다. 터널은 HTTPS로 오지만, 사설망에서는 암호화하지 않은 HTTP로도 같은 화면에 닿는다 [code:platform/argocd/ingress.yaml:7] [code:platform/argocd/ingress.yaml:15]
-- Cloudflare API 토큰은 저장소에 없다. 클러스터를 다시 만들 때 사람이 Secret을 넣지 않으면 인증서를 받지 못한다 [code:platform/cert-manager/cluster-issuer.yaml:1]
+- Cloudflare API 토큰이 저장소에 없는 것은 비밀값을 저장소에 두지 않는 결정에서 나와 → 「알려진 한계」에 모았다
 - 공개 앱의 인증서는 Cloudflare 쪽에 있어 저장소로는 볼 수 없다 [docs:history/cluster_state_20261116.md:45-46]
 
 ## 용어 풀이

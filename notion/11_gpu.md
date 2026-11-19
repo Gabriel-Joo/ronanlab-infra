@@ -48,9 +48,7 @@ GPU 수집기는 sudo 없이 Docker 그룹 권한으로 사람이 한 번 띄운
 
 ## 알려진 한계
 
-- GPU가 한 장이다. 바깥에서 터널로 긴 생성을 돌리면 펫퍼민트 서빙이 멈출 수 있다. 그래서 그 터널은 늘 Access 뒤에 둔다. [docs:history/build_log/03_cloudflare_tunnel.md:701]
-- 서버 한 대가 전부다. 호스트가 꺼지면 추론 서버, 벡터 DB, model-service와 쿠버네티스 가상 머신이 함께 멈춘다. [docs:history/build_log/kubernetes_install.md:198]
-- 호스트 서비스는 ArgoCD 밖이라 저장소로 상태를 되돌릴 수 없다. [docs:history/cluster_state_20261116.md:76-77] GPU 수집기는 컨테이너가 사라지면 사람이 스크립트를 다시 돌려 띄운다. [docs:history/build_log/09_monitoring.md:124] [code:scripts/host-gpu-exporter.sh:11]
+- GPU가 한 장인 것, 서버 한 대가 전부인 것, 호스트 서비스가 ArgoCD 밖인 것은 여러 편에 걸리는 한계와 조건이라 → 「알려진 한계」에 모았다
 - 파드가 부르는 호스트 주소는 매니페스트에 글자로 박혀 있다. 사설망 대역이 바뀌면 펫퍼민트와 런슈즈 매니페스트를 함께 고쳐야 한다. [code:apps/petmint/app/configmap.yaml:23-26] [code:apps/runshoes/app/deployment.yaml:98-99]
 
 ## 용어 풀이
