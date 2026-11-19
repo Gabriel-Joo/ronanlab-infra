@@ -8,7 +8,7 @@ kustomization.yaml     이미지 태그(images.newTag) — Jenkins가 커밋 해
 mysql/                 StatefulSet + headless Service. PVC(local-path 10Gi)는 Pod·StatefulSet을 지워도 남는다(Retain)
                        replica.yaml — Replica(w2, 2026-11-10), 수동 승격: ronanlab-infra docs/runbooks/mysql-replica.md
 data/nfs.yaml          약관(chunks, graph)·고객 시드 픽스처 — 호스트 NFS 읽기 전용 PV 3개(ReadOnlyMany) + PVC
-app/configmap.yaml     비밀 아닌 접속 정보. GPU 호스트(Ollama·Milvus)는 192.168.122.1, search-service는 아직 없어 자리만(.invalid)
+app/configmap.yaml     비밀 아닌 접속 정보. GPU 호스트(Ollama·Milvus)는 192.168.122.1, search-service도 같은 호스트 :8100(2026-10-21 기동)
 jobs/init-db.yaml      초기화 Job(ArgoCD Sync hook): bootstrap → migrate(petmint) → migrate(insurance_core) → seed --if-empty
 app/                   Deployment(replicas 2, app 노드 w1 · w2에 하나씩, 옛 Pod를 먼저 내리는 롤링) · PDB(minAvailable 1) · Service · Ingress(petmint.ronanlab.dev)
 backup/cronjob.yaml    MySQL 백업 — CronJob(매일 03:30 KST mysqldump --single-transaction) + 호스트 NFS 쓰기 PV/PVC. 복구는 앱 리포 docs 12번 1-5절
@@ -35,7 +35,7 @@ ArgoCD가 넘겨받은 뒤(2026-10-16)로는 **이 디렉터리를 `kubectl appl
   kubectl -n argocd patch application petmint --type merge -p '{"spec":{"syncPolicy":{"automated":{"prune":false,"selfHeal":false}}}}'   # 켜기
   ```
 - **Application에 finalizer가 없다.** Application을 지워도 앱·MySQL·PV는 남는다
-- **Namespace는 사람이 만든다.** petmint 네임스페이스에는 사람이 넣은 Secret 4개가 있다. ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다.
+- **Namespace는 사람이 만든다.** petmint 네임스페이스에는 사람이 넣은 Secret 5개가 있다(2026-11-10 Replica 때 mysql-repl이 더해졌다). ArgoCD가 소유하면 prune·삭제 한 번에 그것들이 사라질 수 있다.
   공개 주소 터널(cloudflared)도 예전에는 여기 있었다 — 2026-10-18 따로 뺐다(지금 `apps/cloudflared`, 네임스페이스 `cloudflared`)
 - **단일 환경이다.** 개발은 로컬(uvicorn + vite), 클러스터는 운영만 — 개발·운영 네임스페이스를 가르지 않는다
 

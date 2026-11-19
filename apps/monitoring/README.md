@@ -11,7 +11,7 @@ Prometheus · Grafana · node-exporter · kube-state-metrics + Loki · Alloy · 
 | Loki | 서버 로그 | w4 local-path 10Gi, 보존 7일(compactor) |
 | Alloy(DaemonSet) | `/var/log/pods` → Loki. **넣지 않는 것**: runshoes 챗봇의 질문 원문 줄, Jenkins 빌드 Pod | 노드 `/var/lib/alloy-monitoring`(읽은 위치) |
 | json-exporter | Ollama `/api/ps` → `ollama_loaded_model_vram_bytes{model}` | — |
-| Grafana | 대시보드 `petmint — 운영`(`grafana/dashboards/`) · 데이터소스 Prometheus · Loki · petmint-turns(MySQL) | emptyDir — 설정 · 대시보드는 저장소에서 |
+| Grafana | 대시보드 `petmint 운영` · `runshoes 운영`(`grafana/dashboards/`) · 데이터소스 Prometheus · Loki · petmint-turns(MySQL) | emptyDir — 설정 · 대시보드는 저장소에서 |
 
 **데이터 출처**(앱에 `/metrics`가 없어서):
 
