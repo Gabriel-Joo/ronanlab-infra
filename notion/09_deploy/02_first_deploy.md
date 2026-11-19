@@ -42,8 +42,11 @@
 ## 알려진 한계
 
 - 비밀값이 클러스터에만 있는 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다
-- Harbor 로봇 비밀번호는 만들 때 한 번만 보인다. 잃으면 로봇을 다시 만들어야 한다. [docs:history/build_log/06_jenkins.md:174]
 - 네임스페이스, Secret, 호스트 NFS 공유는 사람이 하는 단계라 ArgoCD가 대신해 주지 않는다. [code:apps/petmint/README.md:47-52]
+
+### 조건
+
+- Harbor 로봇 비밀번호는 만들 때 한 번만 보인다. 잃으면 로봇을 다시 만들어야 한다. [docs:history/build_log/06_jenkins.md:174]
 - 런슈즈 서명 키를 바꾸면 모든 사용자가 다시 로그인해야 한다. [code:apps/runshoes/scripts/create-secrets.sh:10]
 
 ## 용어 풀이

@@ -46,9 +46,12 @@ PDB(PodDisruptionBudget, 노드 정비로 파드를 내보낼 때 최소 몇 개
 
 - 롤링하는 동안 잠깐 앱 파드가 하나다. 그 사이 남은 파드가 죽으면 끊긴다. [code:apps/petmint/app/deployment.yaml:6]
 - 앱 노드 하나가 빠지면 두 번째 파드는 그 노드가 돌아올 때까지 뜨지 못하고, 그동안 롤링도 멈춘다. [code:apps/petmint/app/deployment.yaml:7]
-- ConfigMap만 바꾼 Sync는 떠 있는 파드에 들어가지 않는다. 파드를 다시 띄워야 한다. [code:apps/petmint/app/configmap.yaml:28]
 - 런슈즈의 검사 경로는 이미지 판과 묶여 있다. 이미지를 옛 판으로 되돌릴 때 검사 경로도 맞춰야 한다. [code:apps/runshoes/app/deployment.yaml:120]
 - 롤링 때 열려 있던 웹소켓은 한 번 끊긴다. [code:apps/runshoes/app/deployment.yaml:4]
+
+### 조건
+
+- ConfigMap만 바꾼 Sync는 떠 있는 파드에 들어가지 않는다. 파드를 다시 띄워야 한다. [code:apps/petmint/app/configmap.yaml:28]
 
 ## 용어 풀이
 
