@@ -39,6 +39,7 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 | 12-03 | `notion/12_monitoring/03_dashboards.md` | 대시보드 | `apps/monitoring/grafana/` |
 | 13 | `notion/13_storage.md` | 공유 저장소 | `apps/petmint/data/nfs.yaml` |
 | 14 | `notion/14_operations.md` | 운영 규칙과 문서 게시 | `CLAUDE.md`, `.foreman/notion.toml`, `.foreman/docs.toml`, `.gitignore`, `scripts/docs-check.py`, `scripts/docs_for_code.py`, `scripts/foreman_tool.py` |
+| 15 | `notion/15_limits.md` | 알려진 한계 | 여러 편에 걸리는 한계와 조건(기준 문서 2절 「한계 편의 꼴」) |
 
 개발자 문서는 같은 번호로 `docs/00_overview.md` ~ `docs/14_operations.md` 한 편씩이다(하위 편 없이 한 파일). 다루는 곳은 원고의 그 편과 하위 편을 합친 것이다.
 

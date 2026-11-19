@@ -25,6 +25,7 @@
 | 12 | [12_monitoring.md](12_monitoring.md) | `notion/12_monitoring/` | 지표, 로그, 대시보드 |
 | 13 | [13_storage.md](13_storage.md) | `notion/13_storage.md` | local-path, 호스트 NFS |
 | 14 | [14_operations.md](14_operations.md) | `notion/14_operations.md` | 운영 규칙과 문서 게시 |
+| 15 | 없음 | `notion/15_limits.md` | 여러 편에 걸리는 한계와 조건을 결정으로 묶은 원고 편(2026-11-19) |
 
 ## 지키는 것
 
