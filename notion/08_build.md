@@ -64,6 +64,8 @@ helm 차트와 매니페스트 주소로 바로 넣은 것(Calico, metrics-serve
 
 ### 조건
 
+아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것이다.
+
 - 태그 커밋을 revert해도 데이터베이스 마이그레이션은 되돌아가지 않는다. [code:apps/petmint/README.md:27]
 
 ## 용어 풀이

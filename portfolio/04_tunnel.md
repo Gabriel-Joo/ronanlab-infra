@@ -45,4 +45,6 @@ cloudflared를 파드로 띄운 까닭은 운영을 쿠버네티스에 맡기기
 
 ## 조건
 
+아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것입니다.
+
 - cloudflared는 설정을 켜질 때 한 번만 읽습니다. 설정을 반영한 뒤 파드를 차례로 다시 띄우는 단계까지 해야 새 설정이 들어갑니다. 새 설정이 깨져 있으면 새 파드가 준비되지 못해 교체가 멈추고, 옛 두 벌이 계속 받습니다 [code:apps/cloudflared/configmap.yaml:3] [code:apps/cloudflared/deployment.yaml:3-4]

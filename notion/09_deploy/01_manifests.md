@@ -51,6 +51,8 @@ PDB(PodDisruptionBudget, 노드 정비로 파드를 내보낼 때 최소 몇 개
 
 ### 조건
 
+아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것이다.
+
 - ConfigMap만 바꾼 Sync는 떠 있는 파드에 들어가지 않는다. 파드를 다시 띄워야 한다. [code:apps/petmint/app/configmap.yaml:28]
 
 ## 용어 풀이

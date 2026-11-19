@@ -78,6 +78,8 @@
 
 ### 조건
 
+아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것이다.
+
 - 자동 Sync를 끈 정확한 시각은 ArgoCD에 남지 않는다. [code:apps/runshoes/runbooks/v21-grafana-compare-views.md:167]
 
 ## 용어 풀이
