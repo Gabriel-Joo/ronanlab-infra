@@ -1,6 +1,6 @@
 <!--
 다루는 곳: cluster/label-nodes.sh, bootstrap/root-app.yaml, apps/cloudflared/app.yaml, scripts/host-gpu-exporter.sh
-읽은 커밋: 19a7e38
+읽은 커밋: 40ca5f3
 -->
 # 15 알려진 한계
 
@@ -40,7 +40,7 @@
 
 ### 비밀값은 저장소에 두지 않는다
 
-비밀값은 저장소에 두지 않고, 사람이 클러스터에 Secret으로 직접 만든다 [code:CLAUDE.md:47] [code:README.md:14]. 커밋되는 매니페스트에 실제 값이 박히는 것을 막으려는 것이다 [docs:history/build_log/03_cloudflare_tunnel.md:188]. 그래서 클러스터를 새로 세우면 비밀값은 저장소에서 돌아오지 않고, 사람이 다시 넣어야 한다.
+비밀값은 저장소에 두지 않고, 사람이 클러스터에 Secret으로 직접 만든다 [code:CLAUDE.md:47]. 커밋되는 매니페스트에 실제 값이 박히는 것을 막으려는 것이다 [docs:history/build_log/03_cloudflare_tunnel.md:188]. 그래서 클러스터를 새로 세우면 비밀값은 저장소에서 돌아오지 않고, 사람이 다시 넣어야 한다.
 
 - Cloudflare API 토큰이 저장소에 없다. 클러스터를 다시 만들 때 사람이 Secret을 넣지 않으면 인증서를 받지 못한다 [code:platform/cert-manager/cluster-issuer.yaml:1]
 - ArgoCD의 웹훅 시크릿과 알림 토큰도 저장소에 없어, 클러스터를 새로 세우면 사람이 다시 넣어야 한다 [docs:history/build_log/04_argocd.md:56-59]
@@ -72,7 +72,7 @@ GPU는 호스트에 그대로 두고, 파드는 호스트의 추론 서버를 �
 
 이것은 고른 것이 아니라 가진 자원이다. 사무실 서버 PC 가운데 이 프로젝트가 쓰는 것은 한 대이고 [docs:history/notion_hardware_20261116.md:12], 쿠버네티스 가상 머신 다섯 대와 호스트의 추론 서버, 벡터 DB, model-service, NFS가 모두 그 한 대, 같은 디스크 위에 있다 [docs:history/build_log/01_cluster.md:699] [docs:history/build_log/kubernetes_install.md:198]. 노드를 나눈 것은 가상 머신 하나나 노드 프로그램 하나가 죽는 장애만 막는다 [docs:history/build_log/08_scale_out.md:436].
 
-- 서버가 꺼지면 클러스터, 운영 도구, 추론 서버, 벡터 DB, model-service가 함께 멈춘다 [code:README.md:3] [docs:history/build_log/kubernetes_install.md:198]
+- 서버가 꺼지면 클러스터, 운영 도구, 추론 서버, 벡터 DB, model-service가 함께 멈춘다 [code:cluster/Vagrantfile:3-10] [docs:history/build_log/kubernetes_install.md:198]
 - NFS 공유도 호스트 하나에 있다. 호스트가 멈추면 약관을 읽는 앱과 백업이 멈추지만, 그때는 가상 머신도 같은 호스트에서 돌므로 클러스터 전체가 함께 멈춘다 [code:apps/petmint/data/nfs.yaml:1-2]
 
 ## 6. 조건: GPU 한 장

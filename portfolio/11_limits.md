@@ -1,6 +1,6 @@
 <!--
-다루는 곳: README.md, cluster/label-nodes.sh, apps/cloudflared/app.yaml, bootstrap/root-app.yaml, platform/cert-manager/cluster-issuer.yaml
-읽은 커밋: 19a7e38
+다루는 곳: cluster/label-nodes.sh, apps/cloudflared/app.yaml, bootstrap/root-app.yaml, platform/cert-manager/cluster-issuer.yaml
+읽은 커밋: 40ca5f3
 -->
 # 알려진 한계
 
@@ -35,15 +35,15 @@
 
 ## 4. 비밀값은 저장소에 두지 않았습니다
 
-비밀번호와 토큰 같은 비밀값은 저장소에 두지 않고, 사람이 클러스터에 직접 만듭니다 [code:CLAUDE.md:47] [code:README.md:14]. 공개 저장소에 올라가는 설정 파일에 실제 값이 박히는 것을 막으려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:188].
+비밀번호와 토큰 같은 비밀값은 저장소에 두지 않고, 사람이 클러스터에 직접 만듭니다 [code:CLAUDE.md:47]. 공개 저장소에 올라가는 설정 파일에 실제 값이 박히는 것을 막으려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:188].
 
 치른 값은 이렇습니다.
 
-- 클러스터를 다시 세우면 비밀값은 저장소에서 돌아오지 않아, 사람이 다시 넣어야 합니다 [code:README.md:14]
+- 클러스터를 다시 세우면 비밀값은 저장소에서 돌아오지 않아, 사람이 다시 넣어야 합니다 [code:CLAUDE.md:47]
 - 인증서 발급에 쓰는 Cloudflare API 토큰도 그중 하나라, 클러스터를 다시 만들 때 사람이 넣지 않으면 인증서를 받지 못합니다 [code:platform/cert-manager/cluster-issuer.yaml:1] (→ 「TLS가 끝나는 곳과 noTLSVerify를 확인한 일」)
 
 ## 5. 조건: 물리 서버 한 대
 
 이것은 고른 것이 아니라 가진 자원입니다. 사무실 서버 가운데 이 프로젝트가 쓰는 것은 한 대이고 [docs:history/notion_hardware_20261116.md:12], 쿠버네티스 VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [docs:history/build_log/01_cluster.md:699]. 노드를 여럿으로 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애까지만 막습니다 [docs:history/build_log/08_scale_out.md:436]. 그래서 여러 벌로 늘려도 서버와 함께 꺼지는 것은 들이지 않았습니다. 컨트롤 플레인을 한 대로 둔 것이 그렇습니다(→ 「손으로 세운 여러 노드 클러스터」).
 
-- 서버가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버와 벡터 DB, model-service가 함께 멈춥니다 [code:README.md:3] [docs:history/build_log/kubernetes_install.md:198]
+- 서버가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버와 벡터 DB, model-service가 함께 멈춥니다 [code:cluster/Vagrantfile:3-10] [docs:history/build_log/kubernetes_install.md:198]

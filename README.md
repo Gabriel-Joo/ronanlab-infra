@@ -20,7 +20,7 @@ GPU가 든 서버 한 대 안에 가상 머신 다섯 대로 쿠버네티스 클
 | 08 | [모니터링은 차트 대신 매니페스트로](portfolio/08_monitoring.md) |  |
 | 09 | [워커를 늘리고 옮기기](portfolio/09_scale_out.md) |  |
 | 10 | [문서를 기계로 검사하기](portfolio/10_docs.md) |  |
-| 11 | [하지 않은 것과 한계](portfolio/11_limits.md) |  |
+| 11 | [알려진 한계](portfolio/11_limits.md) |  |
 
 ## 기술문서
 
@@ -43,6 +43,7 @@ GPU가 든 서버 한 대 안에 가상 머신 다섯 대로 쿠버네티스 클
 | 12 | [모니터링](notion/12_monitoring.md) | 하위 3 |
 | 13 | [공유 저장소](notion/13_storage.md) |  |
 | 14 | [운영 규칙과 문서 게시](notion/14_operations.md) |  |
+| 15 | [알려진 한계](notion/15_limits.md) |  |
 
 ## 문서
 
