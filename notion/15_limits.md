@@ -25,7 +25,7 @@
 
 ### 관리 길은 SSH 하나로
 
-바깥에서 서버로 바로 들어오는 길은 공유기의 포트포워딩 하나이고, 그 길은 서버의 SSH에만 닿는다. Jupyter, 원격 데스크톱, 추론 서버 같은 다른 서비스는 바깥에 열지 않고 SSH 연결 안의 터널로 연다 [docs:history/notion_hardware_20261116.md:11]. 추론 서버 포트를 공유기에 바로 여는 길은, 그 포트를 인증 없이 인터넷에 그대로 내놓는 보안 위험이 있어 버렸다 [docs:history/cloudflare_tunnel_vcluster.md:77]. 그래서 바깥에서 하는 관리가 모두 이 한 길에 기댄다. 서버는 모니터와 키보드를 떼고 SSH와 원격 데스크톱으로만 관리한다 [docs:history/notion_hardware_20261116.md:18].
+바깥에서 서버로 바로 들어오는 길은 공유기의 포트포워딩 하나이고, 그 길은 서버의 SSH에만 닿는다. 바깥으로 여는 길이 늘수록 뚫릴 자리가 늘어서, 관리 길은 하나로 두고 그 하나만 지키기로 했다 [c:44860df]. Jupyter, 원격 데스크톱, 추론 서버 같은 다른 서비스는 바깥에 열지 않고 SSH 연결 안의 터널로 연다 [docs:history/notion_hardware_20261116.md:11]. 추론 서버 포트를 공유기에 바로 여는 길은, 그 포트를 인증 없이 인터넷에 그대로 내놓는 보안 위험이 있어 버렸다 [docs:history/cloudflare_tunnel_vcluster.md:77]. 그래서 바깥에서 하는 관리가 모두 이 한 길에 기댄다. 서버는 모니터와 키보드를 떼고 SSH와 원격 데스크톱으로만 관리한다 [docs:history/notion_hardware_20261116.md:18].
 
 - 공유기 설정이 바뀌거나 공유기가 꺼지면 바깥에서 서버를 관리할 길이 없다
 - SSH 서비스나 방화벽 설정이 잘못되면 바깥에서는 서버에 닿을 길이 없고, 서버 앞에 가서 모니터와 키보드를 꽂아야 한다
@@ -73,6 +73,7 @@ GPU는 호스트에 그대로 두고, 파드는 호스트의 추론 서버를 �
 이것은 고른 것이 아니라 가진 자원이다. 사무실 서버 PC 가운데 이 프로젝트가 쓰는 것은 한 대이고 [docs:history/notion_hardware_20261116.md:12], 쿠버네티스 가상 머신 다섯 대와 호스트의 추론 서버, 벡터 DB, model-service, NFS가 모두 그 한 대, 같은 디스크 위에 있다 [docs:history/build_log/01_cluster.md:699] [docs:history/build_log/kubernetes_install.md:198]. 노드를 나눈 것은 가상 머신 하나나 노드 프로그램 하나가 죽는 장애만 막는다 [docs:history/build_log/08_scale_out.md:436].
 
 - 서버가 꺼지면 클러스터, 운영 도구, 추론 서버, 벡터 DB, model-service가 함께 멈춘다 [code:cluster/Vagrantfile:3-10] [docs:history/build_log/kubernetes_install.md:198]
+- 앱을 맡는 노드가 둘뿐이다. 하나가 빠지면 각 앱이 파드 하나로 버틴다 [docs:history/build_log/08_scale_out.md:433] [c:44860df]
 - NFS 공유도 호스트 하나에 있다. 호스트가 멈추면 약관을 읽는 앱과 백업이 멈추지만, 그때는 가상 머신도 같은 호스트에서 돌므로 클러스터 전체가 함께 멈춘다 [code:apps/petmint/data/nfs.yaml:1-2]
 
 ## 6. 조건: GPU 한 장

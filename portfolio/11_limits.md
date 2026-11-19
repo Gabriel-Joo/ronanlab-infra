@@ -47,3 +47,4 @@
 이것은 고른 것이 아니라 가진 자원입니다. 사무실 서버 가운데 이 프로젝트가 쓰는 것은 한 대이고 [docs:history/notion_hardware_20261116.md:12], 쿠버네티스 VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [docs:history/build_log/01_cluster.md:699]. 노드를 여럿으로 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애까지만 막습니다 [docs:history/build_log/08_scale_out.md:436]. 그래서 여러 벌로 늘려도 서버와 함께 꺼지는 것은 들이지 않았습니다. 컨트롤 플레인을 한 대로 둔 것이 그렇습니다(→ 「손으로 세운 여러 노드 클러스터」).
 
 - 서버가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버와 벡터 DB, model-service가 함께 멈춥니다 [code:cluster/Vagrantfile:3-10] [docs:history/build_log/kubernetes_install.md:198]
+- 앱을 맡는 노드도 둘뿐이라, 하나가 빠지면 각 앱이 파드 하나로 버팁니다 [docs:history/build_log/08_scale_out.md:433] [c:44860df]
