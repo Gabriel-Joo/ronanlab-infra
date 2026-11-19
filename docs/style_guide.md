@@ -125,7 +125,7 @@ ronanlab-infra 문서는 두 벌이다. `notion/`은 비개발자도 읽는 노�
 | 08 | `portfolio/08_monitoring.md` | 모니터링은 차트 대신 매니페스트로 |
 | 09 | `portfolio/09_scale_out.md` | 워커를 늘리고 옮기기 |
 | 10 | `portfolio/10_docs.md` | 문서를 기계로 검사하기 |
-| 11 | `portfolio/11_limits.md` | 하지 않은 것과 한계 |
+| 11 | `portfolio/11_limits.md` | 알려진 한계 |
 
 제목에는 번호를 붙이지 않는다. 게시기가 파일 이름의 번호를 앞에 붙인다.
 

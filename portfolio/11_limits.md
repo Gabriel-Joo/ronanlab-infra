@@ -1,36 +1,49 @@
 <!--
-다루는 곳: README.md, cluster/Vagrantfile, apps/cloudflared/configmap.yaml, apps/cloudflared/app.yaml, platform/argocd/ingress.yaml, apps/monitoring/README.md, apps/monitoring/prometheus/configmap.yaml, apps/harbor-backup/README.md, apps/runshoes/README.md, bootstrap/root-app.yaml, scripts/host-gpu-exporter.sh, docs/runbooks/mysql-replica.md
-읽은 커밋: ddbaadf
+다루는 곳: README.md, cluster/label-nodes.sh, apps/cloudflared/app.yaml, bootstrap/root-app.yaml, platform/cert-manager/cluster-issuer.yaml
+읽은 커밋: 19a7e38
 -->
-# 하지 않은 것과 한계
+# 알려진 한계
 
-> 이 글은 이 홈랩이 막지 못하는 장애와 일부러 하지 않은 일을 모아 다룹니다.
+> 이 글은 이 홈랩을 만들며 고른 결정 가운데 여러 편에 걸치는 것과, 그 결정 때문에 하지 못하게 된 것을 다룹니다.
 
-**여기 적은 것은 모두 저장소나 확인 기록에 남아 있는 한계입니다. 기록에 없는 약점을 짐작해 덧붙이거나, 기록에 있는 한계를 줄여 쓰지 않았습니다. 안 하는 까닭을 한 줄로 쓸 수 있는 것만 한계로 두고, 아직 하지 않은 일은 저장소의 할 일 목록에 따로 둡니다 [c:a40b111].**
+**앞의 편들은 결정 하나씩 무엇을 골랐고 무엇을 치렀는지를 보였습니다. 그중 여러 결정에 되풀이되는 것만 이 편에 모았고, 한 결정에만 걸리는 것은 그 편의 「치른 값」에 그대로 있습니다. 결정마다 무엇을 왜 골랐는지와 그 값으로 치른 것을 적고, 끝의 하나는 고른 것이 아니라 바꿀 수 없는 조건입니다. 아직 하지 않은 일은 한계가 아니어서 저장소의 할 일 목록에 따로 둡니다 [docs:TODO.md]. 자세한 까닭은 기술문서의 알려진 한계 편에 있습니다.**
 
-## 왜 따로 적나
+## 1. 노드마다 역할을 하나씩 정했습니다
 
-앞의 글들은 무엇을 골랐고 왜 골랐는지를 말합니다. 고른 것에는 늘 버린 것이 따라옵니다. 그 버린 쪽을 한곳에 모아야, 이 클러스터가 어디까지 믿을 만하고 어디서부터는 사람이 지켜봐야 하는지가 보입니다. 각 항목은 그 한계가 무엇인지, 그 때문에 무엇이 멈추거나 틀어지는지, 기록에 까닭이 있으면 까닭까지 짧게 적습니다.
+노드가 죽었을 때 무엇이 멈추는지를 노드 이름으로 말할 수 있게 하려고, 워커마다 역할을 정하고 각 구성 요소를 그 역할의 노드에 고정했습니다 [docs:history/build_log/08_scale_out.md:129]. 앱을 맡는 노드는 둘이지만, 이미지 저장소와 빌드 서버와 배포 도구를 맡는 w3, 모니터링을 맡는 w4는 한 대씩입니다 [code:cluster/label-nodes.sh:6-8]. 그 노드가 빠지면 거기 고정한 것은 다른 노드로 옮겨 뜨지 않습니다(→ 「워커를 늘리고 옮기기」).
 
-## 하드웨어와 클러스터 구조
+치른 값은 이렇습니다.
 
-- **물리 서버가 한 대입니다.** VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8] [docs:history/build_log/01_cluster.md:699]. 노드를 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애만 막습니다. 서버 자체가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버가 함께 멈춥니다 [docs:history/build_log/08_scale_out.md:436].
-- **컨트롤 플레인(클러스터 전체를 관리하는 노드)이 m-k8s 한 대입니다** [docs:history/cluster_state_20261116.md:11]. m-k8s가 멈추면 이미 떠 있는 파드는 계속 돌지만, 새 배치와 복구, 사람이 내리는 명령이 멈춥니다 [docs:history/build_log/01_cluster.md:700]. 늘리려면 클러스터 상태를 저장하는 etcd가 과반으로 결정하는 방식이라 셋이 필요합니다. 그런데 VM이 모두 같은 물리 서버 한 대 위에 있어, 셋으로 늘려도 서버가 꺼지면 함께 꺼집니다. 들이는 자원만큼 얻는 것이 없습니다 [c:a40b111].
-- **이미지 저장소와 배포 도구가 있는 w3, 모니터링이 있는 w4는 한 대씩입니다.** w3이 죽으면 배포와 빌드가, w4가 죽으면 모니터링이 그 노드가 돌아올 때까지 멈춥니다. 목표로 받아들인 한계입니다 [docs:history/build_log/08_scale_out.md:434]. 앱 노드도 둘뿐이라, 하나가 빠지면 각 앱이 파드 하나로 버팁니다 [docs:history/build_log/08_scale_out.md:433]. → 「워커를 늘리고 옮기기」
+- w3이 죽으면 배포와 빌드가, w4가 죽으면 모니터링이 그 노드가 돌아올 때까지 멈춥니다. 목표로 받아들인 한계입니다 [docs:history/build_log/08_scale_out.md:434]
+- 빌드 서버 Jenkins도 본체가 하나이고 w3에 묶여 있어, w3를 정비하는 동안 빌드가 멈춥니다. 이미 떠 있는 앱은 영향이 없습니다 [docs:history/build_log/06_jenkins.md:504]
 
-## 망과 보안
+## 2. 바깥 공개는 터널 하나로 모았습니다
 
-- **cloudflared는 원점 인증서를 확인하지 않습니다.** 바깥 요청을 클러스터로 들여오는 터널 프로그램 cloudflared는 클러스터 안의 들어오는 문(ingress-nginx)까지 HTTPS로 가지만, 상대 인증서 확인을 꺼 두었습니다 [code:apps/cloudflared/configmap.yaml:15-17]. 그 구간에서는 상대가 진짜 ingress-nginx인지 따지지 않습니다. 지금 설정으로 확인을 켜면 일곱 주소 모두 실패한다는 것을 클러스터에서 확인했습니다 [docs:history/notls_check_20261117.md:20-22]. → 「TLS가 끝나는 곳과 noTLSVerify를 확인한 일」
-- **사설망 안에서는 HTTP로도 닿습니다.** Ingress(바깥 요청을 주소에 따라 각 서비스로 나눠 주는 규칙)마다 HTTPS로 다시 오라고 돌려보내는 기능을 꺼 두었습니다. 터널은 HTTPS로 붙지만, VM 사설망에서는 암호화하지 않은 HTTP 경로도 그대로 열려 있습니다 [code:platform/argocd/ingress.yaml:7] [code:platform/argocd/ingress.yaml:15].
-- **바깥 공개 주소가 모두 터널 하나를 지납니다.** 터널이 깨지면 두 서비스와 함께 ArgoCD, Grafana처럼 고칠 도구와 볼 도구의 화면도 바깥에서 사라집니다. 그래서 터널만은 자동 배포를 켜지 않고 사람이 반영합니다 [code:apps/cloudflared/app.yaml:4-7].
+웹 서비스는 공유기 포트포워딩 없이 Cloudflare 터널 하나로 공개하고, 어느 앱으로 보낼지는 클러스터 안의 들어오는 문(ingress-nginx)이 주소를 보고 고릅니다. 앱이 늘 때마다 터널을 고치지 않고 들어오는 문의 규칙만 더하려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:153]. 그래서 공개 주소가 모두 한 터널을 지납니다(→ 「포트포워딩 없이 공개하기」).
 
-## 사람 손에 남은 것
+치른 값은 이렇습니다.
 
-- **비밀값은 저장소에 없고, 사람이 클러스터에 직접 만듭니다** [code:CLAUDE.md:46]. 비밀값이 커밋에 새지 않는 대신, 클러스터를 다시 세우면 사람이 다시 넣어야 합니다.
-- **호스트 서비스는 GitOps 밖입니다.** 추론 서버, 벡터 DB, 검색 서비스 같은 것은 VM이 아니라 호스트에서 컨테이너나 서비스로 돕니다 [docs:history/cluster_state_20261116.md:77-78]. 저장소로 상태를 되돌릴 수 없습니다. GPU 지표 수집기는 사라지면 사람이 스크립트를 다시 돌려 띄우고 [docs:history/build_log/09_monitoring.md:124] [code:scripts/host-gpu-exporter.sh:11]. → 「GPU는 호스트에, 파드는 불러 쓰기만」
-- **데이터베이스 원본이 죽으면 사람이 사본을 올립니다.** 자동 전환은 없습니다 [docs:runbooks/mysql-replica.md:3]. 자동 전환 도구는 부품과 메모리를 더 먹어 쓰지 않았습니다 [docs:history/build_log/08_scale_out.md:134-137]. 사람이 알아채고 올리기 전까지 두 앱의 쓰기는 실패합니다 [docs:history/build_log/08_scale_out.md:28]. 올리는 시험은 했지만, 앱 트래픽까지 옮기는 진짜 전환은 아직 해 보지 않았습니다 [docs:history/build_log/08_scale_out.md:432].
-- **저장소에서 지운 것은 클러스터에 남습니다.** 루트 Application에서 지운 리소스를 클러스터에서도 지우는 기능(prune)을 꺼 두었습니다. 사람이 따로 지워야 합니다 [code:bootstrap/root-app.yaml:11].
+- 터널 하나에 공개 주소 일곱 개가 몰려 있습니다. 터널이 깨지면 공개 앱만이 아니라 고칠 도구(ArgoCD 화면)와 볼 도구(Grafana)도 바깥에서 한꺼번에 사라집니다 [code:apps/cloudflared/app.yaml:4-7]
 
-## 백업
+## 3. 기반은 ArgoCD 밖에서 손으로 넣습니다
 
-- **이미지 저장소의 이미지 층은 백업하지 않습니다.** Harbor 데이터베이스만 백업하므로 층이 사라진 태그는 내려받을 수 없습니다. 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 합니다 [code:apps/harbor-backup/README.md:15-16].
+인증서 관리 도구(cert-manager), 로드밸런서(MetalLB), 들어오는 문(ingress-nginx), Harbor, Jenkins 같은 기반은 ArgoCD(저장소의 내용대로 클러스터를 맞추는 도구) 밖에 있고, 사람이 Helm이나 kubectl로 넣습니다. 기록된 까닭은 이것들이 ArgoCD보다 먼저 깔린 기반이라는 것입니다 [code:bootstrap/root-app.yaml:13] (→ 「사람 손을 타지 않는 배포」).
+
+치른 값은 이렇습니다.
+
+- 기반의 설정을 고쳐 저장소에 올려도 클러스터는 바뀌지 않습니다. 바꾼 사람이 손으로 넣어야 하고, 넣지 않으면 저장소와 클러스터가 어긋납니다 [code:platform/ingress-nginx/overlay/kustomization.yaml:1] [code:bootstrap/root-app.yaml:13]
+
+## 4. 비밀값은 저장소에 두지 않았습니다
+
+비밀번호와 토큰 같은 비밀값은 저장소에 두지 않고, 사람이 클러스터에 직접 만듭니다 [code:CLAUDE.md:47] [code:README.md:14]. 공개 저장소에 올라가는 설정 파일에 실제 값이 박히는 것을 막으려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:188].
+
+치른 값은 이렇습니다.
+
+- 클러스터를 다시 세우면 비밀값은 저장소에서 돌아오지 않아, 사람이 다시 넣어야 합니다 [code:README.md:14]
+- 인증서 발급에 쓰는 Cloudflare API 토큰도 그중 하나라, 클러스터를 다시 만들 때 사람이 넣지 않으면 인증서를 받지 못합니다 [code:platform/cert-manager/cluster-issuer.yaml:1] (→ 「TLS가 끝나는 곳과 noTLSVerify를 확인한 일」)
+
+## 5. 조건: 물리 서버 한 대
+
+이것은 고른 것이 아니라 가진 자원입니다. 사무실 서버 가운데 이 프로젝트가 쓰는 것은 한 대이고 [docs:history/notion_hardware_20261116.md:12], 쿠버네티스 VM 다섯 대가 같은 서버, 같은 디스크 위에 있습니다 [docs:history/build_log/01_cluster.md:699]. 노드를 여럿으로 나눈 것은 VM 하나나 노드 프로그램 하나가 죽는 장애까지만 막습니다 [docs:history/build_log/08_scale_out.md:436]. 그래서 여러 벌로 늘려도 서버와 함께 꺼지는 것은 들이지 않았습니다. 컨트롤 플레인을 한 대로 둔 것이 그렇습니다(→ 「손으로 세운 여러 노드 클러스터」).
+
+- 서버가 꺼지면 클러스터, 운영 도구, 호스트의 추론 서버와 벡터 DB, model-service가 함께 멈춥니다 [code:README.md:3] [docs:history/build_log/kubernetes_install.md:198]
