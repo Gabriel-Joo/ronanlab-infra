@@ -44,10 +44,11 @@ PV를 지워도 호스트의 파일은 그대로 남는다. 반환 규칙을 Ret
 
 ## 알려진 한계
 
-- local-path PV가 노드에 묶여 분산 저장소가 없는 것과 NFS가 호스트 하나에 있는 것은 여러 편에 걸리는 한계와 조건이라 → 「알려진 한계」에 모았다
+- local-path PV가 노드에 묶여 분산 저장소가 없는 것은 여러 편에 걸려 → 「알려진 한계」에 모았다
 
 ### 조건
 
+- NFS가 호스트 하나에 있는 것은 여러 편에 걸려 → 「알려진 한계」에 모았다
 - local-path는 PVC를 지우면 데이터도 지운다. Harbor처럼 손으로 Retain으로 바꿔 둔 PV만 예외다. [code:platform/harbor/pvc-w3.yaml:6]
 - local-path와 NFS 모두 크기를 강제하지 않는다. 실제 상한은 노드 디스크와 호스트 디스크다. [code:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
 - 약관 파일을 바꿔도 앱을 다시 띄우기 전에는 반영되지 않는다. [code:apps/petmint/data/nfs.yaml:6-7]
