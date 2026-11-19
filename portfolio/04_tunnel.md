@@ -36,10 +36,10 @@ cloudflared를 파드로 띄운 까닭은 운영을 쿠버네티스에 맡기기
 
 터널이 ingress-nginx 하나만 가리키게 한 까닭은 앱이 늘 때마다 터널을 고치지 않으려는 것입니다. 새 앱은 Ingress 규칙만 더하면 됩니다. 다만 이 터널은 설정 파일 방식이라 공개 주소를 더할 때는 설정에 주소 한 줄과 Cloudflare 쪽 DNS 기록도 같이 더합니다 [docs:history/build_log/03_cloudflare_tunnel.md:143-153].
 
+터널이 깨지면 바깥 길 전체가 끊기므로, cloudflared는 저장소 변경이 자동으로 반영되지 않는 유일한 앱입니다. 다른 앱은 커밋이 곧 배포로 이어지지만, 이 앱은 사람이 반영을 누르고 교체 과정을 지켜봅니다. 잘못된 커밋 하나가 사람 손을 거치지 않고 바깥 길 전체를 끊게 두지 않으려는 것입니다 [code:apps/cloudflared/app.yaml:4-8] [docs:history/cluster_state_20261116.md:56-61]. 터널이 끊겼을 때를 위한 길도 남겨 두었습니다. 서버 호스트에서는 터널을 거치지 않고 ingress-nginx의 사설망 고정 주소(VIP)로 운영 도구 화면을 열 수 있고, 관리 노드에 들어가 명령으로 되돌릴 수 있습니다 [code:apps/cloudflared/README.md:24-25].
+
 ## 치른 값
 
-- 터널 하나에 공개 주소 일곱 개가 몰려 있습니다. 터널이 깨지면 공개 앱만이 아니라 고칠 도구(ArgoCD 화면)와 볼 도구(Grafana)도 바깥에서 한꺼번에 사라집니다 [code:apps/cloudflared/app.yaml:5-6]
-- 그래서 cloudflared는 저장소 변경이 자동으로 반영되지 않는 유일한 앱입니다. 다른 앱은 커밋이 곧 배포로 이어지지만, 이 앱은 사람이 반영을 누르고 교체 과정을 지켜봅니다. 잘못된 커밋 하나가 사람 손을 거치지 않고 바깥 길 전체를 끊게 두지 않으려는 것입니다 [code:apps/cloudflared/app.yaml:4-8] [docs:history/cluster_state_20261116.md:56-61]
-- 터널이 끊겼을 때를 위한 길을 남겨 두었습니다. 서버 호스트에서는 터널을 거치지 않고 ingress-nginx의 사설망 고정 주소(VIP)로 운영 도구 화면을 열 수 있고, 관리 노드에 들어가 명령으로 되돌릴 수 있습니다 [code:apps/cloudflared/README.md:24-25]
-- 그 사설망 길에는 Access가 없습니다. 자체 로그인이 없는 Prometheus도 사설망 안에서는 그대로 열립니다 [code:apps/monitoring/ingress.yaml:6]
+- 공개 주소가 모두 터널 하나에 몰린 것은 여러 결정에 걸려 → 「알려진 한계」에 모았습니다
+- 터널이 끊겼을 때 쓰는 사설망 길에는 Access가 없습니다. 자체 로그인이 없는 Prometheus도 사설망 안에서는 그대로 열립니다 [code:apps/monitoring/ingress.yaml:6]
 - cloudflared는 설정을 켜질 때 한 번만 읽습니다. 설정을 반영한 뒤 파드를 차례로 다시 띄우는 단계까지 해야 새 설정이 들어갑니다. 새 설정이 깨져 있으면 새 파드가 준비되지 못해 교체가 멈추고, 옛 두 벌이 계속 받습니다 [code:apps/cloudflared/configmap.yaml:3] [code:apps/cloudflared/deployment.yaml:3-4]

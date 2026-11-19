@@ -30,7 +30,7 @@ Let's Encrypt가 이름의 주인인지 시험하는 방식은 DNS-01(그 이름
 
 - 터널에서 ingress-nginx까지 가는 구간에서 cloudflared는 상대의 인증서를 확인하지 않습니다(noTLSVerify). 일곱 주소 모두 그렇습니다. 이 구간에서는 상대가 진짜 ingress-nginx인지 따지지 않습니다 [code:apps/cloudflared/configmap.yaml:13-43]
 - 모든 Ingress가 HTTP로 온 요청을 HTTPS로 돌려보내지 않게 꺼 두었습니다. 사설망 안에서는 암호화하지 않은 HTTP로도 같은 화면에 닿습니다 [code:platform/argocd/ingress.yaml:7] [code:platform/argocd/ingress.yaml:15]
-- 인증서 발급에 쓰는 Cloudflare API 토큰은 저장소에 없습니다. 클러스터를 다시 만들 때 사람이 넣지 않으면 인증서를 받지 못합니다 [code:platform/cert-manager/cluster-issuer.yaml:1]
+- 인증서 발급에 쓰는 Cloudflare API 토큰이 저장소에 없는 것은 비밀값을 저장소에 두지 않는 결정에서 나와 → 「알려진 한계」에 모았습니다
 
 ## 막혔을 때: 확인을 끈 까닭을 다시 확인한 일
 
