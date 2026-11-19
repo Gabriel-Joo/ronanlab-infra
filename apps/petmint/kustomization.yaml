@@ -29,4 +29,4 @@ resources:
 
 images:
   - name: harbor.ronanlab.dev/petmint/petmint-app
-    newTag: "936174bc5e67"   # Jenkins가 바꾼다(커밋 해시 12자리). 이 줄 모양을 바꾸면 Jenkinsfile의 sed도 바꾼다. latest 금지(10번 8절) — 롤링 중 어느 Pod가 무엇을 도는지 알 수 있어야 한다
+    newTag: "39d2d6bb5ab8"   # Jenkins가 바꾼다(커밋 해시 12자리). 이 줄 모양을 바꾸면 Jenkinsfile의 sed도 바꾼다. latest 금지(10번 8절) — 롤링 중 어느 Pod가 무엇을 도는지 알 수 있어야 한다
