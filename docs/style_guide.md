@@ -148,6 +148,8 @@ python3 scripts/docs_for_code.py <코드 파일 경로>               # 그 코�
 python3 scripts/docs_for_code.py --range main...HEAD --unfixed  # 이 브랜치가 바꾼 것으로 걸리는데 안 고친 문서
 ```
 
+점검이 늘 내는 의심 2건(`docs/02_nodes.md:9`, `docs/03_kubernetes.md:9`)은 그대로 둔다. 둘 다 원고와 이웃 문서를 알려 주는 안내 줄이고, 파일 이름의 번호(`03`, `02`)를 근거 없는 숫자로 읽어 잡힌 것이라 근거를 달 사실이 없다(2026-11-20 확인).
+
 두 명령은 FOREMAN 문서 도구(`tools/docs.py`의 `check`, `refs`)를 부르는 껍데기다(2026-11-17 문서 도구 합치기). 규칙은 FOREMAN에 있고, 이 저장소만의 값은 `.foreman/docs.toml`에 있다. FOREMAN 폴더는 환경 변수 `FOREMAN_DIR`가 먼저이고, 없으면 `scripts/foreman_tool.py`의 기본 경로를 쓴다. 둘 다 못 찾으면 종료 코드 2로 멈춘다. 점검이나 거꾸로 찾기의 규칙을 고칠 일은 FOREMAN 관리자에게 부탁한다.
 
 코드를 고치는 세션은 그 코드를 가리키는 문서도 같은 브랜치에서 고친다. 어느 문서가 걸리는지는 `python3 scripts/docs_for_code.py`로 본다. 고칠 수 없으면 무엇이 걸리는지 보고한다(2026-11-17 사용자). 디자이너와 조사 세션에는 적용하지 않는다.
