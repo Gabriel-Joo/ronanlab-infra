@@ -45,10 +45,10 @@
 
 ### 파일 두 벌
 
-- `cluster/`(git): `Vagrantfile`, `setup-node.sh`, `label-nodes.sh`. 기록과 검토용 [code:CLAUDE.md:16]
-- 호스트 `~/k8s-cluster/`(git 아님): `Vagrantfile`, `setup-node.sh`, `.vagrant/`(VM 상태와 SSH 키). 실제로 `vagrant`가 도는 자리 [code:CLAUDE.md:15]
-- 겹치는 두 파일은 따로 복사한 파일이고 내용이 같다. `label-nodes.sh`는 저장소에만 있다 [code:CLAUDE.md:16-17]
-- `Vagrantfile`은 `setup-node.sh`를 부르지 않는다. 노드 설치는 사람이 넣는다 [code:CLAUDE.md:17]
+- `cluster/`(git): `Vagrantfile`, `setup-node.sh`, `label-nodes.sh`. 기록과 검토용 [repo:CLAUDE.md:16]
+- 호스트 `~/k8s-cluster/`(git 아님): `Vagrantfile`, `setup-node.sh`, `.vagrant/`(VM 상태와 SSH 키). 실제로 `vagrant`가 도는 자리 [repo:CLAUDE.md:15]
+- 겹치는 두 파일은 따로 복사한 파일이고 내용이 같다. `label-nodes.sh`는 저장소에만 있다 [repo:CLAUDE.md:16-17]
+- `Vagrantfile`은 `setup-node.sh`를 부르지 않는다. 노드 설치는 사람이 넣는다 [repo:CLAUDE.md:17]
 
 ### 역할 라벨과 배치
 
@@ -90,7 +90,7 @@
 
 ## 바꾸거나 다시 만들기
 
-VM 만들기, 끄기, `vagrant ssh`는 호스트 `~/k8s-cluster`에서 한다. `.vagrant/` 상태가 거기에만 있어 `cluster/`에서 `vagrant up`을 치면 기존 VM을 모르고 새로 만들려 한다 [code:CLAUDE.md:18]
+VM 만들기, 끄기, `vagrant ssh`는 호스트 `~/k8s-cluster`에서 한다. `.vagrant/` 상태가 거기에만 있어 `cluster/`에서 `vagrant up`을 치면 기존 VM을 모르고 새로 만들려 한다 [repo:CLAUDE.md:18]
 
 설정을 바꿀 때:
 
@@ -101,7 +101,7 @@ cmp ~/k8s-cluster/Vagrantfile cluster/Vagrantfile && cmp ~/k8s-cluster/setup-nod
 cd ~/k8s-cluster && vagrant provision <노드>
 ```
 
-근거: [code:CLAUDE.md:17-18] [docs:history/build_log/01_cluster.md:73]
+근거: [repo:CLAUDE.md:17-18] [docs:history/build_log/01_cluster.md:73]
 
 워커 더하기(w4를 더한 절차, 새 이름은 예시) [docs:history/build_log/01_cluster.md:87]:
 
@@ -121,11 +121,11 @@ echo "$J" | vagrant ssh w5-k8s -c 'read -r C; sudo $C'; unset J
 
 - 새 IP는 `default` 망의 DHCP 범위와 MetalLB 풀(192.168.122.240-250) 밖에서 고른다. DHCP 범위는 `docs/04_ingress.md` [docs:history/cluster_state_20261116.md:32]
 - 노드를 새로 만들거나 다시 join하면 역할 라벨이 없다. `bash cluster/label-nodes.sh`를 m-k8s에서 다시 돌린다 [code:cluster/label-nodes.sh:3-4]
-- 노드 정비(cordon, 앱 Pod 먼저 drain, halt, up, uncordon) 순서는 옛 기록 `docs/history/build_log/08_scale_out.md` 1-5절에 있다. VM 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함)는 사람 승인이 필요하다 [docs:history/build_log/08_scale_out.md:81-96] [code:CLAUDE.md:37-41]
+- 노드 정비(cordon, 앱 Pod 먼저 drain, halt, up, uncordon) 순서는 옛 기록 `docs/history/build_log/08_scale_out.md` 1-5절에 있다. VM 끄기(`vagrant halt`, `virsh` 메모리 바꾸기 포함)는 사람 승인이 필요하다 [docs:history/build_log/08_scale_out.md:81-96] [repo:CLAUDE.md:37-41]
 
 ## 확인
 
-m-k8s에서(`cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`) [code:CLAUDE.md:27]:
+m-k8s에서(`cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`) [repo:CLAUDE.md:27]:
 
 ```bash
 kubectl get nodes -o wide
@@ -155,7 +155,7 @@ swapon --show | wc -l         # 0
 - InternalIP를 쓰는 기능은 관리망 주소를 쓴다. 예: Prometheus `kubelet-cadvisor` 작업은 `role: node` 서비스 디스커버리로 노드 IP:10250을 긁는다 [code:apps/monitoring/prometheus/configmap.yaml:33-43]
 - eth0 주소는 재부팅 때 바뀔 수 있고, 바뀌면 InternalIP도 바뀐다 [docs:history/human_answers_20261116.md:7] [docs:history/human_answers_20261116.md:15]
 - 프로비저너는 VM을 처음 만들 때만 돈다 [docs:history/build_log/01_cluster.md:704]
-- 같은 파일 두 벌(`cluster/`와 `~/k8s-cluster/`)이 따로 복사돼 있다. 한쪽만 고치면 어긋난다 [code:CLAUDE.md:17-18]
+- 같은 파일 두 벌(`cluster/`와 `~/k8s-cluster/`)이 따로 복사돼 있다. 한쪽만 고치면 어긋난다 [repo:CLAUDE.md:17-18]
 - infra(w3), platform(w4)은 노드가 하나씩이다. app 노드는 둘이다 [docs:history/build_log/08_scale_out.md:433-434]
 - 컨트롤 플레인이 한 대다 [docs:history/build_log/01_cluster.md:700]
 - VM 다섯 대가 같은 물리 서버에 있다 [docs:history/build_log/08_scale_out.md:436]

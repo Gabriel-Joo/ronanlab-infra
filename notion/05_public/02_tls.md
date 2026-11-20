@@ -42,7 +42,7 @@ ArgoCD 화면을 내놓는 argocd-server는 자기 인증서로만 HTTPS를 받�
 
 ## 사설 VIP로 와도 같은 인증서다
 
-사설망에서 사설 VIP로 들어오는 요청도 같은 Ingress에 닿으므로, ingress-nginx는 같은 인증서를 내놓는다. 공개 주소와 같은 이름을 쓰기 때문에 이 인증서는 사설 VIP 길에서도 그대로 확인을 통과한다. 노드의 containerd가 Harbor를 부를 때와 서버 호스트에서 운영 도구 화면을 열 때가 이 경우다. [code:apps/monitoring/ingress.yaml:4] [code:apps/cloudflared/README.md:24-25] [code:platform/harbor/values.yaml:4]
+사설망에서 사설 VIP로 들어오는 요청도 같은 Ingress에 닿으므로, ingress-nginx는 같은 인증서를 내놓는다. 공개 주소와 같은 이름을 쓰기 때문에 이 인증서는 사설 VIP 길에서도 그대로 확인을 통과한다. 노드의 containerd가 Harbor를 부를 때와 서버 호스트에서 운영 도구 화면을 열 때가 이 경우다. [code:apps/monitoring/ingress.yaml:4] [repo:apps/cloudflared/README.md:24-25] [code:platform/harbor/values.yaml:4]
 
 Harbor는 Ingress를 Harbor의 helm 차트가 만든다. 차트에 인증서를 직접 만들지 말고 cert-manager가 넣어 둔 Secret을 쓰라고 적어 두었다. [code:platform/harbor/values.yaml:5-9] [code:platform/harbor/values.yaml:20-21]
 

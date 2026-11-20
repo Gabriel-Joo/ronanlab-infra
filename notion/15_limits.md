@@ -32,7 +32,7 @@
 
 ### 사설망 안쪽 길에는 Access가 없다
 
-터널이 깨졌을 때 고칠 길로, 서버 호스트에서 터널을 거치지 않고 ingress-nginx의 사설 VIP로 운영 도구 화면을 여는 길을 남겼다. 이 길은 Cloudflare를 지나지 않으므로 Access도 거치지 않는다 [code:apps/cloudflared/README.md:24-25]. 그 사설망에는 호스트와 가상 머신만 있다 [code:apps/monitoring/ingress.yaml:6].
+터널이 깨졌을 때 고칠 길로, 서버 호스트에서 터널을 거치지 않고 ingress-nginx의 사설 VIP로 운영 도구 화면을 여는 길을 남겼다. 이 길은 Cloudflare를 지나지 않으므로 Access도 거치지 않는다 [repo:apps/cloudflared/README.md:24-25]. 그 사설망에는 호스트와 가상 머신만 있다 [code:apps/monitoring/ingress.yaml:6].
 
 - 사설망 안에서는 Access 없이 운영 도구에 닿는다. 자체 로그인이 없는 Prometheus도 사설망에서는 그대로 열린다 [code:apps/monitoring/ingress.yaml:5-6]
 
@@ -40,7 +40,7 @@
 
 ### 비밀값은 저장소에 두지 않는다
 
-비밀값은 저장소에 두지 않고, 사람이 클러스터에 Secret으로 직접 만든다 [code:CLAUDE.md:47]. 커밋되는 매니페스트에 실제 값이 박히는 것을 막으려는 것이다 [docs:history/build_log/03_cloudflare_tunnel.md:188]. 그래서 클러스터를 새로 세우면 비밀값은 저장소에서 돌아오지 않고, 사람이 다시 넣어야 한다.
+비밀값은 저장소에 두지 않고, 사람이 클러스터에 Secret으로 직접 만든다 [repo:CLAUDE.md:47]. 커밋되는 매니페스트에 실제 값이 박히는 것을 막으려는 것이다 [docs:history/build_log/03_cloudflare_tunnel.md:188]. 그래서 클러스터를 새로 세우면 비밀값은 저장소에서 돌아오지 않고, 사람이 다시 넣어야 한다.
 
 - Cloudflare API 토큰이 저장소에 없다. 클러스터를 다시 만들 때 사람이 Secret을 넣지 않으면 인증서를 받지 못한다 [code:platform/cert-manager/cluster-issuer.yaml:1]
 - ArgoCD의 웹훅 시크릿과 알림 토큰도 저장소에 없어, 클러스터를 새로 세우면 사람이 다시 넣어야 한다 [docs:history/build_log/04_argocd.md:56-59]
@@ -49,10 +49,10 @@
 
 ### 자동 Sync 스위치는 클러스터에 둔다
 
-자동 반영(자동 Sync)을 켜고 끄는 실제 스위치는 저장소의 앱 정의 파일이 아니라 클러스터에 있다. 루트 Application이 앱의 Sync 설정까지 저장소대로 맞추면, Jenkins의 태그 커밋 하나에 루트가 다시 Sync하면서 스키마 배포 동안 잠시 꺼 둔 자동 Sync를 도로 켜기 때문이다 [code:bootstrap/root-app.yaml:8-10]. 끄고 켜는 일도 사람이 한다. 배포를 막는 장치라 사람이 직접 끈다 [code:apps/runshoes/runbooks/catalog-v4-v5.md:37].
+자동 반영(자동 Sync)을 켜고 끄는 실제 스위치는 저장소의 앱 정의 파일이 아니라 클러스터에 있다. 루트 Application이 앱의 Sync 설정까지 저장소대로 맞추면, Jenkins의 태그 커밋 하나에 루트가 다시 Sync하면서 스키마 배포 동안 잠시 꺼 둔 자동 Sync를 도로 켜기 때문이다 [code:bootstrap/root-app.yaml:8-10]. 끄고 켜는 일도 사람이 한다. 배포를 막는 장치라 사람이 직접 끈다 [repo:apps/runshoes/runbooks/catalog-v4-v5.md:37].
 
-- 앱 정의 파일의 자동 Sync 값과 클러스터의 실제 값이 다를 수 있다. 저장소만 보고는 지금 반영 방식을 단정할 수 없고, 클러스터에서 확인해야 한다 [code:CLAUDE.md:11]
-- 스키마를 바꾸는 배포에서 끄기를 잊고 push하면 덤프 없이 스키마가 바뀔 수 있다 [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
+- 앱 정의 파일의 자동 Sync 값과 클러스터의 실제 값이 다를 수 있다. 저장소만 보고는 지금 반영 방식을 단정할 수 없고, 클러스터에서 확인해야 한다 [repo:CLAUDE.md:11]
+- 스키마를 바꾸는 배포에서 끄기를 잊고 push하면 덤프 없이 스키마가 바뀔 수 있다 [repo:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
 
 ### GPU를 쓰는 서비스는 호스트에 둔다
 

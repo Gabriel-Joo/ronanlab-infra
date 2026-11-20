@@ -64,11 +64,11 @@ Primary가 있는 w1이 오래 돌아오지 않으면 사람이 사본을 Primar
 
 덤프는 클러스터 안이 아니라 호스트(VM들을 돌리는 물리 서버)의 디렉터리에 쌓인다. 호스트가 NFS(네트워크로 디렉터리를 나눠 쓰는 방식)로 백업 디렉터리 하나만 쓰기용으로 열고, 클러스터는 그것을 고정 PV(미리 만들어 둔 저장 공간) `petmint-backup`으로 붙인다. [code:apps/petmint/backup/cronjob.yaml:79-94] 호스트 쪽 NFS를 여는 설정은 펫퍼민트 저장소에 있고, 관리자 권한이 필요해 사람이 돌린다. [code:apps/petmint/backup/cronjob.yaml:79] 호스트가 NFS를 어떻게 나눠 주는지는 → 「공유 저장소」에서 다룬다. 이미지 저장소의 데이터베이스도 같은 방식으로 호스트에 백업하는데, 그것은 → 「이미지 저장소」에서 다룬다.
 
-런슈즈는 정기 백업이 없다. 데이터베이스 구조를 바꾸는 배포 직전에 사람이 덤프를 뜨고 되살리기까지 확인한다. [code:apps/runshoes/README.md:54]
+런슈즈는 정기 백업이 없다. 데이터베이스 구조를 바꾸는 배포 직전에 사람이 덤프를 뜨고 되살리기까지 확인한다. [repo:apps/runshoes/README.md:54]
 
 ## 지우는 일은 사람이 정한다
 
-StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해 두었다. [code:apps/petmint/mysql/statefulset.yaml:3] [code:apps/petmint/mysql/statefulset.yaml:18-20] 하지만 기본 저장소의 규칙상 PVC를 지우면 노드 디스크의 데이터도 함께 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8] 그래서 운영 데이터베이스의 데이터를 지우는 일, PVC와 PV를 지우는 일, 네임스페이스를 지우는 일은 사람의 승인 없이 하지 않는다. 이 저장소에서 일하는 세션도 같은 규칙을 따른다. [code:CLAUDE.md:36-39]
+StatefulSet이나 파드를 지워도 저장 공간 요청(PVC)은 남도록 해 두었다. [code:apps/petmint/mysql/statefulset.yaml:3] [code:apps/petmint/mysql/statefulset.yaml:18-20] 하지만 기본 저장소의 규칙상 PVC를 지우면 노드 디스크의 데이터도 함께 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8] 그래서 운영 데이터베이스의 데이터를 지우는 일, PVC와 PV를 지우는 일, 네임스페이스를 지우는 일은 사람의 승인 없이 하지 않는다. 이 저장소에서 일하는 세션도 같은 규칙을 따른다. [repo:CLAUDE.md:36-39]
 
 ## 알려진 한계
 

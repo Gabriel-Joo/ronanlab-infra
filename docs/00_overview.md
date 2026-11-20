@@ -14,8 +14,8 @@ GPU 호스트 한 대 안의 VM 다섯 대로 세운 kubeadm 클러스터와, �
 | --- | --- |
 | `bootstrap/root-app.yaml` | 루트 Application(App of Apps). `main`의 `apps/*/app.yaml`을 읽어 앱 Application을 만든다 [code:bootstrap/root-app.yaml:22-28] |
 | `apps/` | ArgoCD가 배포하는 것. petmint, runshoes, cloudflared, harbor-backup, monitoring [code:apps/] |
-| `platform/` | ArgoCD 밖에서 사람이 Helm이나 kubectl로 넣은 기반. cert-manager, coredns, ingress-nginx, metallb, harbor, jenkins, argocd ingress [code:bootstrap/root-app.yaml:13] [code:CLAUDE.md:13] |
-| `cluster/` | VM 정의 `Vagrantfile`, 노드 설치 `setup-node.sh`, 역할 라벨 `label-nodes.sh`. 앞의 둘은 호스트 `~/k8s-cluster`의 사본이라 고치면 양쪽을 같이 고친다 [code:CLAUDE.md:16-18] |
+| `platform/` | ArgoCD 밖에서 사람이 Helm이나 kubectl로 넣은 기반. cert-manager, coredns, ingress-nginx, metallb, harbor, jenkins, argocd ingress [code:bootstrap/root-app.yaml:13] [repo:CLAUDE.md:13] |
+| `cluster/` | VM 정의 `Vagrantfile`, 노드 설치 `setup-node.sh`, 역할 라벨 `label-nodes.sh`. 앞의 둘은 호스트 `~/k8s-cluster`의 사본이라 고치면 양쪽을 같이 고친다 [repo:CLAUDE.md:16-18] |
 | `scripts/` | 호스트 스크립트(`host-nfs-harbor-backup-setup.sh`는 sudo로 사람이 돌린다), 배포 키, MySQL 복제 맞추기와 확인, 문서 점검 [code:scripts/host-nfs-harbor-backup-setup.sh:3] [code:scripts/] |
 | `docs/` | 개발자 문서(00~14), 남은 일 `TODO.md`, 기록 `history/`. 노션 원고는 `notion/`, 포트폴리오는 `portfolio/` [docs:README.md] |
 
@@ -55,16 +55,16 @@ GPU 호스트 한 대 안의 VM 다섯 대로 세운 kubeadm 클러스터와, �
 | Cloudflare 터널 커넥터 | cloudflared | ArgoCD 수동 Sync | `apps/cloudflared/` |
 | cert-manager, coredns, ingress-nginx, metallb, harbor, jenkins, argocd ingress | 각각 | 사람이 helm, kubectl | `platform/` |
 
-- 앱 설명: [docs:history/build_log/07_project_deploy.md:16] [code:apps/runshoes/README.md:3]
+- 앱 설명: [docs:history/build_log/07_project_deploy.md:16] [repo:apps/runshoes/README.md:3]
 - Sync 방식: [docs:history/cluster_state_20261116.md:54-61]
 - `platform/`이 ArgoCD 밖인 것: [code:bootstrap/root-app.yaml:13]
-- 모니터링 구성: [code:apps/monitoring/README.md:3-6]
+- 모니터링 구성: [repo:apps/monitoring/README.md:3-6]
 - 두 앱 모두 앱 파드 2개(w1, w2)와 MySQL Primary(w1), Replica(w2) [docs:history/build_log/07_project_deploy.md:3]
 
 ### 흐름
 
 - 배포: 앱 저장소 push, Jenkins 빌드, Harbor push, 이 저장소 `apps/<앱>/kustomization.yaml` 태그 커밋, ArgoCD 자동 Sync, 롤링 [docs:history/build_log/07_project_deploy.md:3] [code:apps/petmint/app.yaml:1]
-- 바깥 공개: 클러스터 안 cloudflared 파드 2개가 터널 `ronanlab-tunnel` 하나로 공개 주소 일곱을 받아 모두 `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`으로 보낸다 [code:apps/cloudflared/README.md:3-4] [code:apps/cloudflared/deployment.yaml:13] [docs:history/cluster_state_20261116.md:50]
+- 바깥 공개: 클러스터 안 cloudflared 파드 2개가 터널 `ronanlab-tunnel` 하나로 공개 주소 일곱을 받아 모두 `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443`으로 보낸다 [repo:apps/cloudflared/README.md:3-4] [code:apps/cloudflared/deployment.yaml:13] [docs:history/cluster_state_20261116.md:50]
 - 안쪽 문: MetalLB VIP 192.168.122.240(ingress-nginx LoadBalancer, 80과 443) [docs:history/cluster_state_20261116.md:34]
 - 인증서: cert-manager, ClusterIssuer `letsencrypt-prod`, Certificate 다섯 [docs:history/cluster_state_20261116.md:48]
 - GPU 추론: 파드가 호스트의 Ollama(11434), model-service(8200), Milvus(19530), search(8100)를 192.168.122.1로 부른다 [docs:history/cluster_state_20261116.md:80]
@@ -92,7 +92,7 @@ kubectl apply -f bootstrap/root-app.yaml
 
 ## 확인
 
-호스트에는 kubectl이 없어 m-k8s에서 친다 [code:CLAUDE.md:27]
+호스트에는 kubectl이 없어 m-k8s에서 친다 [repo:CLAUDE.md:27]
 
 ```
 cd ~/k8s-cluster && vagrant status                                   # 다섯 대 running
@@ -104,7 +104,7 @@ vagrant ssh m-k8s -c 'kubectl -n argocd get applications'            # root 와 
 
 ## 알려진 한계
 
-- 모든 것이 물리 서버 한 대 안에 있다. 호스트가 멈추면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다 [code:cluster/Vagrantfile:3-10] [code:CLAUDE.md:8]
+- 모든 것이 물리 서버 한 대 안에 있다. 호스트가 멈추면 클러스터, 운영 도구, 추론 서버가 함께 멈춘다 [code:cluster/Vagrantfile:3-10] [repo:CLAUDE.md:8]
 - control-plane은 m-k8s 한 대다 [docs:history/cluster_state_20261116.md:11]
 - 공개 주소 일곱이 터널 하나를 지난다. 터널이 깨지면 ArgoCD, Grafana 화면도 바깥에서 안 보인다 [code:apps/cloudflared/app.yaml:4-7]
 - 노드 InternalIP가 eth0(DHCP) 주소로 잡혀 있다. kubelet에 `--node-ip`가 없어서다 [docs:history/cluster_state_20261116.md:26] [docs:history/human_answers_20261116.md:15]

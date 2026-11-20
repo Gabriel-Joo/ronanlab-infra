@@ -64,7 +64,7 @@ kubectl은 m-k8s에서 친다. 호스트에는 kubectl이 없어 `cd ~/k8s-clust
 kubectl -n argocd delete application <이름>
 ```
 
-자동 Sync 켜고 끄기(실제 스위치). 바꾼 뒤 `app.yaml`의 기록도 맞춰 고친다 [code:apps/petmint/README.md:34-35]
+자동 Sync 켜고 끄기(실제 스위치). 바꾼 뒤 `app.yaml`의 기록도 맞춰 고친다 [repo:apps/petmint/README.md:34-35]
 
 ```bash
 kubectl -n argocd patch application <앱> --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'   # 끄기
@@ -77,7 +77,7 @@ kubectl -n argocd patch application <앱> --type merge -p '{"spec":{"syncPolicy"
 kubectl -n argocd patch app <앱> --type merge -p '{"operation":{"sync":{"revision":"<커밋>"}}}'
 ```
 
-`apps/cloudflared/configmap.yaml`을 바꾼 경우에는 Sync 뒤 `kubectl -n cloudflared rollout restart deploy/cloudflared`까지 한다 [code:apps/cloudflared/README.md:44]
+`apps/cloudflared/configmap.yaml`을 바꾼 경우에는 Sync 뒤 `kubectl -n cloudflared rollout restart deploy/cloudflared`까지 한다 [repo:apps/cloudflared/README.md:44]
 
 ArgoCD 처음부터 다시 세우기(순서만. 비밀값은 셸 변수와 표준 입력으로만 다룬다. 웹훅 시크릿과 알림 토큰을 넣는 명령은 옛 구축 기록에 있다) [docs:history/build_log/04_argocd.md:92-109]
 

@@ -32,7 +32,7 @@ Milvus와 서비스 행의 근거는 [docs:history/build_log/00_server.md:99] [d
 Ollama 동작:
 
 - 모델은 요청 때 VRAM에 올리고, 마지막 요청 뒤 `OLLAMA_KEEP_ALIVE` 기본값(5분)이 지나면 내린다 [docs:history/build_log/00_server.md:234]
-- `OLLAMA_KEEP_ALIVE`는 바꾸지 않는다. 학교 PC 등과 GPU 메모리를 나눠 쓴다 [code:CLAUDE.md:34]
+- `OLLAMA_KEEP_ALIVE`는 바꾸지 않는다. 학교 PC 등과 GPU 메모리를 나눠 쓴다 [repo:CLAUDE.md:34]
 - 클러스터가 쓰는 모델: petmint `tri-7b`(기본)와 `kabyul-tri-7b-rag1-rebuild4-ckpt462`(업무특화) [code:apps/petmint/app/configmap.yaml:29-30], runshoes 챗봇과 리뷰 요약 `gemma4:e4b` [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:288]
 
 ## 설정 자리

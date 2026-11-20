@@ -51,7 +51,7 @@ Jenkins가 앱 이미지를 굽고 Harbor에 올린 뒤 이 저장소의 `newTag
 ### 태그 커밋
 
 - Jenkinsfile이 빌드 뒤 이 저장소를 `sh 'git clone'`으로 받아 `newTag` 줄을 sed로 바꾸고, grep으로 다시 센 뒤 main에 push한다 [docs:history/build_log/07_project_deploy.md:212-228]
-- 커밋 제목은 `<앱>: 이미지 태그 <해시>` 꼴이다. 기계가 쓰는 커밋이라 이 저장소의 커밋 메시지 규칙을 따르지 않는다 [code:CLAUDE.md:89]
+- 커밋 제목은 `<앱>: 이미지 태그 <해시>` 꼴이다. 기계가 쓰는 커밋이라 이 저장소의 커밋 메시지 규칙을 따르지 않는다 [repo:CLAUDE.md:89]
 - 바뀐 파일이 모두 문서뿐인 push는 SUCCESS로 끝내고 이미지와 태그 커밋을 건너뛴다 [docs:history/build_log/06_jenkins.md:487]
 
 ### 이미지 판 고정
@@ -90,7 +90,7 @@ Jenkins가 앱 이미지를 굽고 Harbor에 올린 뒤 이 저장소의 `newTag
 
 ## 바꾸거나 다시 만들기
 
-kubectl과 helm은 m-k8s에서 친다(`cd ~/k8s-cluster && vagrant ssh m-k8s`). 클러스터를 만지는 일은 원본 폴더 main에서 한 세션만 한다 [code:CLAUDE.md:23]
+kubectl과 helm은 m-k8s에서 친다(`cd ~/k8s-cluster && vagrant ssh m-k8s`). 클러스터를 만지는 일은 원본 폴더 main에서 한 세션만 한다 [repo:CLAUDE.md:23]
 
 Jenkins를 처음부터 세울 때는 Secret을 helm보다 먼저 만든다. values가 Secret 이름을 부르기 때문이다 [docs:history/build_log/06_jenkins.md:67]
 
@@ -121,14 +121,14 @@ helm repo add jenkins https://charts.jenkins.io && helm repo update
 helm install jenkins jenkins/jenkins --version 5.9.68 -n jenkins -f platform/jenkins/values.yaml
 ```
 
-명령 출처: [docs:history/build_log/06_jenkins.md:105-110]. values를 고친 뒤에는 같은 차트 판과 `-f platform/jenkins/values.yaml`로 `helm upgrade`한다. `--reuse-values`는 앞의 값을 덮을 수 있어 쓰지 않는다 [code:CLAUDE.md:103]
+명령 출처: [docs:history/build_log/06_jenkins.md:105-110]. values를 고친 뒤에는 같은 차트 판과 `-f platform/jenkins/values.yaml`로 `helm upgrade`한다. `--reuse-values`는 앞의 값을 덮을 수 있어 쓰지 않는다 [repo:CLAUDE.md:103]
 
 - 플러그인 판을 올릴 때: 올릴 플러그인과 그 의존을 목록에서 같이 고치고 `helm upgrade` [code:platform/jenkins/values.yaml:174]
 - Job을 더한 `helm upgrade` 뒤 Job이 안 보이면 관리 → Configuration as Code → Reload 한 번 [code:platform/jenkins/values.yaml:128-130]
 - 차트 판을 올리면 `platform/versions.yaml`도 같은 커밋에서 고친다 [code:platform/versions.yaml:6]
 - `newTag` 줄 모양을 바꾸면 앱 저장소 Jenkinsfile의 sed도 함께 바꾼다 [code:apps/runshoes/kustomization.yaml:26]
 - ingress-nginx 판 올리기: `base/deploy.yaml`을 새 태그로 다시 받아 바꾸고 overlay에서 `kubectl diff -k`로 본다 [code:platform/ingress-nginx/base/kustomization.yaml:4]
-- 이미지만 되돌리기: 이 저장소의 태그 커밋을 `git revert`해 push(자동 Sync 앱은 push가 곧 배포다). DB 마이그레이션은 되돌아가지 않는다 [code:apps/runshoes/README.md:64] [code:apps/petmint/README.md:27]
+- 이미지만 되돌리기: 이 저장소의 태그 커밋을 `git revert`해 push(자동 Sync 앱은 push가 곧 배포다). DB 마이그레이션은 되돌아가지 않는다 [repo:apps/runshoes/README.md:64] [repo:apps/petmint/README.md:27]
 
 ## 확인
 

@@ -20,11 +20,11 @@
 
 ## 시계열을 작게 유지한다
 
-Prometheus에서 시계열(이름과 라벨이 같은 값의 줄기 하나)의 수는 곧 메모리와 디스크다. 그래서 큰 출처는 쓰는 것만 남겼다. [code:apps/monitoring/prometheus/configmap.yaml:1] node-exporter는 파드마다 생기는 마운트와 가상 네트워크 장치를 빼고 [code:apps/monitoring/node-exporter/daemonset.yaml:32-34], cAdvisor는 컨테이너마다 수십 개를 내는 지표 가운데 일곱 개만 남기며 [code:apps/monitoring/prometheus/configmap.yaml:47-51], kube-state-metrics는 기본값인 모든 객체 종류 대신 열두 종류만 본다. [code:apps/monitoring/kube-state-metrics/deployment.yaml:29-30] API 서버와 kubelet 자체의 지표는 시계열이 가장 많은데 대시보드에 쓰지 않아 긁지 않는다. 이렇게 줄여 시계열을 약 1만으로 어림했고, 설정은 1.5만을 기준으로 잡았다. [code:apps/monitoring/README.md:70-80]
+Prometheus에서 시계열(이름과 라벨이 같은 값의 줄기 하나)의 수는 곧 메모리와 디스크다. 그래서 큰 출처는 쓰는 것만 남겼다. [code:apps/monitoring/prometheus/configmap.yaml:1] node-exporter는 파드마다 생기는 마운트와 가상 네트워크 장치를 빼고 [code:apps/monitoring/node-exporter/daemonset.yaml:32-34], cAdvisor는 컨테이너마다 수십 개를 내는 지표 가운데 일곱 개만 남기며 [code:apps/monitoring/prometheus/configmap.yaml:47-51], kube-state-metrics는 기본값인 모든 객체 종류 대신 열두 종류만 본다. [code:apps/monitoring/kube-state-metrics/deployment.yaml:29-30] API 서버와 kubelet 자체의 지표는 시계열이 가장 많은데 대시보드에 쓰지 않아 긁지 않는다. 이렇게 줄여 시계열을 약 1만으로 어림했고, 설정은 1.5만을 기준으로 잡았다. [repo:apps/monitoring/README.md:70-80]
 
 ## 저장과 보존
 
-Prometheus는 한 대이고, 지표를 w4의 로컬 디스크 볼륨(local-path, 노드의 디렉터리를 그대로 볼륨으로 쓰는 방식)에 10Gi로 저장한다. [code:apps/monitoring/prometheus/statefulset.yaml:61-69] 보존은 15일이고, 그보다 먼저 9GB에 닿으면 오래된 것부터 지운다. local-path는 볼륨 크기를 강제하지 않아서 디스크를 채우지 않게 하는 실제 상한은 이 9GB다. [code:apps/monitoring/prometheus/statefulset.yaml:36-37] [code:apps/monitoring/README.md:109] 처음 설계는 7일에 5Gi였고, 15일 보존에 맞춰 10Gi로 올렸다. [code:apps/monitoring/README.md:104]
+Prometheus는 한 대이고, 지표를 w4의 로컬 디스크 볼륨(local-path, 노드의 디렉터리를 그대로 볼륨으로 쓰는 방식)에 10Gi로 저장한다. [code:apps/monitoring/prometheus/statefulset.yaml:61-69] 보존은 15일이고, 그보다 먼저 9GB에 닿으면 오래된 것부터 지운다. local-path는 볼륨 크기를 강제하지 않아서 디스크를 채우지 않게 하는 실제 상한은 이 9GB다. [code:apps/monitoring/prometheus/statefulset.yaml:36-37] [repo:apps/monitoring/README.md:109] 처음 설계는 7일에 5Gi였고, 15일 보존에 맞춰 10Gi로 올렸다. [repo:apps/monitoring/README.md:104]
 
 local-path 볼륨은 처음 붙은 노드에 묶인다. Prometheus 파드는 그 노드로만 다시 뜨므로, w4를 비우면 Prometheus도 멈춘다. [code:apps/monitoring/prometheus/statefulset.yaml:2] 설정을 바꿨을 때도 주의가 필요하다. ConfigMap만 바뀌면 떠 있는 Prometheus는 설정을 다시 읽지 않으므로, 파드 주석의 판 숫자를 함께 올려 파드를 새로 띄운다. [code:apps/monitoring/prometheus/statefulset.yaml:18-19]
 

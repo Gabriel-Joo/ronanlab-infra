@@ -30,7 +30,7 @@ ArgoCD 쪽은 App of Apps로 짰습니다. ArgoCD에서 「어느 폴더를 어�
 
 ## 까닭
 
-Git을 기준으로 삼으면 바뀐 내용이 모두 커밋으로 남고, 되돌리기는 앞 커밋으로 돌아가는 일이 됩니다. [docs:history/build_log/04_argocd.md:118-130] 이미지만 되돌릴 때는 태그 커밋 하나를 거꾸로 적용하는 커밋(revert)을 올리면 자동 Sync가 옛 이미지로 바꿉니다. [code:apps/runshoes/README.md:64]
+Git을 기준으로 삼으면 바뀐 내용이 모두 커밋으로 남고, 되돌리기는 앞 커밋으로 돌아가는 일이 됩니다. [docs:history/build_log/04_argocd.md:118-130] 이미지만 되돌릴 때는 태그 커밋 하나를 거꾸로 적용하는 커밋(revert)을 올리면 자동 Sync가 옛 이미지로 바꿉니다. [repo:apps/runshoes/README.md:64]
 
 태그를 고정한 것도 같은 생각입니다. `latest`를 쓰면 파드를 하나씩 새것으로 바꾸는 동안 어느 파드가 무엇을 도는지 알 수 없습니다. [code:apps/petmint/kustomization.yaml:32] 커밋 해시를 태그로 쓰면 태그만 보고 어느 커밋이 도는지 알 수 있습니다. [code:apps/runshoes/kustomization.yaml:26]
 
@@ -44,21 +44,21 @@ Jenkins는 빌드 파드를 띄우고, 권한을 주고, 이미지를 밀어 넣
 
 - 자동 Sync인 앱은 push가 곧 배포입니다. 데이터베이스 구조를 바꾸는 배포는 자동 Sync를 잠시 끄고 사람이 단계마다 확인하며 넣습니다. [code:apps/runshoes/app.yaml:9]
 - 저장소에서 지운 리소스를 클러스터에서도 지우는 기능(prune)을 꺼 두었습니다. 저장소에서 지운 것이 클러스터에서 바로 사라지지 않게 하려는 것이라, 클러스터에 남은 것은 사람이 따로 지워야 합니다. [code:bootstrap/root-app.yaml:11] [code:apps/runshoes/app.yaml:8] [docs:history/build_log/07_project_deploy.md:261]
-- Harbor는 데이터베이스만 백업하고 이미지 층은 백업하지 않습니다. 층이 사라진 태그는 내려받을 수 없고, 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 합니다. [code:apps/harbor-backup/README.md:15-16]
+- Harbor는 데이터베이스만 백업하고 이미지 층은 백업하지 않습니다. 층이 사라진 태그는 내려받을 수 없고, 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 합니다. [repo:apps/harbor-backup/README.md:15-16]
 - ArgoCD 밖의 기반을 사람이 손으로 넣는 것과 Jenkins가 한 노드에 묶인 것은 여러 결정에 걸려 → 「알려진 한계」에 모았습니다
 
 ## 조건
 
 아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것입니다.
 
-- 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [code:apps/petmint/README.md:27]
+- 태그 커밋을 되돌려도 데이터베이스 마이그레이션은 되돌아가지 않습니다. [repo:apps/petmint/README.md:27]
 
 ## 막혔을 때: 자동 Sync가 켜진 채 push가 먼저 나간 일
 
-자동 Sync는 편하지만, 데이터베이스 구조를 바꾸는 배포에서는 위험이 됩니다. 런슈즈는 새 이미지의 파드가 뜰 때 구조 변경을 적용하므로, 덤프(백업)와 복원 확인보다 태그 커밋이 먼저 들어가면 백업 없이 구조가 바뀝니다. [code:apps/runshoes/app.yaml:9] [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]
+자동 Sync는 편하지만, 데이터베이스 구조를 바꾸는 배포에서는 위험이 됩니다. 런슈즈는 새 이미지의 파드가 뜰 때 구조 변경을 적용하므로, 덤프(백업)와 복원 확인보다 태그 커밋이 먼저 들어가면 백업 없이 구조가 바뀝니다. [code:apps/runshoes/app.yaml:9] [repo:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]
 
 이 순서를 지키려면 두 가지가 필요했습니다. 하나는 자동 Sync를 잠시 끈 것이 도로 켜지지 않는 것입니다. 루트가 앱의 Sync 설정까지 저장소대로 맞추면, Jenkins의 태그 커밋 하나에 루트가 다시 Sync하면서 꺼 둔 자동 Sync를 도로 켭니다. 그래서 루트는 앱의 Sync 설정을 덮지 않게 했고, 자동 Sync의 실제 스위치는 클러스터에서 Application을 직접 고치는 명령이 되었습니다. [code:bootstrap/root-app.yaml:8-10]
 
-다른 하나는 사람이 순서를 지키는 것인데, 여기서 실제로 어긋난 일이 있었습니다. 런슈즈의 한 구조 변경 배포에서 자동 Sync가 켜진 채 앱 push가 먼저 나갔습니다. Jenkins 빌드가 끝나 태그 커밋이 생기기 전에 자동 Sync를 꺼서 태그 커밋이 자동으로 들어가지 않았고, 덤프와 복원 확인을 거친 뒤 사람이 Sync했습니다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:150-155] 빌드가 더 빨랐다면 덤프 없이 구조가 바뀌었을 것입니다. [code:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
+다른 하나는 사람이 순서를 지키는 것인데, 여기서 실제로 어긋난 일이 있었습니다. 런슈즈의 한 구조 변경 배포에서 자동 Sync가 켜진 채 앱 push가 먼저 나갔습니다. Jenkins 빌드가 끝나 태그 커밋이 생기기 전에 자동 Sync를 꺼서 태그 커밋이 자동으로 들어가지 않았고, 덤프와 복원 확인을 거친 뒤 사람이 Sync했습니다. [repo:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:150-155] 빌드가 더 빨랐다면 덤프 없이 구조가 바뀌었을 것입니다. [repo:apps/runshoes/runbooks/v22-v23-review-hide-miss-status.md:158]
 
-그 뒤로 절차 첫머리에 「자동 Sync를 끄고 끈 것을 확인하는 일은 반드시 push 전에」를 다시 적고, 확인 명령의 출력을 붙여 보인 뒤에야 push하게 했습니다. [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:40-50] [code:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]
+그 뒤로 절차 첫머리에 「자동 Sync를 끄고 끈 것을 확인하는 일은 반드시 push 전에」를 다시 적고, 확인 명령의 출력을 붙여 보인 뒤에야 push하게 했습니다. [repo:apps/runshoes/runbooks/v24-chatbot-miss-note.md:40-50] [repo:apps/runshoes/runbooks/v24-chatbot-miss-note.md:63]

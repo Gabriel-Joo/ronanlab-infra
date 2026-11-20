@@ -10,7 +10,7 @@
 
 공개 이미지 저장소인 Docker Hub를 쓰면 따로 세울 것이 없다. 그러나 공개 저장소에는 앱 코드가 든 이미지를 올릴 수 없고, 무료 계정은 내려받는 횟수에 제한이 있어 파드가 자주 다시 뜨는 환경에서는 막힐 수 있다. 학교에 있는 Harbor를 함께 쓰는 길도 보았지만, 그 저장소는 학교 안 망에서만 열려 있어 서버에서 닿지 않았다. [docs:history/build_log/05_harbor.md:170-172]
 
-여러 저장소 소프트웨어 가운데 Harbor를 고른 것은 이미지를 담는 일 말고도 필요한 것이 이미 들어 있어서다. 프로젝트마다 권한을 나눌 수 있고, 사람 계정 대신 기계가 쓰는 로봇 계정을 따로 만들 수 있으며, 올라온 이미지의 알려진 취약점을 검사하는 Trivy가 딸려 온다. 로봇 계정 덕분에 빌드 서버에 관리자 비밀번호를 넣지 않아도 된다. [docs:history/build_log/05_harbor.md:174] [docs:history/build_log/05_harbor.md:224] 지금 저장소에는 library, petmint, runshoes 세 프로젝트가 있다. [code:apps/harbor-backup/README.md:55]
+여러 저장소 소프트웨어 가운데 Harbor를 고른 것은 이미지를 담는 일 말고도 필요한 것이 이미 들어 있어서다. 프로젝트마다 권한을 나눌 수 있고, 사람 계정 대신 기계가 쓰는 로봇 계정을 따로 만들 수 있으며, 올라온 이미지의 알려진 취약점을 검사하는 Trivy가 딸려 온다. 로봇 계정 덕분에 빌드 서버에 관리자 비밀번호를 넣지 않아도 된다. [docs:history/build_log/05_harbor.md:174] [docs:history/build_log/05_harbor.md:224] 지금 저장소에는 library, petmint, runshoes 세 프로젝트가 있다. [repo:apps/harbor-backup/README.md:55]
 
 Harbor는 구성 요소가 일곱이고 그중 다섯이 저장 공간을 쓴다. 이것을 매니페스트로 하나하나 쓰면 설정 파일이 수십 개가 되고 그 안에 주소와 비밀번호가 흩어진다. Helm(여러 매니페스트를 묶은 차트에 값만 넣어 설치하게 해 주는 도구)을 쓰면 바꿀 값을 `platform/harbor/values.yaml` 한 곳에 모을 수 있다. [docs:history/build_log/05_harbor.md:180] Harbor는 ArgoCD 밖에 있어서, 이 파일을 고쳐 `main`에 올려도 클러스터는 바뀌지 않고 사람이 Helm으로 다시 넣는다. [code:bootstrap/root-app.yaml:13] 이렇게 저장소 밖에서 넣은 것은 판을 `platform/versions.yaml`에 따로 적어 둔다. [code:platform/versions.yaml:1-6] 빌드 서버가 이미지를 올리고 태그를 고정하는 과정은 → 「빌드와 태그 고정」에서 다룬다.
 
@@ -48,11 +48,11 @@ w3로 옮길 때 새 저장 공간을 따로 만들어 붙였고, 옛 저장 공
 
 백업이 쌓이는 곳은 서버(호스트)의 디스크다. 서버가 NFS(망을 거쳐 다른 컴퓨터의 폴더를 제 것처럼 쓰게 하는 방식)로 백업 폴더 하나를 클러스터의 사설망에만 쓰기로 열어 두고, 백업 작업이 그 폴더에 쓴다. 파드가 어느 사용자로 쓰든 서버에서는 서버 사용자의 파일로 저장된다. 서버 쪽 준비는 관리자 권한이 필요해서 사람이 `scripts/host-nfs-harbor-backup-setup.sh`를 한 번 돌린다. [code:scripts/host-nfs-harbor-backup-setup.sh:1-10] 서버의 NFS 공유 전반은 → 「공유 저장소」에서 다룬다.
 
-복구할 때는 운영 데이터베이스를 바로 덮지 않는다. 먼저 따로 띄운 시험 데이터베이스에 넣어 표마다 행 수가 맞는지 본 뒤에 운영에 넣는다. 이 순서로 실제 복구를 시험해, 모든 표의 행 수가 운영과 같게 돌아오는 것까지 확인했다. [code:apps/harbor-backup/README.md:26-28] [code:apps/harbor-backup/README.md:53-55]
+복구할 때는 운영 데이터베이스를 바로 덮지 않는다. 먼저 따로 띄운 시험 데이터베이스에 넣어 표마다 행 수가 맞는지 본 뒤에 운영에 넣는다. 이 순서로 실제 복구를 시험해, 모든 표의 행 수가 운영과 같게 돌아오는 것까지 확인했다. [repo:apps/harbor-backup/README.md:26-28] [repo:apps/harbor-backup/README.md:53-55]
 
 ## 알려진 한계
 
-- 이미지 층은 백업하지 않는다. 데이터베이스만 돌아오면 프로젝트와 로봇 계정은 살아나지만 층이 없는 태그는 내려받을 수 없다. 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 한다 [code:apps/harbor-backup/README.md:15-16]
+- 이미지 층은 백업하지 않는다. 데이터베이스만 돌아오면 프로젝트와 로봇 계정은 살아나지만 층이 없는 태그는 내려받을 수 없다. 앱 이미지는 앱 저장소의 커밋에서 다시 빌드할 수 있다는 것을 전제로 한다 [repo:apps/harbor-backup/README.md:15-16]
 - Harbor가 한 노드에만 있는 것, 관리자 비밀번호가 저장소에 없는 것, 분산 저장소가 없어 데이터가 한 노드의 디스크에만 있는 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다
 
 ## 용어 풀이

@@ -38,7 +38,7 @@ GPU는 NVIDIA GeForce RTX 5070 Ti 한 장이고 메모리는 16GB다. [docs:hist
 
 추론 서버는 모델을 요청이 올 때만 GPU 메모리에 올리고, 마지막 요청 뒤 유지 시간(기본 5분)이 지나면 내린다. [docs:history/notion_hardware_20261116.md:33] 쉬는 동안에는 메모리를 비워 두니, GPU 한 장으로 여러 모델과 여러 클라이언트를 돌릴 수 있다. 대가로 모델이 내려간 뒤 오는 첫 질문은 모델을 다시 올리느라 몇 초 더 걸린다. [code:apps/monitoring/grafana/dashboards/gen_petmint.py:187-188]
 
-이 유지 시간은 기본값 그대로 두고 바꾸지 않는다. 클러스터의 두 서비스만 GPU를 쓰는 것이 아니라, 학교 PC 같은 다른 클라이언트도 같은 GPU 메모리를 나눠 쓰기 때문이다. [code:CLAUDE.md:34] 한쪽 서비스의 첫 답을 빠르게 하려고 유지 시간을 늘리면, 그 모델이 메모리를 오래 붙잡아 다른 쪽이 모델을 올릴 자리가 줄어든다.
+이 유지 시간은 기본값 그대로 두고 바꾸지 않는다. 클러스터의 두 서비스만 GPU를 쓰는 것이 아니라, 학교 PC 같은 다른 클라이언트도 같은 GPU 메모리를 나눠 쓰기 때문이다. [repo:CLAUDE.md:34] 한쪽 서비스의 첫 답을 빠르게 하려고 유지 시간을 늘리면, 그 모델이 메모리를 오래 붙잡아 다른 쪽이 모델을 올릴 자리가 줄어든다.
 
 나눠 쓰는 쪽이 여럿이라 서로 밀어내는 일이 생긴다. 펫퍼민트는 모드에 따라 기본 모델과 학습한 모델을 번갈아 쓰므로, 모드가 섞여 들어오면 두 모델을 번갈아 올리느라 답이 느려질 수 있다. [code:apps/monitoring/grafana/dashboards/gen_petmint.py:202-203] 런슈즈 챗봇과 리뷰 요약은 또 다른 모델을 쓰고, 두 서비스가 모델을 서로 내렸다 올리면 그때 첫 답이 늦어진다. [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:288-290] model-service의 임베딩 모델도 같은 GPU 메모리에 올라간다. [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:285]
 

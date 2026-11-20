@@ -87,7 +87,7 @@
 
 ## 바꾸거나 다시 만들기
 
-모든 명령은 m-k8s에서 친다. 호스트에서는 `cd ~/k8s-cluster && vagrant ssh m-k8s`로 들어간다. [code:CLAUDE.md:27]
+모든 명령은 m-k8s에서 친다. 호스트에서는 `cd ~/k8s-cluster && vagrant ssh m-k8s`로 들어간다. [repo:CLAUDE.md:27]
 
 매니페스트를 고치면 push 뒤 ArgoCD 자동 Sync로 들어간다(petmint, runshoes 둘 다 자동). [docs:history/cluster_state_20261116.md:57-58]
 
@@ -108,7 +108,7 @@ bash scripts/mysql-replica-seed.sh runshoes runshoes-mysql-0 runshoes-mysql-0.ru
 kubectl -n petmint create job --from=cronjob/mysql-backup mysql-backup-manual-$(date +%s)
 ```
 
-다음은 사람 승인이 있어야 한다. 운영 DB `DROP`과 데이터 지우기, PVC와 PV 삭제, 네임스페이스 삭제. [code:CLAUDE.md:36-39] PVC를 지우면 local-path reclaimPolicy Delete라 노드의 데이터 디렉터리도 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8]
+다음은 사람 승인이 있어야 한다. 운영 DB `DROP`과 데이터 지우기, PVC와 PV 삭제, 네임스페이스 삭제. [repo:CLAUDE.md:36-39] PVC를 지우면 local-path reclaimPolicy Delete라 노드의 데이터 디렉터리도 지워진다. [code:apps/runshoes/mysql/statefulset.yaml:8]
 
 ## 확인
 
@@ -148,7 +148,7 @@ kubectl -n petmint logs job/<가장 최근 Job>
 - 자동 전환이 없다. w1이 멈추면 승격 전까지 두 앱의 DB 쓰기가 실패한다. 수동 승격을 고른 값이다(Operator는 부품과 메모리가 는다) [docs:history/build_log/08_scale_out.md:28] [docs:history/build_log/08_scale_out.md:132-137]
 - 두 Primary가 모두 w1에 있다. [code:apps/runshoes/mysql/statefulset.yaml:6-7]
 - petmint Primary에는 노드 규칙이 없다. PV를 새로 만들면 어느 노드에 뜰지 정해지지 않는다. [code:apps/petmint/mysql/statefulset.yaml:21-29]
-- runshoes는 정기 백업이 없다. 스키마를 바꾸기 전 손 덤프만 있다(`apps/runshoes/runbooks/auth-v3.md` 2절). [code:apps/runshoes/README.md:54]
+- runshoes는 정기 백업이 없다. 스키마를 바꾸기 전 손 덤프만 있다(`apps/runshoes/runbooks/auth-v3.md` 2절). [repo:apps/runshoes/README.md:54]
 - Replica는 백업이 아니다. Primary에서 지운 것은 Replica에서도 지워진다. [docs:history/build_log/08_scale_out.md:79]
 - petmint 백업에 `mysql` 스키마(계정)가 없다. 계정은 초기화 Job이 다시 만든다. [code:apps/petmint/backup/cronjob.yaml:2-3]
 - 백업이 VM을 돌리는 같은 호스트 디스크에 있다. [code:apps/petmint/backup/cronjob.yaml:1]

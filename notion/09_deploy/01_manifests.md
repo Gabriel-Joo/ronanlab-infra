@@ -10,9 +10,9 @@
 
 두 앱 모두 앱 파드를 둘 띄운다. 세션과 상태가 데이터베이스에 있어 파드를 늘려도 되기 때문이다. [code:apps/petmint/app/deployment.yaml:1-3] [code:apps/petmint/app/deployment.yaml:17] 둘은 앱 역할 라벨이 붙은 노드(w1, w2)에만 뜨고, 같은 노드에 둘이 함께 뜨지 못하게 막아 두었다(required anti-affinity). 노드 하나가 죽어도 다른 노드의 파드가 요청을 받는다. [code:apps/petmint/app/deployment.yaml:43-51]
 
-새 이미지로 바꿀 때는 옛 파드 하나를 먼저 내리고 그 자리에 새 파드를 띄운다(`maxSurge 0`, `maxUnavailable 1`). 보통은 새 파드를 먼저 띄우고 옛 파드를 내리는 쪽이 안전하지만, 앱 노드가 둘뿐이고 같은 노드에 둘을 두지 못하니 세 번째 파드가 갈 곳이 없어 롤링이 멈춘다. 그래서 롤링 동안 잠깐 파드가 하나로 줄어드는 것을 받아들였다. [code:apps/petmint/app/deployment.yaml:4-7] [code:apps/petmint/app/deployment.yaml:19-23] 새 파드가 준비되지 못하면 롤링이 거기서 멈추고 남은 옛 파드 하나가 계속 받는다. 배포가 잘못돼도 서비스가 통째로 끊기지 않는 것은 이 덕분이다. [code:apps/runshoes/README.md:34]
+새 이미지로 바꿀 때는 옛 파드 하나를 먼저 내리고 그 자리에 새 파드를 띄운다(`maxSurge 0`, `maxUnavailable 1`). 보통은 새 파드를 먼저 띄우고 옛 파드를 내리는 쪽이 안전하지만, 앱 노드가 둘뿐이고 같은 노드에 둘을 두지 못하니 세 번째 파드가 갈 곳이 없어 롤링이 멈춘다. 그래서 롤링 동안 잠깐 파드가 하나로 줄어드는 것을 받아들였다. [code:apps/petmint/app/deployment.yaml:4-7] [code:apps/petmint/app/deployment.yaml:19-23] 새 파드가 준비되지 못하면 롤링이 거기서 멈추고 남은 옛 파드 하나가 계속 받는다. 배포가 잘못돼도 서비스가 통째로 끊기지 않는 것은 이 덕분이다. [repo:apps/runshoes/README.md:34]
 
-파드가 내려갈 때는 종료 직전에 5초를 기다린다(preStop). 그사이 Ingress가 이 파드를 받을 곳 목록에서 빼므로, 이미 내려가는 파드로 새 요청이 가지 않는다. [code:apps/petmint/app/deployment.yaml:96-99] 열려 있던 웹소켓 연결은 이때 한 번 끊기고, 화면이 다음 질문 때 새 파드로 다시 붙는다. [code:apps/petmint/app/deployment.yaml:40-42] [code:apps/runshoes/README.md:31-33]
+파드가 내려갈 때는 종료 직전에 5초를 기다린다(preStop). 그사이 Ingress가 이 파드를 받을 곳 목록에서 빼므로, 이미 내려가는 파드로 새 요청이 가지 않는다. [code:apps/petmint/app/deployment.yaml:96-99] 열려 있던 웹소켓 연결은 이때 한 번 끊기고, 화면이 다음 질문 때 새 파드로 다시 붙는다. [code:apps/petmint/app/deployment.yaml:40-42] [repo:apps/runshoes/README.md:31-33]
 
 파드가 살아 있는지는 세 가지 검사로 본다. 기동 검사(startupProbe)가 통과할 때까지는 생존 검사(livenessProbe)가 파드를 죽이지 않는다. 앱이 처음 뜨면서 데이터를 확인하거나 스키마를 넣는 동안 「응답이 없다」고 잘못 재시작되지 않게 하려는 것이다. 준비 검사(readinessProbe)가 통과해야 요청이 들어온다. [code:apps/petmint/app/deployment.yaml:84-95] 런슈즈의 준비 검사는 데이터베이스 연결까지 본다. 검사 경로는 이미지가 제공하는 것이라, 그 경로가 없던 옛 이미지로 되돌리면 파드가 준비되지 못한다. 이미지를 되돌릴 때 검사 경로도 함께 되돌려야 하는 까닭이다. [code:apps/runshoes/app/deployment.yaml:3] [code:apps/runshoes/app/deployment.yaml:117-130]
 
@@ -38,7 +38,7 @@ PDB(PodDisruptionBudget, 노드 정비로 파드를 내보낼 때 최소 몇 개
 
 ## 앱 말고 도는 것: Job과 CronJob
 
-펫퍼민트는 데이터베이스와 계정을 만들고 스키마를 맞추고 원장을 채우는 초기화 Job이 있다. 초기화용 이미지를 따로 만들지 않고 앱 이미지로 돈다. [code:apps/petmint/jobs/init-db.yaml:1-7] ArgoCD는 이 Job을 Sync 훅으로 돌린다. 적용 순서(sync-wave)는 MySQL, 볼륨, ConfigMap이 먼저이고, 그다음 Job이 끝까지 돈 뒤에 앱이 바뀐다. [code:apps/petmint/README.md:59-62] [code:apps/petmint/jobs/init-db.yaml:14-17] Job은 한번 만들면 파드 내용을 바꿀 수 없어서 태그만 바꿔 다시 적용하면 실패한다. 그래서 Sync마다 끝난 Job을 지우고 새로 만들게 했다. 여러 번 돌아도 결과가 같도록 짜 두었고, 원장 시드는 비어 있을 때만 넣는다. [code:apps/petmint/README.md:64-66]
+펫퍼민트는 데이터베이스와 계정을 만들고 스키마를 맞추고 원장을 채우는 초기화 Job이 있다. 초기화용 이미지를 따로 만들지 않고 앱 이미지로 돈다. [code:apps/petmint/jobs/init-db.yaml:1-7] ArgoCD는 이 Job을 Sync 훅으로 돌린다. 적용 순서(sync-wave)는 MySQL, 볼륨, ConfigMap이 먼저이고, 그다음 Job이 끝까지 돈 뒤에 앱이 바뀐다. [repo:apps/petmint/README.md:59-62] [code:apps/petmint/jobs/init-db.yaml:14-17] Job은 한번 만들면 파드 내용을 바꿀 수 없어서 태그만 바꿔 다시 적용하면 실패한다. 그래서 Sync마다 끝난 Job을 지우고 새로 만들게 했다. 여러 번 돌아도 결과가 같도록 짜 두었고, 원장 시드는 비어 있을 때만 넣는다. [repo:apps/petmint/README.md:64-66]
 
 런슈즈는 리뷰 요약을 만드는 CronJob이 매일 새벽 한 번 돈다. 웹 파드와 같은 이미지에 배치 프로필만 붙여 돌리고, 태그도 같은 `newTag` 한 줄을 함께 받는다. [code:apps/runshoes/app/cronjob.yaml:1-3] [code:apps/runshoes/app/cronjob.yaml:14-15] 배치 프로필에서는 스키마 변경 도구를 끄고 스키마가 맞는지만 확인한다. 스키마는 웹 파드의 Sync만 바꾸고, 맞지 않으면 배치가 곧바로 실패한다. [code:apps/runshoes/app/cronjob.yaml:3] 회차가 겹치면 뒤에 온 쪽이 데이터베이스 잠금에서 곧바로 끝나고, 실패해도 바로 다시 돌지 않는다. 다시 만들 대상은 앱이 남긴 표시가 정한다. [code:apps/runshoes/app/cronjob.yaml:4-5] [code:apps/runshoes/app/cronjob.yaml:16] [code:apps/runshoes/app/cronjob.yaml:26-27]
 

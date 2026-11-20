@@ -10,7 +10,7 @@
 
 ## 상황
 
-이 홈랩의 쿠버네티스 노드는 물리 서버 한 대 위에 올린 가상 머신(VM) 다섯 대입니다. [docs:history/cluster_state_20261116.md:9-17] 물리 서버에는 NVIDIA GeForce RTX 5070 Ti 한 장이 꽂혀 있습니다. [docs:history/cluster_state_20261116.md:76] 클러스터에서 도는 두 서비스, 문서를 찾아 답하는 챗봇인 펫퍼민트와 러닝화 스펙 아카이브인 런슈즈는 모두 언어 모델을 씁니다. [code:apps/petmint/README.md:3] [code:apps/runshoes/README.md:3] 펫퍼민트는 답을 만들 때, 런슈즈는 리뷰를 요약하고 챗봇이 답할 때 모델을 부릅니다. [code:apps/petmint/app/configmap.yaml:23-30] [code:apps/runshoes/app/deployment.yaml:98-99] [code:apps/runshoes/app/deployment.yaml:144-149]
+이 홈랩의 쿠버네티스 노드는 물리 서버 한 대 위에 올린 가상 머신(VM) 다섯 대입니다. [docs:history/cluster_state_20261116.md:9-17] 물리 서버에는 NVIDIA GeForce RTX 5070 Ti 한 장이 꽂혀 있습니다. [docs:history/cluster_state_20261116.md:76] 클러스터에서 도는 두 서비스, 문서를 찾아 답하는 챗봇인 펫퍼민트와 러닝화 스펙 아카이브인 런슈즈는 모두 언어 모델을 씁니다. [repo:apps/petmint/README.md:3] [repo:apps/runshoes/README.md:3] 펫퍼민트는 답을 만들 때, 런슈즈는 리뷰를 요약하고 챗봇이 답할 때 모델을 부릅니다. [code:apps/petmint/app/configmap.yaml:23-30] [code:apps/runshoes/app/deployment.yaml:98-99] [code:apps/runshoes/app/deployment.yaml:144-149]
 
 GPU를 클러스터에서 쓰는 흔한 방법은 GPU 패스스루(물리 GPU를 VM 하나에 통째로 넘겨, 그 VM 안에서 제 장치처럼 쓰게 하는 것)입니다. 그렇게 하면 쿠버네티스가 GPU를 자원으로 알고 파드에 직접 나눠 줄 수 있습니다. 한편 호스트에서는 클러스터를 세우기 전부터 Ollama(언어 모델을 받아 두었다가 요청이 오면 GPU에 올려 답을 만드는 추론 서버)를 쓰고 있었습니다. [docs:history/build_log/kubernetes_install.md:117]
 
@@ -26,7 +26,7 @@ GPU 패스스루를 하지 않았습니다. GPU는 호스트에 그대로 두고
 
 추론 서버를 쓰는 곳이 클러스터만이 아니라는 점도 이 구조와 맞물립니다. 학교 PC는 환경이 달라 사설망에 닿지 못하므로, 호스트에서 도는 별도의 Cloudflare 터널로 같은 추론 서버를 부릅니다. [docs:history/build_log/03_cloudflare_tunnel.md:114] [docs:history/cluster_state_20261116.md:78] 클러스터의 파드는 이 터널을 쓰지 않고 사설망으로 바로 갑니다. [docs:history/build_log/03_cloudflare_tunnel.md:68] 추론 서버가 호스트에 있으니 클러스터와 학교 PC가 같은 서버를 같은 방식으로 나눠 씁니다.
 
-GPU 메모리를 나눠 쓰는 방식도 이 공유를 따랐습니다. Ollama는 모델을 요청이 올 때만 GPU 메모리에 올리고, 마지막 요청 뒤 기본 유지 시간이 지나면 내립니다. [docs:history/notion_hardware_20261116.md:33] 클러스터 서비스의 첫 답을 빠르게 하려고 이 유지 시간을 늘리면, 그 모델이 메모리를 오래 붙잡아 학교 PC 같은 다른 쪽이 모델을 올릴 자리가 줄어듭니다. 그래서 유지 시간은 일부러 바꾸지 않는다는 운영 규칙을 두었습니다. [code:CLAUDE.md:34]
+GPU 메모리를 나눠 쓰는 방식도 이 공유를 따랐습니다. Ollama는 모델을 요청이 올 때만 GPU 메모리에 올리고, 마지막 요청 뒤 기본 유지 시간이 지나면 내립니다. [docs:history/notion_hardware_20261116.md:33] 클러스터 서비스의 첫 답을 빠르게 하려고 이 유지 시간을 늘리면, 그 모델이 메모리를 오래 붙잡아 학교 PC 같은 다른 쪽이 모델을 올릴 자리가 줄어듭니다. 그래서 유지 시간은 일부러 바꾸지 않는다는 운영 규칙을 두었습니다. [repo:CLAUDE.md:34]
 
 ![Grafana의 GPU 패널. GPU 사용률과 메모리, 메모리에 올라간 모델이 보입니다](img/06_grafana_gpu.png)
 

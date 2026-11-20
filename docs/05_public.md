@@ -86,7 +86,7 @@ kubectl create namespace cloudflared
 # cert-manager/cloudflare-api-token 도 사람이 만든다
 ```
 
-근거: [code:apps/cloudflared/README.md:28-36] [code:platform/cert-manager/cluster-issuer.yaml:1]
+근거: [repo:apps/cloudflared/README.md:28-36] [code:platform/cert-manager/cluster-issuer.yaml:1]
 
 cert-manager 설치(ArgoCD 밖, m-k8s에서): [docs:history/build_log/02_metrics_storage_ingress.md:146-148]
 
@@ -101,13 +101,13 @@ kubectl apply -f platform/cert-manager/argocd-certificate.yaml -f platform/cert-
 
 터널 설정을 바꿀 때(호스트 추가 등). 공개 주소 7개가 함께 걸린 작업이라 하기 전에 알린다. [code:apps/cloudflared/app.yaml:5]
 
-1. `apps/cloudflared/configmap.yaml`을 고쳐 커밋하고 관리자가 push한다 [code:apps/cloudflared/README.md:43]
-2. ArgoCD에서 cloudflared를 수동 Sync한다. ConfigMap만 바뀌고 떠 있는 Pod는 옛 설정 그대로다 [code:apps/cloudflared/README.md:43]
-3. `kubectl -n cloudflared rollout restart deploy/cloudflared`. 새 Pod가 Ready(엣지 연결)가 돼야 옛 Pod가 내려간다 [code:apps/cloudflared/README.md:44]
-4. 새 설정이 깨졌으면 새 Pod가 Ready가 못 되고 롤링이 멈춘다(옛 Pod 둘이 계속 받는다). git revert, Sync, `rollout restart` [code:apps/cloudflared/README.md:45]
-5. 새 공개 이름의 DNS CNAME(`<터널 ID>.cfargotunnel.com`)과 Access는 Cloudflare 대시보드에서 사람이 한다. 운영 도구는 Access를 건 뒤 DNS를 연다 [code:apps/cloudflared/README.md:46] [code:apps/monitoring/ingress.yaml:5]
+1. `apps/cloudflared/configmap.yaml`을 고쳐 커밋하고 관리자가 push한다 [repo:apps/cloudflared/README.md:43]
+2. ArgoCD에서 cloudflared를 수동 Sync한다. ConfigMap만 바뀌고 떠 있는 Pod는 옛 설정 그대로다 [repo:apps/cloudflared/README.md:43]
+3. `kubectl -n cloudflared rollout restart deploy/cloudflared`. 새 Pod가 Ready(엣지 연결)가 돼야 옛 Pod가 내려간다 [repo:apps/cloudflared/README.md:44]
+4. 새 설정이 깨졌으면 새 Pod가 Ready가 못 되고 롤링이 멈춘다(옛 Pod 둘이 계속 받는다). git revert, Sync, `rollout restart` [repo:apps/cloudflared/README.md:45]
+5. 새 공개 이름의 DNS CNAME(`<터널 ID>.cfargotunnel.com`)과 Access는 Cloudflare 대시보드에서 사람이 한다. 운영 도구는 Access를 건 뒤 DNS를 연다 [repo:apps/cloudflared/README.md:46] [code:apps/monitoring/ingress.yaml:5]
 
-근거: [code:apps/cloudflared/README.md:41-46] [code:apps/cloudflared/configmap.yaml:3] [code:apps/monitoring/ingress.yaml:5]
+근거: [repo:apps/cloudflared/README.md:41-46] [code:apps/cloudflared/configmap.yaml:3] [code:apps/monitoring/ingress.yaml:5]
 
 수동 Sync 명령:
 
@@ -115,7 +115,7 @@ kubectl apply -f platform/cert-manager/argocd-certificate.yaml -f platform/cert-
 kubectl -n argocd patch app cloudflared --type merge -p '{"operation":{"sync":{"revision":"<커밋>"}}}'
 ```
 
-터널 없이 쓰는 길: m-k8s(192.168.122.10)에서 kubectl, UI는 호스트에서 VIP로 [code:apps/cloudflared/README.md:24-25].
+터널 없이 쓰는 길: m-k8s(192.168.122.10)에서 kubectl, UI는 호스트에서 VIP로 [repo:apps/cloudflared/README.md:24-25].
 
 ```bash
 curl --resolve argocd.ronanlab.dev:443:192.168.122.240 https://argocd.ronanlab.dev/
@@ -138,7 +138,7 @@ kubectl get ingress -A
 # 7개. tls Secret은 petmint-app, runshoes 에 없다
 ```
 
-근거: [code:apps/cloudflared/README.md:48-55] [docs:history/cluster_state_20261116.md:36-50] [docs:history/build_log/03_cloudflare_tunnel.md:707-728]
+근거: [repo:apps/cloudflared/README.md:48-55] [docs:history/cluster_state_20261116.md:36-50] [docs:history/build_log/03_cloudflare_tunnel.md:707-728]
 
 ## 알려진 한계
 

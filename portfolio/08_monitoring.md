@@ -10,13 +10,13 @@
 
 ## 상황
 
-모니터링은 세 가지로 이루어집니다. 시간에 따른 숫자(CPU, 메모리, 요청 수, GPU 사용률)인 지표는 Prometheus가 모으고, 서버가 남기는 글 기록인 로그는 Alloy가 모아 Loki에 넣으며, 사람이 보는 화면은 Grafana가 그립니다. [code:apps/monitoring/README.md:3]
+모니터링은 세 가지로 이루어집니다. 시간에 따른 숫자(CPU, 메모리, 요청 수, GPU 사용률)인 지표는 Prometheus가 모으고, 서버가 남기는 글 기록인 로그는 Alloy가 모아 Loki에 넣으며, 사람이 보는 화면은 Grafana가 그립니다. [repo:apps/monitoring/README.md:3]
 
 쿠버네티스에서 이 묶음을 넣는 흔한 길은 kube-prometheus-stack이라는 Helm 차트(여러 매니페스트를 묶어 값만 넣으면 설치되게 만든 꾸러미)입니다. 처음 계획도 이 차트였습니다. [docs:history/build_log/09_monitoring.md:31] 그런데 `helm install`로 넣으면 설정이 클러스터 안에만 남아, 다시 만들 때 무엇을 어떻게 했는지 알 수 없게 됩니다. [docs:history/build_log/09_monitoring.md:31]
 
 ## 고른 것
 
-차트를 쓰지 않고 매니페스트를 직접 써서 `apps/monitoring/`에 두었습니다. ArgoCD(저장소의 내용대로 클러스터를 맞추는 도구)가 이 폴더를 자동으로 클러스터에 넣습니다. [code:apps/monitoring/app.yaml:20-27] Prometheus는 Operator(설정을 쿠버네티스 객체로 받아 대신 관리해 주는 프로그램) 없이 설정 파일 하나로 지표를 긁고, Grafana의 데이터 연결과 대시보드도 저장소의 파일로 넣습니다. [docs:history/build_log/09_monitoring.md:32] 대시보드는 저장소의 생성 스크립트를 고쳐 JSON을 다시 만들고, push하면 반영됩니다. [code:apps/monitoring/README.md:4]
+차트를 쓰지 않고 매니페스트를 직접 써서 `apps/monitoring/`에 두었습니다. ArgoCD(저장소의 내용대로 클러스터를 맞추는 도구)가 이 폴더를 자동으로 클러스터에 넣습니다. [code:apps/monitoring/app.yaml:20-27] Prometheus는 Operator(설정을 쿠버네티스 객체로 받아 대신 관리해 주는 프로그램) 없이 설정 파일 하나로 지표를 긁고, Grafana의 데이터 연결과 대시보드도 저장소의 파일로 넣습니다. [docs:history/build_log/09_monitoring.md:32] 대시보드는 저장소의 생성 스크립트를 고쳐 JSON을 다시 만들고, push하면 반영됩니다. [repo:apps/monitoring/README.md:4]
 
 ![Grafana의 runshoes 운영 대시보드. 실제로 돌아가는 서비스의 응답 가능한 서버 수, 요청량, 오류 비율, CPU와 메모리가 보입니다](img/08_grafana_dashboard.png)
 

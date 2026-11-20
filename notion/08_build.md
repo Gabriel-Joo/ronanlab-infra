@@ -59,7 +59,7 @@ MySQL은 일부러 Kustomize `images`에 넣지 않았다. 넣으면 Jenkins의 
 
 helm 차트와 매니페스트 주소로 바로 넣은 것(Calico, metrics-server, local-path, ArgoCD)은 저장소에 매니페스트가 없다. 그 판은 클러스터만 알고 있었는데, 다시 만들 때 같은 판을 깔 수 있도록 `platform/versions.yaml`에 적어 두었다. [code:platform/versions.yaml:1-6] [code:platform/versions.yaml:14-30] 클러스터에만 있는 값은 사라지기 쉽고, 그 값이 없으면 같은 환경을 다시 만들 수 없기 때문이다. [docs:history/human_answers_20261116.md:19] Jenkins 본체 이미지는 values에 따로 적지 않았고 차트 판이 정한 기본 이미지를 쓴다. 차트 판이 고정돼 있으니 본체 이미지도 따라 고정된다. [docs:history/build_log/06_jenkins.md:506]
 
-고정하는 까닭은 세 가지다. 첫째, 같은 매니페스트가 늘 같은 이미지를 뜻하게 하려는 것이다. `latest`를 쓰면 롤링(파드를 하나씩 새것으로 바꾸는 배포) 도중 어느 파드가 무엇을 도는지 알 수 없다. [code:apps/petmint/kustomization.yaml:32] 둘째, 태그에서 코드를 거꾸로 찾아갈 수 있다. 태그가 곧 앱 커밋이므로 같은 커밋이면 같은 태그이고, 어느 커밋이 도는지 태그만 보고 안다. [docs:history/build_log/07_project_deploy.md:107] [code:apps/runshoes/kustomization.yaml:26] 셋째, 되돌리기가 단순해진다. 이미지만 되돌릴 때는 인프라 저장소의 태그 커밋 하나를 revert(그 커밋을 거꾸로 적용하는 새 커밋)하면 된다. [code:apps/runshoes/README.md:64] 플러그인을 고정한 까닭도 같다. 저절로 올라가는 판은 깨졌을 때 무엇이 바뀌었는지 알려 주지 않는다. [code:platform/jenkins/values.yaml:172-173]
+고정하는 까닭은 세 가지다. 첫째, 같은 매니페스트가 늘 같은 이미지를 뜻하게 하려는 것이다. `latest`를 쓰면 롤링(파드를 하나씩 새것으로 바꾸는 배포) 도중 어느 파드가 무엇을 도는지 알 수 없다. [code:apps/petmint/kustomization.yaml:32] 둘째, 태그에서 코드를 거꾸로 찾아갈 수 있다. 태그가 곧 앱 커밋이므로 같은 커밋이면 같은 태그이고, 어느 커밋이 도는지 태그만 보고 안다. [docs:history/build_log/07_project_deploy.md:107] [code:apps/runshoes/kustomization.yaml:26] 셋째, 되돌리기가 단순해진다. 이미지만 되돌릴 때는 인프라 저장소의 태그 커밋 하나를 revert(그 커밋을 거꾸로 적용하는 새 커밋)하면 된다. [repo:apps/runshoes/README.md:64] 플러그인을 고정한 까닭도 같다. 저절로 올라가는 판은 깨졌을 때 무엇이 바뀌었는지 알려 주지 않는다. [code:platform/jenkins/values.yaml:172-173]
 
 ## 알려진 한계
 
@@ -70,7 +70,7 @@ helm 차트와 매니페스트 주소로 바로 넣은 것(Calico, metrics-serve
 
 아래는 고른 것이 아니라 바탕이 그러해서 따라오는 것이다.
 
-- 태그 커밋을 revert해도 데이터베이스 마이그레이션은 되돌아가지 않는다. [code:apps/petmint/README.md:27]
+- 태그 커밋을 revert해도 데이터베이스 마이그레이션은 되돌아가지 않는다. [repo:apps/petmint/README.md:27]
 
 ## 용어 풀이
 

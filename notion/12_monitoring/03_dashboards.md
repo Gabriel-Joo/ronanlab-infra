@@ -27,9 +27,9 @@ Grafana는 저장 공간을 따로 갖지 않는다. 파드 안의 데이터 폴
 
 두 MySQL 데이터소스는 대시보드에 질문 수, 답 걸린 시간, 평가 같은 서비스 숫자를 그리려고 둔 것이다. 이런 숫자는 지표로 나오지 않고 각 서비스가 DB에 남기는 기록에만 있다. [docs:history/build_log/09_monitoring.md:64] [code:apps/monitoring/grafana/datasource.yaml:26-36] [code:apps/monitoring/grafana/datasource.yaml:43-53] 그런데 그 기록에는 질문과 답 원문도 함께 있다. 그래서 세 겹으로 막았다.
 
-첫째, 운영 DB(Primary)가 아니라 복제본(Replica)을 읽는다. 대시보드 쿼리가 서비스의 쓰기에 부하를 주지 않게 하기 위해서다. [code:apps/monitoring/grafana/datasource.yaml:26] [code:apps/monitoring/grafana/datasource.yaml:43] 둘째, 읽기 계정은 칸 단위로만 읽기 권한을 받았다. 분류, 시간, 상태 같은 칸은 읽지만 질문, 답, 상담원 코멘트, 고객 정보 칸은 권한이 없어 쿼리를 보내도 거절된다. [code:apps/monitoring/grafana/datasource.yaml:27-28] [code:apps/monitoring/grafana/datasource.yaml:43-44] 셋째, 계정의 동시 연결 수에 상한을 두었다. [code:apps/monitoring/README.md:30]
+첫째, 운영 DB(Primary)가 아니라 복제본(Replica)을 읽는다. 대시보드 쿼리가 서비스의 쓰기에 부하를 주지 않게 하기 위해서다. [code:apps/monitoring/grafana/datasource.yaml:26] [code:apps/monitoring/grafana/datasource.yaml:43] 둘째, 읽기 계정은 칸 단위로만 읽기 권한을 받았다. 분류, 시간, 상태 같은 칸은 읽지만 질문, 답, 상담원 코멘트, 고객 정보 칸은 권한이 없어 쿼리를 보내도 거절된다. [code:apps/monitoring/grafana/datasource.yaml:27-28] [code:apps/monitoring/grafana/datasource.yaml:43-44] 셋째, 계정의 동시 연결 수에 상한을 두었다. [repo:apps/monitoring/README.md:30]
 
-DB 계정의 비밀번호는 저장소에 없다. 사람이 쿠버네티스 Secret으로 만들고, Grafana가 환경 변수로 받아 데이터소스에 넣는다. [code:apps/monitoring/grafana/deployment.yaml:32-40] 런슈즈 쪽 Secret이 없으면 Grafana 파드가 뜨지 않는다. [code:apps/monitoring/README.md:43]
+DB 계정의 비밀번호는 저장소에 없다. 사람이 쿠버네티스 Secret으로 만들고, Grafana가 환경 변수로 받아 데이터소스에 넣는다. [code:apps/monitoring/grafana/deployment.yaml:32-40] 런슈즈 쪽 Secret이 없으면 Grafana 파드가 뜨지 않는다. [repo:apps/monitoring/README.md:43]
 
 ## 대시보드 둘
 

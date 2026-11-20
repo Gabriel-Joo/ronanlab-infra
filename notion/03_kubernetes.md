@@ -38,7 +38,7 @@ Calico는 두 부분으로 돈다. 노드마다 하나씩 뜨는 calico-node가 
 
 이미지 저장소의 핵심 서비스로 바로 보내지 않고 들어오는 문을 거치게 한 데도 까닭이 있다. 이미지 저장소는 로그인 토큰을 받을 주소를 "요청한 이름 그대로의 HTTPS 주소"로 알려 주는데, 핵심 서비스는 암호화하지 않는 통신만 받는다. 들어오는 문을 거치면 그 주소가 공개 인증서로 검증되는 HTTPS로 이어진다. [code:platform/coredns/configmap.yaml:5-7] 들어오는 문과 인증서는 → 「들어오는 문」과 → 「TLS가 끝나는 곳」에서 다룬다.
 
-CoreDNS 설정은 배포 도구(ArgoCD)가 지켜보는 범위 밖이라, 바꾸면 사람이 직접 클러스터에 적용한다. [code:CLAUDE.md:13] [code:platform/coredns/configmap.yaml:2]
+CoreDNS 설정은 배포 도구(ArgoCD)가 지켜보는 범위 밖이라, 바꾸면 사람이 직접 클러스터에 적용한다. [repo:CLAUDE.md:13] [code:platform/coredns/configmap.yaml:2]
 
 ## 저장소 밖에서 넣은 것의 판 기록
 

@@ -14,7 +14,7 @@
 
 cloudflared는 서버 호스트의 프로세스가 아니라 클러스터 안의 파드로 띄웠다. 파드로 두면 죽었을 때 쿠버네티스가 다시 띄우고, 두 벌로 늘리는 것도 설정 한 줄이며, 설정이 저장소에 남는다. 지금 cloudflared는 cloudflared 네임스페이스에 두 벌이 떠 있고 둘 다 같은 터널에 붙는다. 하나가 죽어도 다른 하나가 받는다. [docs:history/build_log/03_cloudflare_tunnel.md:129-139] [code:apps/cloudflared/deployment.yaml:1] [code:apps/cloudflared/deployment.yaml:13]
 
-터널이 앱을 하나하나 가리키지 않고 ingress-nginx 하나만 가리키게 한 것도 일부러 고른 것이다. 터널 설정의 공개 주소 일곱 개는 모두 같은 목적지, ingress-nginx로 간다. 어느 앱으로 갈지는 ingress-nginx가 호스트 이름을 보고 고른다. 앱이 바뀌거나 늘어도 길을 나누는 일은 Ingress가 맡고, 터널은 손댈 것이 적다. 다만 이 터널은 설정 파일 방식이라 새 공개 주소를 더할 때는 터널 설정에 주소 한 줄을 더하고, Cloudflare 쪽에서 그 이름을 터널에 잇는 DNS 기록도 사람이 따로 만든다. 설정에 없는 주소로 온 요청은 마지막 규칙에서 「없음」으로 돌려보낸다. [code:apps/cloudflared/configmap.yaml:13-44] [docs:history/build_log/03_cloudflare_tunnel.md:143-153] [code:apps/cloudflared/README.md:46]
+터널이 앱을 하나하나 가리키지 않고 ingress-nginx 하나만 가리키게 한 것도 일부러 고른 것이다. 터널 설정의 공개 주소 일곱 개는 모두 같은 목적지, ingress-nginx로 간다. 어느 앱으로 갈지는 ingress-nginx가 호스트 이름을 보고 고른다. 앱이 바뀌거나 늘어도 길을 나누는 일은 Ingress가 맡고, 터널은 손댈 것이 적다. 다만 이 터널은 설정 파일 방식이라 새 공개 주소를 더할 때는 터널 설정에 주소 한 줄을 더하고, Cloudflare 쪽에서 그 이름을 터널에 잇는 DNS 기록도 사람이 따로 만든다. 설정에 없는 주소로 온 요청은 마지막 규칙에서 「없음」으로 돌려보낸다. [code:apps/cloudflared/configmap.yaml:13-44] [docs:history/build_log/03_cloudflare_tunnel.md:143-153] [repo:apps/cloudflared/README.md:46]
 
 ## 터널 앞의 관문
 
@@ -30,17 +30,17 @@ cloudflared는 서버 호스트의 프로세스가 아니라 클러스터 안의
 
 이 길이 꼭 있어야 하는 곳이 노드다. 노드의 containerd(파드의 이미지를 받아 와 돌리는 프로그램)는 사설 이미지 저장소 Harbor에서 이미지를 받는다. Harbor의 공개 이름을 Cloudflare로 풀면 Access 관문에 막히니, 노드마다 그 이름을 사설 VIP로 풀도록 고정해 두었다. 그래서 노드는 공개 주소와 같은 이름으로, 같은 인증서를 확인하면서 사설 VIP를 통해 Harbor에 닿는다. 클러스터 안의 파드가 Harbor를 부를 때는 클러스터 DNS가 같은 이름을 ingress-nginx의 내부 주소로 바꿔 준다. 노드 쪽 설정은 → 「VM 다섯 대와 랜카드 둘」, 클러스터 DNS 쪽은 → 「쿠버네티스 설치와 파드 망」에서 다룬다. [code:cluster/Vagrantfile:33-36] [code:platform/harbor/values.yaml:4] [code:platform/coredns/configmap.yaml:1-7]
 
-이 길은 터널이 깨졌을 때 숨구멍이 되기도 한다. 터널이 멈추면 바깥에서는 ArgoCD 화면도 Grafana 화면도 보이지 않는다. 그때도 서버 호스트에서는 사설 VIP로 운영 도구 화면을 열 수 있고, m-k8s에 들어가 kubectl로 고칠 수 있다. [code:apps/cloudflared/README.md:24-25]
+이 길은 터널이 깨졌을 때 숨구멍이 되기도 한다. 터널이 멈추면 바깥에서는 ArgoCD 화면도 Grafana 화면도 보이지 않는다. 그때도 서버 호스트에서는 사설 VIP로 운영 도구 화면을 열 수 있고, m-k8s에 들어가 kubectl로 고칠 수 있다. [repo:apps/cloudflared/README.md:24-25]
 
 ## 터널 설정을 바꿀 때
 
-터널 설정은 저장소의 `apps/cloudflared`에 있고 ArgoCD가 클러스터에 넣는다. 그런데 다른 앱과 달리 이 앱은 자동 반영을 꺼 두었다. 저장소에 올라간 커밋이 곧바로 클러스터에 들어가지 않고, 사람이 ArgoCD에서 반영을 누르고 바뀌는 과정을 지켜본다. 이 터널이 깨지면 공개 주소 일곱 개가 한꺼번에 사라지고, 고칠 도구(ArgoCD 화면)와 볼 도구(Grafana)도 같이 사라진다. 그 상태에서는 m-k8s의 kubectl로만 되돌릴 수 있다. 잘못된 커밋 하나가 사람 손을 거치지 않고 이 상태를 만들게 두지 않으려는 것이다. [code:apps/cloudflared/app.yaml:4-8] [code:apps/cloudflared/README.md:21-23] [docs:history/cluster_state_20261116.md:61]
+터널 설정은 저장소의 `apps/cloudflared`에 있고 ArgoCD가 클러스터에 넣는다. 그런데 다른 앱과 달리 이 앱은 자동 반영을 꺼 두었다. 저장소에 올라간 커밋이 곧바로 클러스터에 들어가지 않고, 사람이 ArgoCD에서 반영을 누르고 바뀌는 과정을 지켜본다. 이 터널이 깨지면 공개 주소 일곱 개가 한꺼번에 사라지고, 고칠 도구(ArgoCD 화면)와 볼 도구(Grafana)도 같이 사라진다. 그 상태에서는 m-k8s의 kubectl로만 되돌릴 수 있다. 잘못된 커밋 하나가 사람 손을 거치지 않고 이 상태를 만들게 두지 않으려는 것이다. [code:apps/cloudflared/app.yaml:4-8] [repo:apps/cloudflared/README.md:21-23] [docs:history/cluster_state_20261116.md:61]
 
 같은 까닭으로 이 앱은 저장소에서 지운 것을 클러스터에서 같이 지우지 않고, ArgoCD 쪽 앱을 지워도 터널 파드는 남는다. 네임스페이스와 터널 자격 증명은 사람이 직접 만든다. 자격 증명을 저장소에 평문으로 둘 수 없어서다. [code:apps/cloudflared/app.yaml:9-11] [code:apps/cloudflared/kustomization.yaml:6]
 
-반영을 눌러도 끝이 아니다. cloudflared는 설정 파일을 켜질 때 한 번만 읽는다. 반영하면 설정 파일만 바뀌고, 떠 있는 cloudflared는 옛 설정으로 계속 돈다. 그래서 반영한 뒤 cloudflared를 차례로 다시 띄우는(rollout restart) 단계까지 해야 새 설정이 들어간다. [code:apps/cloudflared/configmap.yaml:3] [code:apps/cloudflared/README.md:43-44]
+반영을 눌러도 끝이 아니다. cloudflared는 설정 파일을 켜질 때 한 번만 읽는다. 반영하면 설정 파일만 바뀌고, 떠 있는 cloudflared는 옛 설정으로 계속 돈다. 그래서 반영한 뒤 cloudflared를 차례로 다시 띄우는(rollout restart) 단계까지 해야 새 설정이 들어간다. [code:apps/cloudflared/configmap.yaml:3] [repo:apps/cloudflared/README.md:43-44]
 
-다시 띄우는 과정은 끊기지 않게 짜여 있다. 새 cloudflared가 Cloudflare와 연결을 하나라도 맺어 준비가 되어야 옛 것을 하나 내린다. 새 설정이 깨져 있으면 새 것이 끝내 준비되지 않고 교체가 거기서 멈추며, 옛 두 벌이 계속 요청을 받는다. 그 사이 커밋을 되돌리고 다시 반영하면 된다. [code:apps/cloudflared/deployment.yaml:2-4] [code:apps/cloudflared/README.md:45]
+다시 띄우는 과정은 끊기지 않게 짜여 있다. 새 cloudflared가 Cloudflare와 연결을 하나라도 맺어 준비가 되어야 옛 것을 하나 내린다. 새 설정이 깨져 있으면 새 것이 끝내 준비되지 않고 교체가 거기서 멈추며, 옛 두 벌이 계속 요청을 받는다. 그 사이 커밋을 되돌리고 다시 반영하면 된다. [code:apps/cloudflared/deployment.yaml:2-4] [repo:apps/cloudflared/README.md:45]
 
 ![ArgoCD의 cloudflared 앱 나무다. 앱 아래 설정 파일과 Deployment가 있고, Deployment 아래 지금 쓰는 판의 파드 두 벌이 떠 있다. 옛 판 둘은 파드 없이 남아 있다.](../../portfolio/img/04_argocd_cloudflared.png)
 

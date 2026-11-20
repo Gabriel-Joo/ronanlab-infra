@@ -83,12 +83,12 @@
 
 ## 바꾸거나 다시 만들기
 
-호스트 명령은 `sudo`가 필요하다. 세션은 직접 치지 않고 사용자에게 알린다. 재부팅은 클러스터 VM과 호스트 서비스가 모두 끊기므로 사람 승인이 필요하다. [code:CLAUDE.md:41-42]
+호스트 명령은 `sudo`가 필요하다. 세션은 직접 치지 않고 사용자에게 알린다. 재부팅은 클러스터 VM과 호스트 서비스가 모두 끊기므로 사람 승인이 필요하다. [repo:CLAUDE.md:41-42]
 
 - NVIDIA 드라이버: 자동 추천 설치가 실패하므로 장치 목록에서 판을 골라 지정해 깐다. Secure Boot가 켜져 있으므로 설치 때 MOK 암호를 정하고, 재부팅 뒤 MOK 등록 화면에서 키를 등록한다 [docs:history/notion_hardware_20261116.md:23-24]
 - docker 그룹 추가가 다시 로그인해도 반영되지 않으면 재부팅으로 풀었다 [docs:history/notion_hardware_20261116.md:27]
 - VNC 안 터미널이 cgroup 오류를 내면 서비스 파일의 `Delegate=yes`와 기본 터미널(xfce4-terminal)을 본다 [docs:history/notion_hardware_20261116.md:42]
-- Ollama 유지 시간(`OLLAMA_KEEP_ALIVE`)은 바꾸지 않는다. GPU 메모리를 다른 PC와 나눠 쓴다 [code:CLAUDE.md:34]
+- Ollama 유지 시간(`OLLAMA_KEEP_ALIVE`)은 바꾸지 않는다. GPU 메모리를 다른 PC와 나눠 쓴다 [repo:CLAUDE.md:34]
 
 ## 확인
 

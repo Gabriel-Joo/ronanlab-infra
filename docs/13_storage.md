@@ -20,8 +20,8 @@
 - local-path는 WaitForFirstConsumer라 처음 붙는 Pod의 노드에 PV가 생긴다. [code:platform/harbor/pvc-w3.yaml:4]
 - local-path PV는 노드에 묶이고, Pod는 그 노드로만 다시 뜬다. [code:apps/monitoring/prometheus/statefulset.yaml:2]
 - local-path 기본 reclaimPolicy는 Delete다. PVC를 지우면 데이터도 지워진다. Harbor의 `*-w3` PV 다섯은 손으로 Retain으로 바꿔 두었다. [code:platform/harbor/pvc-w3.yaml:6] [code:apps/runshoes/mysql/statefulset.yaml:8]
-- local-path는 크기를 강제하지 않는다. 상한은 노드 디스크다. [code:apps/monitoring/README.md:109]
-- NFS PV는 petmint만 쓴다. 호스트의 petmint-rag-chatbot 저장소 디렉터리를 bind로 `/srv/nfs/petmint/` 아래에 걸어 읽기 전용으로 내보낸 것이다. [code:apps/petmint/data/nfs.yaml:1-5] [code:apps/petmint/README.md:72-76]
+- local-path는 크기를 강제하지 않는다. 상한은 노드 디스크다. [repo:apps/monitoring/README.md:109]
+- NFS PV는 petmint만 쓴다. 호스트의 petmint-rag-chatbot 저장소 디렉터리를 bind로 `/srv/nfs/petmint/` 아래에 걸어 읽기 전용으로 내보낸 것이다. [code:apps/petmint/data/nfs.yaml:1-5] [repo:apps/petmint/README.md:72-76]
 - 복사본이 없다. Milvus 색인을 만든 그 파일을 앱이 읽는다. [code:apps/petmint/data/nfs.yaml:6]
 
 local-path를 쓰는 곳:
@@ -68,12 +68,12 @@ NFS를 붙이는 곳:
 
 호스트 쪽 설정(이 저장소 밖):
 
-- petmint-rag-chatbot 저장소 `deploy/scripts/host-nfs-setup.sh`, sudo. 사람이 돌린다. nfs.yaml 2줄 주석의 `scripts/host-nfs-setup.sh`는 이 저장소에 없고 그 파일을 가리킨다. [code:apps/petmint/data/nfs.yaml:2] [code:apps/petmint/README.md:15] [code:apps/petmint/README.md:49]
-- export는 사설망 `192.168.122.0/24`에만, `ro,all_squash`, NFSv4.2. [code:apps/petmint/README.md:70-75]
+- petmint-rag-chatbot 저장소 `deploy/scripts/host-nfs-setup.sh`, sudo. 사람이 돌린다. nfs.yaml 2줄 주석의 `scripts/host-nfs-setup.sh`는 이 저장소에 없고 그 파일을 가리킨다. [code:apps/petmint/data/nfs.yaml:2] [repo:apps/petmint/README.md:15] [repo:apps/petmint/README.md:49]
+- export는 사설망 `192.168.122.0/24`에만, `ro,all_squash`, NFSv4.2. [repo:apps/petmint/README.md:70-75]
 
 ## 바꾸거나 다시 만들기
 
-m-k8s에서 친다. 호스트에서는 `cd ~/k8s-cluster && vagrant ssh m-k8s`. [code:CLAUDE.md:27]
+m-k8s에서 친다. 호스트에서는 `cd ~/k8s-cluster && vagrant ssh m-k8s`. [repo:CLAUDE.md:27]
 
 약관 파일을 바꾼 뒤 앱에 반영한다. 앱은 기동 때 읽는다. [code:apps/petmint/data/nfs.yaml:6-7]
 
@@ -82,7 +82,7 @@ kubectl -n petmint rollout restart deploy/petmint-app
 kubectl -n petmint rollout status  deploy/petmint-app
 ```
 
-`apps/petmint/data/nfs.yaml`을 고치면 push 뒤 petmint 자동 Sync로 들어간다. [docs:history/cluster_state_20261116.md:58] PV의 `spec.nfs`처럼 바꿀 수 없는 필드를 고치면 Sync가 실패한다. 그때 PV를 지우고 다시 만드는 일은 사람 승인이 필요하다. [code:CLAUDE.md:39]
+`apps/petmint/data/nfs.yaml`을 고치면 push 뒤 petmint 자동 Sync로 들어간다. [docs:history/cluster_state_20261116.md:58] PV의 `spec.nfs`처럼 바꿀 수 없는 필드를 고치면 Sync가 실패한다. 그때 PV를 지우고 다시 만드는 일은 사람 승인이 필요하다. [repo:CLAUDE.md:39]
 
 local-path-provisioner를 다시 깐다. [code:platform/versions.yaml:23-26]
 
@@ -113,8 +113,8 @@ kubectl -n petmint exec deploy/petmint-app -c app -- ls /var/lib/petmint/chunks 
 
 - local-path PV는 노드에 묶인다. 그 노드가 멈추면 Pod가 다른 노드로 가지 못한다. [code:apps/monitoring/prometheus/statefulset.yaml:2]
 - local-path 기본 reclaimPolicy Delete. PVC 삭제가 곧 데이터 삭제다. [code:platform/harbor/pvc-w3.yaml:6]
-- local-path, NFS 모두 크기를 강제하지 않는다. [code:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
+- local-path, NFS 모두 크기를 강제하지 않는다. [repo:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
 - local-path-provisioner 매니페스트와 기본 StorageClass 지정은 저장소에 없다. `platform/versions.yaml`에 판만 있다. [code:platform/versions.yaml:23-26]
 - NFS 서버는 호스트 하나다. 호스트가 멈추면 VM도 같이 멈추므로 클러스터 전체가 멈춘다. [code:apps/petmint/data/nfs.yaml:1]
-- 호스트 ufw가 inactive라 NFS를 좁히는 것은 export 대상 대역 하나뿐이다. [code:apps/petmint/README.md:102]
-- 호스트 NFS 설정 스크립트가 이 저장소 밖에 있고, nfs.yaml 주석의 경로(`scripts/host-nfs-setup.sh`)는 이 저장소 기준으로 틀린다. [code:apps/petmint/data/nfs.yaml:2] [code:apps/petmint/README.md:15]
+- 호스트 ufw가 inactive라 NFS를 좁히는 것은 export 대상 대역 하나뿐이다. [repo:apps/petmint/README.md:102]
+- 호스트 NFS 설정 스크립트가 이 저장소 밖에 있고, nfs.yaml 주석의 경로(`scripts/host-nfs-setup.sh`)는 이 저장소 기준으로 틀린다. [code:apps/petmint/data/nfs.yaml:2] [repo:apps/petmint/README.md:15]

@@ -14,7 +14,7 @@ local-path-provisioner는 PVC가 생기면 노드의 로컬 디스크에 디렉�
 
 local-path의 디렉터리는 그 PVC를 처음 쓰는 파드가 뜬 노드에 만들어진다. [code:platform/harbor/pvc-w3.yaml:4] 한 번 만들어지면 PV는 그 노드에 묶이고, 파드는 그 노드로만 다시 뜬다. 노드를 비우면 그 파드도 멈춘다. [code:apps/monitoring/prometheus/statefulset.yaml:2] 다른 노드로 옮기려면 새 PVC를 그 노드에 만들고 데이터를 복사하는 수밖에 없다. [docs:history/build_log/08_scale_out.md:145] 그래서 상태를 가진 것들은 노드 역할에 맞춰 자리를 고정해 두었다. 두 앱의 MySQL은 app 노드에, 이미지 저장소는 infra 노드에 있다. [code:cluster/label-nodes.sh:6-8]
 
-local-path의 기본 반환 규칙은 Delete다. PVC를 지우면 노드에 있던 데이터 디렉터리도 함께 지워진다는 뜻이다. [code:platform/harbor/pvc-w3.yaml:6] [code:apps/runshoes/mysql/statefulset.yaml:8] 크기도 강제하지 않는다. PVC에 적은 크기는 표시일 뿐이고 실제 상한은 노드 디스크다. [code:apps/monitoring/README.md:109]
+local-path의 기본 반환 규칙은 Delete다. PVC를 지우면 노드에 있던 데이터 디렉터리도 함께 지워진다는 뜻이다. [code:platform/harbor/pvc-w3.yaml:6] [code:apps/runshoes/mysql/statefulset.yaml:8] 크기도 강제하지 않는다. PVC에 적은 크기는 표시일 뿐이고 실제 상한은 노드 디스크다. [repo:apps/monitoring/README.md:109]
 
 이 저장소를 쓰는 것은 두 앱의 MySQL, Prometheus와 Loki, 이미지 저장소 Harbor, 빌드 서버 Jenkins다. [code:apps/petmint/mysql/statefulset.yaml:68] [code:apps/runshoes/mysql/statefulset.yaml:84] [code:apps/monitoring/prometheus/statefulset.yaml:66] [code:apps/monitoring/loki/loki.yaml:95] [code:platform/harbor/pvc-w3.yaml:17] [code:platform/jenkins/values.yaml:263] 각각의 자리는 → 「데이터베이스 복제와 백업」, → 「모니터링」, → 「이미지 저장소」, → 「빌드와 태그 고정」에서 다룬다.
 
@@ -28,7 +28,7 @@ PV는 셋이다. `petmint-chunks`와 `petmint-graph`는 앱이 붙이고, `petmi
 
 이 PV들은 여러 노드에서 동시에 읽기로 붙일 수 있는 ReadOnlyMany 모드다. 앱 파드 둘이 서로 다른 노드에 떠도 같은 파일을 붙인다. local-path처럼 한 노드에 묶이지 않으므로 앱이 노드 하나를 잃어도 다른 노드의 파드가 계속 약관을 읽는다. [code:apps/petmint/data/nfs.yaml:8] [code:apps/petmint/app/deployment.yaml:2]
 
-읽기 전용은 세 겹으로 걸었다. 호스트가 디렉터리를 읽기 전용으로 내보내고, PV가 읽기 전용으로 붙이고, 파드도 읽기 전용으로 붙인다. [code:apps/petmint/data/nfs.yaml:8-9] 약관은 바깥으로 나가면 안 되는 데이터라, 클러스터 쪽에서 실수로 파일을 고치거나 지우는 길을 막아 두었다. 호스트는 NFS를 VM들이 쓰는 사설망 대역에만 내보낸다. [code:apps/petmint/README.md:70]
+읽기 전용은 세 겹으로 걸었다. 호스트가 디렉터리를 읽기 전용으로 내보내고, PV가 읽기 전용으로 붙이고, 파드도 읽기 전용으로 붙인다. [code:apps/petmint/data/nfs.yaml:8-9] 약관은 바깥으로 나가면 안 되는 데이터라, 클러스터 쪽에서 실수로 파일을 고치거나 지우는 길을 막아 두었다. 호스트는 NFS를 VM들이 쓰는 사설망 대역에만 내보낸다. [repo:apps/petmint/README.md:70]
 
 NFS는 4.2판만 쓴다. 호스트 쪽에서 옛 판인 3판을 꺼 두었기 때문인데, 3판이 따로 필요로 하는 연결 지점들을 열지 않아도 된다. [code:apps/petmint/data/nfs.yaml:23]
 
@@ -36,7 +36,7 @@ NFS는 4.2판만 쓴다. 호스트 쪽에서 옛 판인 3판을 꺼 두었기 �
 
 PV를 지워도 호스트의 파일은 그대로 남는다. 반환 규칙을 Retain으로 두었고, 데이터의 원본은 호스트의 펫퍼민트 저장소이기 때문이다. [code:apps/petmint/data/nfs.yaml:10] [code:apps/petmint/data/nfs.yaml:20]
 
-호스트에서 NFS를 내보내는 설정은 이 저장소에 없다. 펫퍼민트 저장소에 남은 스크립트이고, 관리자 권한이 필요해 사람이 돌린다. [code:apps/petmint/data/nfs.yaml:2] [code:apps/petmint/README.md:15]
+호스트에서 NFS를 내보내는 설정은 이 저장소에 없다. 펫퍼민트 저장소에 남은 스크립트이고, 관리자 권한이 필요해 사람이 돌린다. [code:apps/petmint/data/nfs.yaml:2] [repo:apps/petmint/README.md:15]
 
 ## 호스트 NFS에 쓰는 것
 
@@ -52,7 +52,7 @@ PV를 지워도 호스트의 파일은 그대로 남는다. 반환 규칙을 Ret
 
 - NFS가 호스트 하나에 있는 것은 여러 편에 걸려 → 「알려진 한계」에 모았다
 - local-path는 PVC를 지우면 데이터도 지운다. Harbor처럼 손으로 Retain으로 바꿔 둔 PV만 예외다. [code:platform/harbor/pvc-w3.yaml:6]
-- local-path와 NFS 모두 크기를 강제하지 않는다. 실제 상한은 노드 디스크와 호스트 디스크다. [code:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
+- local-path와 NFS 모두 크기를 강제하지 않는다. 실제 상한은 노드 디스크와 호스트 디스크다. [repo:apps/monitoring/README.md:109] [code:apps/petmint/data/nfs.yaml:18]
 - 약관 파일을 바꿔도 앱을 다시 띄우기 전에는 반영되지 않는다. [code:apps/petmint/data/nfs.yaml:6-7]
 
 ## 용어 풀이

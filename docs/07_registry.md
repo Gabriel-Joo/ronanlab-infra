@@ -14,7 +14,7 @@ Harbor를 Helm으로 클러스터 안에 세웠다. ArgoCD 밖이고, DB 백업 
 - 노드 containerd는 `/etc/hosts`의 `192.168.122.240 harbor.ronanlab.dev`(ingress-nginx의 MetalLB VIP)로 가서 https를 검증해 당긴다. 공개 DNS로 가면 Cloudflare Access에 막힌다 [code:cluster/Vagrantfile:32-36] [code:platform/harbor/values.yaml:4]
 - 공개 경로는 터널 `apps/cloudflared/configmap.yaml`의 `harbor.ronanlab.dev` 항목, Access 「운영도구」 앱 뒤에 있다 [code:apps/cloudflared/configmap.yaml:22-25] [code:apps/cloudflared/configmap.yaml:35]
 - 구성 요소 portal, core, jobservice, registry, database, redis, trivy 모두 `node.ronanlab.dev/role: infra`(w3) [code:platform/harbor/values.yaml:54-72] [code:cluster/label-nodes.sh:13]
-- 프로젝트 `library`, `petmint`, `runshoes` [code:apps/harbor-backup/README.md:55]
+- 프로젝트 `library`, `petmint`, `runshoes` [repo:apps/harbor-backup/README.md:55]
 
 ### PVC (지금 쓰는 것)
 
@@ -91,15 +91,15 @@ done
 
 - 비밀번호는 사람이 비밀번호 관리 자리에 따로 둔다. 프로젝트와 robot 계정은 DB 백업으로 돌아오고, 다시 만드는 법은 `apps/petmint/README.md`, `apps/runshoes/README.md` 「처음 한 번」이다 [docs:history/build_log/05_harbor.md:132]
 - 백업용 호스트 준비는 sudo가 필요하다. 세션은 치지 않고 사람에게 `sudo scripts/host-nfs-harbor-backup-setup.sh` 한 줄로 알린다. 여러 번 돌려도 같고 nfs-server를 재시작하지 않는다 [code:scripts/host-nfs-harbor-backup-setup.sh:3-10]
-- Harbor 판을 올리면 `platform/versions.yaml`과 `apps/harbor-backup/cronjob.yaml`의 이미지 태그를 같은 커밋에서 고친다 [code:platform/versions.yaml:6] [code:apps/harbor-backup/README.md:17]
+- Harbor 판을 올리면 `platform/versions.yaml`과 `apps/harbor-backup/cronjob.yaml`의 이미지 태그를 같은 커밋에서 고친다 [code:platform/versions.yaml:6] [repo:apps/harbor-backup/README.md:17]
 
-백업을 손으로 한 번 뜨기 [code:apps/harbor-backup/README.md:21-24]
+백업을 손으로 한 번 뜨기 [repo:apps/harbor-backup/README.md:21-24]
 
 ```bash
 kubectl -n harbor create job --from=cronjob/harbor-db-backup harbor-db-backup-manual-$(date +%H%M)
 ```
 
-DB 복구는 `apps/harbor-backup/README.md` 「복구」를 따른다. 운영 DB를 덮기 전에 시험 DB에 먼저 넣어 행 수를 본다. 옛 DB는 `registry_old`로 남기고 지우지 않는다 [code:apps/harbor-backup/README.md:26-44]
+DB 복구는 `apps/harbor-backup/README.md` 「복구」를 따른다. 운영 DB를 덮기 전에 시험 DB에 먼저 넣어 행 수를 본다. 옛 DB는 `registry_old`로 남기고 지우지 않는다 [repo:apps/harbor-backup/README.md:26-44]
 
 ## 확인
 
@@ -121,12 +121,12 @@ kubectl -n harbor get cronjob harbor-db-backup
 kubectl -n harbor get job
 ```
 
-호스트에서 `ls -l ~/backup/harbor/`로 최신 `.dump`와 `.sha256`을 보고, 그 폴더에서 `sha256sum -c harbor-registry-<날짜>.dump.sha256`이 OK여야 한다 [code:apps/harbor-backup/README.md:32]
+호스트에서 `ls -l ~/backup/harbor/`로 최신 `.dump`와 `.sha256`을 보고, 그 폴더에서 `sha256sum -c harbor-registry-<날짜>.dump.sha256`이 OK여야 한다 [repo:apps/harbor-backup/README.md:32]
 
 ## 알려진 한계
 
 - 모든 구성 요소와 데이터가 w3에 있다. w3가 내려가면 Harbor 전체가 멈춘다. 떠 있는 앱 파드는 이미지를 노드에 갖고 있어 그대로다 [code:cluster/label-nodes.sh:7]
-- 이미지 레이어(`harbor-registry-w3`)는 백업하지 않는다. 레이어가 없는 태그는 pull이 안 되고, 앱 저장소 커밋에서 Jenkins로 다시 빌드하는 것을 전제로 한다 [code:apps/harbor-backup/README.md:15-16]
+- 이미지 레이어(`harbor-registry-w3`)는 백업하지 않는다. 레이어가 없는 태그는 pull이 안 되고, 앱 저장소 커밋에서 Jenkins로 다시 빌드하는 것을 전제로 한다 [repo:apps/harbor-backup/README.md:15-16]
 - 백업이 운영과 같은 물리 서버에 있다 [docs:TODO.md:16]
 - 옛 PVC 다섯이 남아 있다. 모두 Retain이라 PVC를 지워도 PV와 데이터가 남으니 PV도 따로 정리한다 [docs:TODO.md:7] [docs:history/build_log/05_harbor.md:481]
 - `harborAdminPassword`는 릴리스 값에만 있다 [docs:history/build_log/05_harbor.md:485]

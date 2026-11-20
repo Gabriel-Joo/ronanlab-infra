@@ -22,7 +22,7 @@ kubeadm으로 세운 클러스터의 판과 설치, Calico 파드 망, CoreDNS �
 - 다른 노드의 Pod 대역으로 가는 경로는 eth1 주소(192.168.122.11~14)를 다음 홉으로 `tunl0`(IPIP)을 탄다 [docs:history/cluster_state_20261116.md:23]
 - 노드 InternalIP는 eth0 주소다(kubelet `--node-ip` 없음). Pod 통신 경로와 다르다 [docs:history/cluster_state_20261116.md:26]
 - CoreDNS 설정은 kubeadm 기본 Corefile에 Harbor 이름 rewrite를 더한 것이다 [code:platform/coredns/configmap.yaml:1]
-- `platform/`은 ArgoCD 밖이다. push로 바뀌지 않는다 [code:CLAUDE.md:13]
+- `platform/`은 ArgoCD 밖이다. push로 바뀌지 않는다 [repo:CLAUDE.md:13]
 
 ## 설정 자리
 
@@ -84,7 +84,7 @@ kubectl apply -f platform/coredns/configmap.yaml
 
 ## 확인
 
-m-k8s에서(`cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`) [code:CLAUDE.md:27]:
+m-k8s에서(`cd ~/k8s-cluster && vagrant ssh m-k8s -c '…'`) [repo:CLAUDE.md:27]:
 
 ```bash
 kubectl get nodes

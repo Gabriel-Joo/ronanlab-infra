@@ -35,11 +35,11 @@
 
 ## 4. 비밀값은 저장소에 두지 않았습니다
 
-비밀번호와 토큰 같은 비밀값은 저장소에 두지 않고, 사람이 클러스터에 직접 만듭니다 [code:CLAUDE.md:47]. 공개 저장소에 올라가는 설정 파일에 실제 값이 박히는 것을 막으려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:188].
+비밀번호와 토큰 같은 비밀값은 저장소에 두지 않고, 사람이 클러스터에 직접 만듭니다 [repo:CLAUDE.md:47]. 공개 저장소에 올라가는 설정 파일에 실제 값이 박히는 것을 막으려는 것입니다 [docs:history/build_log/03_cloudflare_tunnel.md:188].
 
 치른 값은 이렇습니다.
 
-- 클러스터를 다시 세우면 비밀값은 저장소에서 돌아오지 않아, 사람이 다시 넣어야 합니다 [code:CLAUDE.md:47]
+- 클러스터를 다시 세우면 비밀값은 저장소에서 돌아오지 않아, 사람이 다시 넣어야 합니다 [repo:CLAUDE.md:47]
 - 인증서 발급에 쓰는 Cloudflare API 토큰도 그중 하나라, 클러스터를 다시 만들 때 사람이 넣지 않으면 인증서를 받지 못합니다 [code:platform/cert-manager/cluster-issuer.yaml:1] (→ 「TLS가 끝나는 곳과 noTLSVerify를 확인한 일」)
 
 ## 5. 조건: 물리 서버 한 대
