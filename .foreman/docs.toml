@@ -19,6 +19,8 @@ claim_min = 0
 banned = ["notion", "portfolio"]
 cover_by = ["notion"]
 dashdot_base = "b587fe9"        # 새 줄 em dash와 가운뎃점 검사의 기준 커밋. 넣은 때의 인프라 main(2026-11-17)
+# 문서를 가리키는 [code:]는 이 커밋 뒤 새 줄만 틀림. 옛 줄은 이 커밋 뒤에 [repo:]로 모두 바꿨다(2026-11-20 사용자, FOREMAN 973d009)
+code_doc_base = "6219b62f0193661e44b593a305a94585a24f30f0"
 
 [readme]
 # 맨 위 README.md는 생성물이다(tools/docs.py readme, 점검 9번). 폴더 지도는 docs/00_overview.md 저장소 구조 절(2026-11-17 사용자)
