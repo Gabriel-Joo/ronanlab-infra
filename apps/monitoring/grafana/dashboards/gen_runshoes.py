@@ -307,7 +307,8 @@ add(ts("리뷰 쓰기 (일별, 체험 계정 / 그 밖의 계정)", [sql(
     f"SELECT $__timeGroupAlias(a.occurred_at, '1d'), CASE WHEN {DEMO} THEN '체험 계정' ELSE '그 밖의 계정(직접 가입 · 관리자)' END AS metric, COUNT(*) AS value\n"
     + ACT + "WHERE a.event = 'review.create' AND $__timeFilter(a.occurred_at)\nGROUP BY 1, 2 ORDER BY 1")], bars=True, stack=True,
     desc="화면에서 새로 쓴 리뷰 수. 체험 계정(로그인 화면의 체험 카드 31개 — 여러 사람이 함께 쓴다)과 직접 가입한 계정을 나눈다."
-         " 처음에 넣어 둔 예시 리뷰(약 1,500건)는 화면으로 쓴 것이 아니라 들어 있지 않다." + ACT_NOTE
+         " 처음에 넣어 둔 예시 리뷰(약 1,500건)는 화면으로 쓴 것이 아니라 들어 있지 않다."
+         " 2026-11-20까지 화면에서 새로 쓴 리뷰가 한 건도 없어 이 칸은 빈다. 고장이 아니다." + ACT_NOTE
          + SRC + "activity_logs(review.create) · users.role"), 8, 7, 0)
 add(ts("찜과 「도움이 돼요」 (일별)", [sql(
     "SELECT $__timeGroupAlias(occurred_at, '1d'),\n"
