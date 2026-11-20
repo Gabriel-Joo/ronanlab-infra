@@ -44,6 +44,8 @@ GPU는 NVIDIA GeForce RTX 5070 Ti 한 장이고 메모리는 16GB다. [docs:hist
 
 이 모습은 모니터링에서 그대로 보인다. 호스트의 GPU 수집기는 GPU 사용률, 메모리, 온도, 전력을 내보내고 [code:scripts/host-gpu-exporter.sh:4], 추론 서버에 지금 어떤 모델이 올라가 있는지는 클러스터 안의 변환기가 추론 서버에 물어 지표로 바꾼다. [code:apps/monitoring/json-exporter/json-exporter.yaml:1-3] 자세한 것은 → 「지표」와 → 「대시보드」에 있다.
 
+![Grafana의 GPU 묶음이다. 왼쪽부터 GPU 사용률, GPU 메모리, 최근 24시간 동안 메모리에 올라간 모델이 보인다.](../portfolio/img/06_grafana_gpu.png)
+
 GPU 수집기는 sudo 없이 Docker 그룹 권한으로 사람이 한 번 띄운다. 가상 머신 사설망 주소에만 포트를 열고 바깥이나 공유기 쪽으로는 열지 않으며, 추론 서버와 벡터 DB 컨테이너는 건드리지 않는다. [code:scripts/host-gpu-exporter.sh:2-5] 재시작 정책이 붙어 있어 사람이 멈추지 않는 한 Docker가 다시 띄운다. [code:scripts/host-gpu-exporter.sh:11]
 
 ## 알려진 한계

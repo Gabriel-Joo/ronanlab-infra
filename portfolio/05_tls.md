@@ -18,6 +18,8 @@ TLS는 브라우저와 서버 사이의 내용을 암호화하고, 상대가 그
 
 운영 도구 다섯(ArgoCD, Harbor, Jenkins, Grafana, Prometheus)은 ingress-nginx에서 TLS를 끝냅니다. 인증서는 cert-manager(클러스터 안에서 인증서를 받아 오는 프로그램)가 공인 인증 기관 Let's Encrypt에서 받아 오고, 다섯 개 모두 발급을 마친 상태입니다 [docs:history/cluster_state_20261116.md:38-48].
 
+![인증서 발급 상태. 화면을 찍은 것이 아니라 명령 두 개의 출력을 옮겨 그린 그림입니다. 위는 Let's Encrypt 발급자 둘(시험용, 운영용), 아래는 운영 도구 다섯의 인증서가 모두 READY True인 모습입니다. 인증서를 넣어 둔 Secret은 이름만 보이고 내용은 넣지 않았습니다](img/05_certificates.png)
+
 Let's Encrypt가 이름의 주인인지 시험하는 방식은 DNS-01(그 이름의 DNS에 정해진 기록을 올려 증명하는 방식)을 씁니다. 바깥에서 서버의 파일을 열어 보게 하는 방식은 쓸 수 없습니다. 들어오는 포트를 열지 않았고 운영 도구는 로그인 관문 뒤에 있기 때문입니다 [code:platform/cert-manager/values.yaml:1].
 
 ## 까닭

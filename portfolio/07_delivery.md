@@ -20,7 +20,7 @@
 
 ArgoCD 쪽은 App of Apps로 짰습니다. ArgoCD에서 「어느 폴더를 어디에 넣을지」를 적은 단위를 Application이라고 하는데, 사람이 손으로 넣는 것은 루트 Application 하나뿐입니다. 루트는 `apps` 아래 앱 폴더마다 있는 `app.yaml`을 읽어 앱 Application을 만들어 줍니다. 새 앱을 올릴 때는 폴더 하나를 더해 push하면 됩니다. [code:bootstrap/root-app.yaml:1-4]
 
-![ArgoCD 화면. 앱 다섯이 모두 Synced 상태입니다. 작성자 메일 주소는 앞 몇 글자만 남기고 가렸습니다](img/00_argocd_apps.png)
+![ArgoCD 앱 목록. 루트 앱과 그 아래 앱 다섯, 여섯 모두 Healthy와 Synced 상태이고 모두 저장소의 main을 봅니다](img/07_argocd_apps.png)
 
 앱 Application은 다섯이고, 그중 runshoes, petmint, monitoring, harbor-backup 넷이 자동 Sync입니다. cloudflared 하나만 사람이 Sync를 누릅니다. [docs:history/cluster_state_20261116.md:54-61] cloudflared는 바깥에서 클러스터로 들어오는 터널이라, 잘못된 커밋 하나로 터널이 깨지면 서비스만 멈추는 것이 아니라 고칠 때 쓰는 ArgoCD 화면과 상황을 볼 Grafana까지 함께 보이지 않게 됩니다. 그래서 커밋이 곧바로 반영되지 않게 하고, 사람이 Sync한 뒤 새 파드로 갈아타는 과정을 지켜봅니다. [code:apps/cloudflared/app.yaml:4-8] 터널은 → 「포트포워딩 없이 공개하기」에서 다룹니다.
 

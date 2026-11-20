@@ -14,6 +14,10 @@
 
 Harbor는 구성 요소가 일곱이고 그중 다섯이 저장 공간을 쓴다. 이것을 매니페스트로 하나하나 쓰면 설정 파일이 수십 개가 되고 그 안에 주소와 비밀번호가 흩어진다. Helm(여러 매니페스트를 묶은 차트에 값만 넣어 설치하게 해 주는 도구)을 쓰면 바꿀 값을 `platform/harbor/values.yaml` 한 곳에 모을 수 있다. [docs:history/build_log/05_harbor.md:180] Harbor는 ArgoCD 밖에 있어서, 이 파일을 고쳐 `main`에 올려도 클러스터는 바뀌지 않고 사람이 Helm으로 다시 넣는다. [code:bootstrap/root-app.yaml:13] 이렇게 저장소 밖에서 넣은 것은 판을 `platform/versions.yaml`에 따로 적어 둔다. [code:platform/versions.yaml:1-6] 빌드 서버가 이미지를 올리고 태그를 고정하는 과정은 → 「빌드와 태그 고정」에서 다룬다.
 
+![Harbor 프로젝트 목록이다. 비공개 프로젝트 petmint와 runshoes, 기본으로 있는 공개 프로젝트 library가 보이고, 오른쪽 위에 쓰고 있는 저장 용량이 있다.](../portfolio/img/07_harbor_projects.png)
+
+![Harbor의 petmint-app 이미지 목록이다. 태그가 앱 커밋 해시로 붙어 있고, 이미지마다 크기와 취약점 검사 결과, 올린 시각과 노드가 받아 간 시각이 보인다.](../portfolio/img/07_harbor_petmint_tags.png)
+
 ## 노드가 이미지를 받아 가는 길
 
 Harbor는 바깥에서 터널을 거쳐 들어오는 공개 주소를 하나 갖고 있지만, 노드는 그 길로 이미지를 받지 않는다. 공개 주소 앞에는 사람만 통과시키는 접근 제한이 걸려 있어 노드가 막히기 때문이다. [code:apps/cloudflared/configmap.yaml:35] [docs:history/build_log/05_harbor.md:208]

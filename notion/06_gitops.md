@@ -16,6 +16,8 @@ ArgoCD에서 「무엇을 어디서 읽어 어디에 넣을지」를 적은 단�
 
 앱 Application은 runshoes, petmint, monitoring, harbor-backup, cloudflared 다섯이다. 모두 `main`을 보고, 저마다 `apps` 아래 자기 폴더를 읽어 자기 네임스페이스에 넣는다. 루트가 맡는 것은 Application 객체를 만드는 데까지이고, 앱 안의 리소스를 어떻게 넣을지는 각 `app.yaml`이 정한다. [code:apps/runshoes/app.yaml:20-27] [code:bootstrap/root-app.yaml:6]
 
+![ArgoCD의 루트 앱 나무다. 루트 앱 아래 앱 다섯이 달려 있고 모두 Synced 상태다.](../portfolio/img/00_argocd_root_tree.png)
+
 ## 자동으로 들어가는 앱과 손으로 누르는 앱
 
 Sync는 저장소의 내용을 클러스터에 맞춰 넣는 일이다. 자동 Sync가 켜진 앱은 `main`에 커밋이 올라가면 사람이 아무것도 하지 않아도 몇 분 안에 클러스터에 들어간다. 지금 runshoes, petmint, monitoring, harbor-backup이 자동이고 cloudflared 하나만 수동이다. [docs:history/cluster_state_20261116.md:54-61] [code:bootstrap/root-app.yaml:3]
@@ -25,6 +27,8 @@ cloudflared만 수동으로 둔 데는 까닭이 있다. cloudflared는 바깥�
 자동인 앱도 두 가지는 꺼 두었다. 하나는 prune(저장소에서 지운 리소스를 클러스터에서도 지우는 기능)이고, 다른 하나는 selfHeal(누가 클러스터에서 손으로 바꾼 것을 저장소 쪽으로 되돌리는 기능)이다. prune을 꺼 두었으니 저장소에서 지운 것도 클러스터에는 남고, 지우는 일은 사람이 직접 한다. selfHeal을 끈 것은 장애를 고치는 동안 사람이 일부러 파드 수를 0으로 내려 두는 일이 있기 때문이다. 이것을 ArgoCD가 곧바로 되돌리면 복구를 할 수 없다. [code:apps/runshoes/app.yaml:8] [code:apps/runshoes/app.yaml:11]
 
 Application에는 finalizer(지울 때 딸린 리소스까지 함께 지우게 하는 표시)를 달지 않았다. Application을 지워도 앱과 데이터베이스와 저장 공간은 클러스터에 남는다. 루트를 지워도 앱 Application은 남는다. [code:apps/petmint/app.yaml:8] [code:bootstrap/root-app.yaml:11-12]
+
+![ArgoCD 앱 목록이다. 루트 앱과 그 아래 앱 다섯, 여섯 모두 Healthy와 Synced 상태이고 모두 저장소의 main을 본다.](../portfolio/img/07_argocd_apps.png)
 
 ## 자동 Sync의 실제 스위치는 클러스터에 있다
 

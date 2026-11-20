@@ -32,6 +32,8 @@ DNS 기록이 퍼졌는지 확인할 때는 공개 DNS 서버에만 묻게 했�
 
 공인 기관이 내준 인증서라 따로 준비할 것이 없다. 노드의 containerd가 Harbor에서 이미지를 받을 때 인증서 확인을 켠 채로 받는데, 노드마다 우리만의 인증 기관을 심어 둘 필요가 없다. [docs:history/build_log/02_metrics_storage_ingress.md:209] [code:platform/harbor/values.yaml:3-4]
 
+![인증서 발급 상태다. 화면을 찍은 것이 아니라 명령 두 개의 출력을 옮겨 그린 그림이다. 위는 Let's Encrypt 발급자 둘(시험용, 운영용), 아래는 운영 도구 다섯의 인증서가 모두 READY True인 모습이다. 인증서를 넣어 둔 Secret은 이름만 보이고 내용은 넣지 않았다.](../../portfolio/img/05_certificates.png)
+
 ## ArgoCD는 한 번 더 싼다
 
 ArgoCD 화면을 내놓는 argocd-server는 자기 인증서로만 HTTPS를 받는다. 그래서 ArgoCD Ingress는 ingress-nginx에서 브라우저의 TLS를 끝낸 뒤, argocd-server로 넘길 때 다시 HTTPS로 싸서 보낸다. 이 설정이 없으면 ingress-nginx가 HTTP로 보내 argocd-server가 받지 않는다. [code:platform/argocd/ingress.yaml:3-4] [code:platform/argocd/ingress.yaml:14] [docs:history/build_log/04_argocd.md:176]

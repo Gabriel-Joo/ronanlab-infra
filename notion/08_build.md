@@ -14,6 +14,8 @@ Jenkins 본체는 w3(infra 역할) 노드에 고정했다. 작업 기록을 담�
 
 빌드 파드는 특권 없이 이미지를 굽는 BuildKit rootless로 짰다. 컨테이너 안에서 이미지를 구우려고 특권 컨테이너를 쓰면 그 파드가 뚫렸을 때 노드 전체가 뚫린다. BuildKit rootless는 특권 없이 사용자 네임스페이스 안에서 빌드하고, 대가로 보안 프로필 두 가지만 푼다. [docs:history/build_log/06_jenkins.md:124-137]
 
+![Jenkins 첫 화면이다. 작업은 petmint-app과 runshoes-app 둘이고, 둘 다 마지막 빌드가 성공했다.](../portfolio/img/07_jenkins_jobs.png)
+
 ## 설정은 values 한 파일에 있다
 
 Jenkins의 작업(Job), 자격 증명, 웹훅 설정은 모두 `platform/jenkins/values.yaml`의 JCasC 블록이 만든다. 화면에서 만든 작업과 자격 증명은 Jenkins 파드를 다시 만들면 사라지기 때문이다. [docs:history/build_log/06_jenkins.md:43] 그래서 작업 설명에도 「화면에서 고치지 않는다」고 적어 두었다. [code:platform/jenkins/values.yaml:104] 작업은 앱마다 하나씩, 펫퍼민트용 `petmint-app`과 런슈즈용 `runshoes-app` 둘이다. 둘 다 앱 저장소의 main 가지를 보고, 빌드 절차는 앱 저장소의 Jenkinsfile을 읽는다. [code:platform/jenkins/values.yaml:102-127] [code:platform/jenkins/values.yaml:145-170]
@@ -39,6 +41,8 @@ Jenkins의 관리자 비밀번호, Harbor 로봇 비밀번호, 웹훅 공유 비
 Jenkins는 줄을 바꾼 뒤 그 줄이 정말 새 태그가 되었는지 다시 센다. 줄을 바꾸는 명령은 아무것도 못 바꿔도 성공으로 끝나기 때문에, 줄 모양이 달라지면 빌드는 성공인데 배포만 조용히 빠질 수 있다. [docs:history/build_log/07_project_deploy.md:212-220] 그래서 `newTag` 줄 옆에는 「이 줄 모양을 바꾸면 Jenkinsfile도 바꾼다」는 주석이 붙어 있다. [code:apps/petmint/kustomization.yaml:32]
 
 앱 저장소와 매니페스트 저장소를 나눈 것도 이 커밋 때문이다. 한 저장소에 두면 Jenkins가 태그를 바꿔 올린 push가 다시 빌드를 불러 끝없이 돈다. [docs:history/build_log/06_jenkins.md:195] 저장소를 나눠도 Jenkins가 인프라 저장소를 자기 체크아웃 단계로 받으면 폴링이 그 저장소까지 감시해 같은 고리가 생긴다. 그래서 인프라 저장소는 Jenkins가 모르는 일반 복제 명령으로 받는다. [docs:history/build_log/07_project_deploy.md:224-228] 바뀐 파일이 모두 문서뿐인 push는 빌드를 성공으로 끝내되 이미지와 태그 커밋은 건너뛴다. [docs:history/build_log/06_jenkins.md:487]
+
+![Jenkins의 runshoes-app 빌드 한 번의 화면이다. GitHub push로 시작했고, 맨 위에 올린 이미지와 커밋 해시 태그가, 아래에 걸린 시간과 빌드한 앱 커밋이 있다.](../portfolio/img/07_jenkins_build.png)
 
 ## 태그를 모두 고정했다
 

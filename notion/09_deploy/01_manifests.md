@@ -42,6 +42,8 @@ PDB(PodDisruptionBudget, 노드 정비로 파드를 내보낼 때 최소 몇 개
 
 런슈즈는 리뷰 요약을 만드는 CronJob이 매일 새벽 한 번 돈다. 웹 파드와 같은 이미지에 배치 프로필만 붙여 돌리고, 태그도 같은 `newTag` 한 줄을 함께 받는다. [code:apps/runshoes/app/cronjob.yaml:1-3] [code:apps/runshoes/app/cronjob.yaml:14-15] 배치 프로필에서는 스키마 변경 도구를 끄고 스키마가 맞는지만 확인한다. 스키마는 웹 파드의 Sync만 바꾸고, 맞지 않으면 배치가 곧바로 실패한다. [code:apps/runshoes/app/cronjob.yaml:3] 회차가 겹치면 뒤에 온 쪽이 데이터베이스 잠금에서 곧바로 끝나고, 실패해도 바로 다시 돌지 않는다. 다시 만들 대상은 앱이 남긴 표시가 정한다. [code:apps/runshoes/app/cronjob.yaml:4-5] [code:apps/runshoes/app/cronjob.yaml:16] [code:apps/runshoes/app/cronjob.yaml:26-27]
 
+![ArgoCD의 petmint 앱 화면이다. 앱 하나 아래 설정 파일, 저장 공간, 서비스, Deployment, StatefulSet, 백업 CronJob, 초기화 Job이 나무로 펼쳐져 있고 모두 Healthy다.](../../portfolio/img/09_argocd_petmint_tree.png)
+
 ## 알려진 한계
 
 - 롤링하는 동안 잠깐 앱 파드가 하나다. 그 사이 남은 파드가 죽으면 끊긴다. [code:apps/petmint/app/deployment.yaml:6]

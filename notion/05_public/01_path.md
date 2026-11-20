@@ -42,6 +42,8 @@ cloudflared는 서버 호스트의 프로세스가 아니라 클러스터 안의
 
 다시 띄우는 과정은 끊기지 않게 짜여 있다. 새 cloudflared가 Cloudflare와 연결을 하나라도 맺어 준비가 되어야 옛 것을 하나 내린다. 새 설정이 깨져 있으면 새 것이 끝내 준비되지 않고 교체가 거기서 멈추며, 옛 두 벌이 계속 요청을 받는다. 그 사이 커밋을 되돌리고 다시 반영하면 된다. [code:apps/cloudflared/deployment.yaml:2-4] [code:apps/cloudflared/README.md:45]
 
+![ArgoCD의 cloudflared 앱 나무다. 앱 아래 설정 파일과 Deployment가 있고, Deployment 아래 지금 쓰는 판의 파드 두 벌이 떠 있다. 옛 판 둘은 파드 없이 남아 있다.](../../portfolio/img/04_argocd_cloudflared.png)
+
 ## 알려진 한계
 
 - 공개 주소가 모두 터널 하나에 몰린 것과 사설망 안에서는 Access 없이 운영 도구에 닿는 것은 여러 편에 걸리는 한계라 → 「알려진 한계」에 모았다

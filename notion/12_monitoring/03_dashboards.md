@@ -41,6 +41,10 @@ DB 계정의 비밀번호는 저장소에 없다. 사람이 쿠버네티스 Secr
 
 대시보드를 보는 사람은 개발자가 아닐 수 있다. 그래서 칸 제목은 무엇을 세는지 바로 알 수 있는 말로 쓰고, 마우스를 올리면 나오는 설명에 무엇이 섞였는지, 높거나 낮으면 무슨 뜻인지, 언제부터 있는 값인지를 쉬운 말로 적는다. DB 칸 이름이나 도구 이름은 설명 끝의 「출처」 한 줄에만 둔다. [code:apps/monitoring/grafana/dashboards/gen_petmint.py:62-63] [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:10-11] Grafana는 추세를 보는 곳이고, 한 건 한 건을 들여다보고 손대는 일은 각 서비스의 관리자 화면이 맡는다. [code:apps/monitoring/grafana/dashboards/gen_runshoes.py:7-8]
 
+![「petmint 운영」 대시보드를 기본 범위 최근 30일로 본 화면이다. 위에서부터 서비스 상태와 접속량, 질문량, 답변 품질과 속도, AI 서버(GPU) 묶음이 있다. 그 아래 서버 기록 칸이 있는 줄은 접속 주소가 나와 넣지 않았다.](../../portfolio/img/08_grafana_petmint.png)
+
+![「runshoes 운영」 대시보드를 최근 30일로 본 화면이다. 위에서부터 서비스 상태, API, 챗봇 묶음이 있다. 그 아래 AI 서버(GPU), 사이트 활동, 리뷰 요약 배치, 서버 기록 묶음은 넣지 않았다. AI 서버 묶음에는 GPU를 나눠 쓰는 펫퍼민트의 모델 이름이 나온다.](../../portfolio/img/08_grafana_runshoes.png)
+
 ## 들어가는 문
 
 Grafana는 바깥 주소로 열려 있고, 자체 로그인과 Cloudflare Access 두 겹으로 막는다. [code:apps/monitoring/ingress.yaml:7] 로그인하지 않은 사람에게는 아무것도 보여 주지 않으며 [code:apps/monitoring/grafana/deployment.yaml:41-42], 업데이트 확인이나 사용 통계처럼 바깥으로 나가는 호출은 껐다. [code:apps/monitoring/grafana/deployment.yaml:43-49] 관리자 계정은 사람이 Secret으로 만들어 넣는다. [code:apps/monitoring/grafana/deployment.yaml:28-31]
