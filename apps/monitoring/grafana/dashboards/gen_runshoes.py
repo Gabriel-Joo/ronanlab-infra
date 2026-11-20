@@ -55,6 +55,9 @@ def ts(title, targets, unit="short", desc="", bars=False, stack=False, minv=None
                                   "stacking": {"mode": "normal" if stack else "none"}}}
     if minv is not None:
         d["min"] = minv
+    if unit == "percentunit":
+        # 비율 칸은 0~100%로 묶는다. 위끝이 없으면 데이터가 없는 기간에 축이 10000%까지 늘어난다(2026-11-20 사용자)
+        d["min"], d["max"] = 0, 1
     return {"type": "timeseries", "title": title, "description": desc, "targets": targets,
             "fieldConfig": {"defaults": d, "overrides": []},
             "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}}

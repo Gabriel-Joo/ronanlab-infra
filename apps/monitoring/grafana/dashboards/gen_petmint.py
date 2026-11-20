@@ -30,10 +30,14 @@ def sql(q, fmt="time_series", ref="A"):
 def ts(title, targets, unit="short", desc="", bars=False, stack=False):
     for i, t in enumerate(targets):
         t["refId"] = chr(65 + i)
+    d = {"unit": unit, "custom": {
+        "drawStyle": "bars" if bars else "line", "fillOpacity": 60 if bars else 10,
+        "stacking": {"mode": "normal" if stack else "none"}}}
+    if unit == "percentunit":
+        # 비율 칸은 0~100%로 묶는다. 위끝이 없으면 데이터가 없는 기간에 축이 10000%까지 늘어난다(2026-11-20 사용자)
+        d["min"], d["max"] = 0, 1
     return {"type": "timeseries", "title": title, "description": desc, "targets": targets,
-            "fieldConfig": {"defaults": {"unit": unit, "custom": {
-                "drawStyle": "bars" if bars else "line", "fillOpacity": 60 if bars else 10,
-                "stacking": {"mode": "normal" if stack else "none"}}}, "overrides": []},
+            "fieldConfig": {"defaults": d, "overrides": []},
             "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}}
 
 def stat(title, targets, unit="short", desc=""):
